@@ -1,25 +1,9 @@
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: 'Inter', sans-serif;
-}
-
-body {
-    background-color: #7f8c8d;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    padding: 20px;
-}
-
 .form-card {
     background: #ffffff;
     width: 100%;
     max-width: 680px;
     border-radius: 12px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
     overflow: hidden;
 }
 
@@ -35,25 +19,26 @@ body {
 .header-icon {
     width: 44px;
     height: 44px;
-    background: #1e40af;
+    background: #00288E;
     color: #ffffff;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
+    flex-shrink: 0;
 }
 
 .header-text h2 {
     font-size: 1.2rem;
     font-weight: 700;
     color: #0f172a;
+    margin: 0;
 }
 
 .header-text p {
     font-size: 0.85rem;
     color: #64748b;
-    margin-top: 2px;
+    margin: 2px 0 0;
 }
 
 .form-body {
@@ -91,27 +76,32 @@ body {
     position: absolute;
     left: 12px;
     color: #64748b;
-    font-size: 1.1rem;
+    font-size: 20px;
     pointer-events: none;
 }
 
-input, select, textarea {
+.form-body input,
+.form-body select,
+.form-body textarea {
     width: 100%;
     padding: 10px 12px 10px 38px;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
     font-size: 0.85rem;
+    font-family: inherit;
     color: #334155;
     outline: none;
     background-color: #ffffff;
 }
 
-textarea {
+.form-body textarea {
     padding: 10px 12px;
     resize: vertical;
 }
 
-input:focus, select:focus, textarea:focus {
+.form-body input:focus,
+.form-body select:focus,
+.form-body textarea:focus {
     border-color: #1e40af;
     box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
 }
@@ -123,26 +113,16 @@ input:focus, select:focus, textarea:focus {
     margin-top: 10px;
 }
 
-.btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 0.85rem;
+.btn-simpan {
+    padding: 8px 16px;
+    background: #00288E;
+    border: none;
+    border-radius: 6px;
     font-weight: 600;
+    font-size: 0.85rem;
     cursor: pointer;
-    text-decoration: none;
     display: inline-flex;
     align-items: center;
     gap: 6px;
-}
-
-.btn-outline {
-    background: transparent;
-    border: 1px solid #94a3b8;
-    color: #475569;
-}
-
-.btn-primary {
-    background: #002b9a;
-    border: none;
-    color: #ffffff;
+    color: white;
 }

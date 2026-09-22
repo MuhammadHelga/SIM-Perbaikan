@@ -6,27 +6,12 @@
     <title>SIM-Perbaikan - Unit & Barang</title>
     <!-- Font Inter & Remixicon -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/unit.css">
+    <link rel="stylesheet" href="/assets/css/navbar.css">
 </head>
 <body>
-
-    <!-- Header Navigation -->
-    <header class="navbar">
-        <div class="brand">
-            <h2>SIM-Perbaikan</h2>
-        </div>
-        <nav class="nav-menu">
-            <a href="/dashboard" class="nav-item"><i class="ri-dashboard-3-line"></i> Dashboard</a>
-            <a href="/laporan" class="nav-item"><i class="ri-file-list-3-line"></i> Laporan Kegiatan</a>
-            <a href="/ruang" class="nav-item"><i class="ri-door-open-line"></i> Rekap Ruang</a>
-            <a href="/unit" class="nav-item active"><i class="ri-shape-2-line"></i> Unit & Barang</a>
-        </nav>
-        <div class="user-action">
-            <a href="/logout" class="btn-logout"><i class="ri-logout-box-r-line"></i> Logout</a>
-        </div>
-    </header>
-
+    <?php $activeMenu = 'unit_barang'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
     <main class="container">
         <!-- Page Title -->
         <div class="page-title">

@@ -1,0 +1,51 @@
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 48px 16px;
+    overflow-y: auto;
+    z-index: 100;
+
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease;
+}
+
+.modal-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.modal-overlay .form-card {
+    transform: translateY(-12px);
+    transition: transform 0.18s ease;
+}
+
+.modal-overlay.open .form-card {
+    transform: translateY(0);
+}
+
+.modal-close {
+    margin-left: auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.modal-close:hover { 
+    background: #e2e8f0; 
+    color: #1e293b; 
+}

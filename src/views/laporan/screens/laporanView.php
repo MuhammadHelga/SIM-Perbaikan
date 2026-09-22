@@ -1,102 +1,110 @@
+<?php
+$laporanList  = $laporanList ?? [];
+$stats        = $stats ?? ['total' => 0, 'pending' => 0, 'selesai' => 0];
+$periode      = $periode ?? '';
+$statusFilter = $statusFilter ?? '';
+$search       = $search ?? '';
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIM-Perbaikan - Laporan Kegiatan</title>
-    <!-- Font & Icon -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/navbar.css">
     <link rel="stylesheet" href="/assets/css/laporan.css">
+    <link rel="stylesheet" href="/assets/css/modal.css">
+    <link rel="stylesheet" href="/assets/css/tambah-laporan-modal.css">
 </head>
 <body>
+    <?php $activeMenu = 'laporan'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
+    
+    <main class="page-wrap">
+        <div class="page-head">
+            <h1 class="page-title">Daftar Laporan<br>Kegiatan &amp; Kerusakan</h1>
 
-    <!-- Header Navigation -->
-    <header class="navbar">
-        <div class="brand">
-            <h2>SIM-Perbaikan</h2>
-        </div>
-        <nav class="nav-menu">
-            <a href="/dashboard" class="nav-item"><i class="ri-dashboard-3-line"></i> Dashboard</a>
-            <a href="/laporan" class="nav-item active"><i class="ri-file-list-3-line"></i> Laporan Kegiatan</a>
-            <a href="/ruang" class="nav-item"><i class="ri-door-open-line"></i> Rekap Ruang</a>
-            <a href="/unit" class="nav-item"><i class="ri-shape-2-line"></i> Unit & Barang</a>
-        </nav>
-        <div class="user-action">
-            <a href="/logout" class="btn-logout"><i class="ri-logout-box-r-line"></i> Logout</a>
-        </div>
-    </header>
-
-    <main class="container">
-        <!-- Top Section: Title & Summary Cards -->
-        <div class="header-section">
-            <div class="page-title">
-                <h1>Daftar Laporan<br>Kegiatan & Kerusakan</h1>
-            </div>
-            <div class="summary-cards">
-                <div class="mini-card border-blue">
-                    <div class="card-icon icon-blue"><i class="ri-sigma-line"></i></div>
+            <div class="stat-row">
+                <div class="stat-box stat-box--purple">
+                    <span class="stat-box__icon material-symbols-outlined">functions</span>
                     <div>
-                        <span class="card-label">Total Laporan Bulan Ini</span>
-                        <div class="card-count text-blue">132 <small>Unit</small></div>
+                        <p class="stat-box__label">Total Laporan Bulan Ini</p>
+                        <p class="stat-box__value"><span class="value-blue"><?= (int)$stats['total'] ?></span> Unit</p>
                     </div>
                 </div>
-                <div class="mini-card border-red">
-                    <div class="card-icon icon-red"><i class="ri-time-line"></i></div>
+                <div class="stat-box stat-box--red">
+                    <span class="stat-box__icon material-symbols-outlined">schedule</span>
                     <div>
-                        <span class="card-label">Pending/Ditunda</span>
-                        <div class="card-count text-red">12 <small>Unit</small></div>
+                        <p class="stat-box__label">Pending/Ditunda</p>
+                        <p class="stat-box__value"><span class="value-red"><?= (int)$stats['pending'] ?></span> Unit</p>
                     </div>
                 </div>
-                <div class="mini-card border-green">
-                    <div class="card-icon icon-green"><i class="ri-checkbox-circle-line"></i></div>
+                <div class="stat-box stat-box--green">
+                    <span class="stat-box__icon material-symbols-outlined">check_circle</span>
                     <div>
-                        <span class="card-label">Selesai Ditangani</span>
-                        <div class="card-count text-green">120 <small>Unit</small></div>
+                        <p class="stat-box__label">Selesai Ditangani</p>
+                        <p class="stat-box__value"><span class="value-green"><?= (int)$stats['selesai'] ?></span> Unit</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Content Card: Filter & Data Table -->
-        <div class="table-container-card">
-            <!-- Filter Bar -->
-            <div class="filter-bar">
-                <div class="filter-inputs">
-                    <div class="form-group">
-                        <label>Periode Bulan</label>
-                        <div class="input-icon">
-                            <i class="ri-calendar-event-line"></i>
-                            <select>
-                                <option>September 2026</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Status</label>
-                        <select>
-                            <option>Semua</option>
-                            <option>Selesai</option>
-                            <option>Pending</option>
+        <div class="filter-card">
+            <form method="get" class="filter-row" id="filterForm">
+                <div class="filter-field">
+                    <label for="periode">Periode Bulan</label>
+                    <div class="filter-input">
+                        <span class="material-symbols-outlined">calendar_month</span>
+                        <select name="periode" id="periode">
+                            <option value="2026-09">September 2026</option>
+                            <option value="2026-08">Agustus 2026</option>
+                            <option value="2026-07">Juli 2026</option>
                         </select>
                     </div>
-                    <div class="form-group search-group">
-                        <label>Cari</label>
-                        <div class="input-icon">
-                            <i class="ri-search-line"></i>
-                            <input type="text" placeholder="Cari nama barang, unit...">
-                        </div>
+                </div>
+
+                <div class="filter-field">
+                    <label for="status">Status</label>
+                    <div class="filter-input">
+                        <select name="status" id="status">
+                            <option value="" <?= $statusFilter === '' ? 'selected' : '' ?>>Semua</option>
+                            <option value="selesai" <?= $statusFilter === 'selesai' ? 'selected' : '' ?>>Selesai</option>
+                            <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
+                        </select>
                     </div>
                 </div>
-                <div class="filter-actions">
-    <button class="btn btn-success"><i class="ri-printer-line"></i> Cetak Rekap Laporan</button>
-    <!-- Ubah button Tambah Laporan menjadi elemen <a> -->
-    <a href="/laporan/tambah" class="btn btn-primary"><i class="ri-add-circle-line"></i> Tambah Laporan</a>
-</div>
-            </div>
 
-            <!-- Table Section -->
-            <div class="table-responsive">
+                <div class="filter-field filter-field--grow">
+                    <label for="search">Cari</label>
+                    <div class="filter-input">
+                        <span class="material-symbols-outlined">search</span>
+                        <input type="text" name="search" id="search" placeholder="Cari nama barang, unit..."
+                            value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button type="button" class="btn btn-print" id="btnCetak">
+                        <span class="material-symbols-outlined">print</span>
+                        Cetak Rekap Laporan
+                    </button>
+                    <button type="button" class="btn btn-add" onclick="openTambahModal()">
+                        <span class="material-symbols-outlined">add</span>
+                        Tambah Laporan
+                    </button>
+                </div>
+            </form>
+
+            <div class="filter-active">
+                <span class="filter-active__label">Filter Aktif:</span>
+                <span id="activeChips"></span>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-scroll">
                 <table class="data-table">
                     <thead>
                         <tr>
@@ -108,76 +116,74 @@
                             <th>Uraian Kegiatan</th>
                             <th>Hasil</th>
                             <th>Tgl Kirim/Terima</th>
-                            <th>Aksi</th>
+                            <th class="col-aksi">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
+                    <?php if (!$laporanList): ?>
+                        <tr><td colspan="9" class="empty-row">Belum ada laporan.</td></tr>
+                    <?php endif; ?>
+                    <?php foreach ($laporanList as $row): ?>
                         <tr>
-                            <td>19 Sep 2026</td>
-                            <td>Poli</td>
-                            <td>SIMRS</td>
-                            <td>-</td>
-                            <td>Lorem ipsum is simply text...</td>
-                            <td>Lorem ipsum is simply text...</td>
-                            <td><span class="badge badge-success">Selesai</span></td>
-                            <td><button class="btn-sm btn-gray">Kirim</button></td>
-                            <td class="action-buttons">
-                                <a href="#" class="icon-action text-info"><i class="ri-search-eye-line"></i></a>
-                                <a href="#" class="icon-action text-warning"><i class="ri-pencil-line"></i></a>
-                                <a href="#" class="icon-action text-danger"><i class="ri-delete-bin-line"></i></a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>19 Sep 2026</td>
-                            <td>Poli</td>
-                            <td>SIMRS</td>
-                            <td>-</td>
-                            <td>Lorem ipsum is simply text...</td>
-                            <td>Lorem ipsum is simply text...</td>
-                            <td><span class="badge badge-warning">Pending</span></td>
+                            <td class="nowrap"><?= htmlspecialchars($row['tanggal']) ?></td>
+                            <td><?= htmlspecialchars($row['urusan']) ?></td>
+                            <td><?= htmlspecialchars($row['barang']) ?></td>
+                            <td><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
+                            <td class="truncate" title="<?= htmlspecialchars($row['kerusakan']) ?>"><?= htmlspecialchars($row['kerusakan']) ?></td>
+                            <td class="truncate" title="<?= htmlspecialchars($row['uraian']) ?>"><?= htmlspecialchars($row['uraian']) ?></td>
                             <td>
-                                <span class="date-text">19 Sep 2026</span>
-                                <button class="btn-sm btn-teal">Terima</button>
+                                <?php if ($row['hasil'] === 'selesai'): ?>
+                                    <span class="badge badge--green">Selesai</span>
+                                <?php else: ?>
+                                    <span class="badge badge--red">Pending</span>
+                                <?php endif; ?>
                             </td>
-                            <td class="action-buttons">
-                                <a href="#" class="icon-action text-info"><i class="ri-search-eye-line"></i></a>
-                                <a href="#" class="icon-action text-warning"><i class="ri-pencil-line"></i></a>
-                                <a href="#" class="icon-action text-danger"><i class="ri-delete-bin-line"></i></a>
+                            <td class="nowrap">
+                                <?php if ($row['kirim_status'] === 'belum'): ?>
+                                    <button type="button" class="pill-btn pill-btn--navy" onclick="kirimBarang(<?= (int)$row['id'] ?>)">Kirim</button>
+                                <?php elseif ($row['kirim_status'] === 'dikirim'): ?>
+                                    <div class="pill-stack">
+                                        <span class="pill-text"><?= htmlspecialchars($row['tgl_kirim']) ?></span>
+                                        <button type="button" class="pill-btn pill-btn--green" onclick="terimaBarang(<?= (int)$row['id'] ?>)">Terima</button>
+                                    </div>
+                                <?php elseif ($row['kirim_status'] === 'diterima'): ?>
+                                    <span class="pill-text">Diterima: <?= htmlspecialchars($row['tgl_terima']) ?></span>
+                                <?php else: ?>
+                                    <span class="pill-btn pill-btn--disabled">Kirim</span>
+                                <?php endif; ?>
+                            </td>
+                            <td class="col-aksi">
+                                <div class="action-icons">
+                                    <a href="/laporan/<?= (int)$row['id'] ?>" class="icon-btn icon-btn--view" title="Lihat detail">
+                                        <span class="material-symbols-outlined">visibility</span>
+                                    </a>
+                                    <button type="button" class="icon-btn icon-btn--edit" title="Edit" onclick="openEditModal(<?= (int)$row['id'] ?>)">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </button>
+                                    <button type="button" class="icon-btn icon-btn--delete" title="Hapus" onclick="confirmDelete(<?= (int)$row['id'] ?>)">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
-                        <tr>
-                            <td>19 Sep 2026</td>
-                            <td>Poli</td>
-                            <td>SIMRS</td>
-                            <td>-</td>
-                            <td>Lorem ipsum is simply text...</td>
-                            <td>Lorem ipsum is simply text...</td>
-                            <td><span class="badge badge-success">Selesai</span></td>
-                            <td><span class="date-text">Diterima: 19 Sep 2026</span></td>
-                            <td class="action-buttons">
-                                <a href="#" class="icon-action text-info"><i class="ri-search-eye-line"></i></a>
-                                <a href="#" class="icon-action text-warning"><i class="ri-pencil-line"></i></a>
-                                <a href="#" class="icon-action text-danger"><i class="ri-delete-bin-line"></i></a>
-                            </td>
-                        </tr>
+                    <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
 
-            <!-- Table Footer / Pagination -->
             <div class="table-footer">
-                <div class="entries-info">
-                    Menampilkan 
-                    <select>
-                        <option>25</option>
-                        <option>50</option>
-                    </select> 
-                    Laporan
-                </div>
+                <span>Menampilkan</span>
+                <select id="perPage">
+                    <option value="25" selected>25</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                </select>
+                <span>Laporan</span>
             </div>
         </div>
     </main>
-
-
+    
 </body>
+<?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
+<script src="/assets/js/laporan.js"></script>
 </html>

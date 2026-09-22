@@ -4,45 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIM-Perbaikan - Dashboard</title>
-    <!-- Font Inter & Remixicon untuk Ikon -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
-    <!-- Chart.js CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="stylesheet" href="/assets/css/dashboard.css">
+    <link rel="stylesheet" href="/assets/css/navbar.css">
 </head>
 <body>
+    <?php $activeMenu = 'dashboard'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
 
-    <!-- Top Navigation Header -->
-    <header class="navbar">
-        <div class="brand">
-            <h2>SIM-Perbaikan</h2>
-        </div>
-        <!-- Di dalam file DashboardView.php & view lainnya -->
-<nav class="nav-menu">
-    <a href="/dashboard" class="nav-item"><i class="ri-dashboard-3-line"></i> Dashboard</a>
-    
-    <!-- Arahkan href ke URL /laporan -->
-    <a href="/laporan" class="nav-item"><i class="ri-file-list-3-line"></i> Laporan Kegiatan</a>
-    
-    <a href="/ruang" class="nav-item"><i class="ri-door-open-line"></i> Rekap Ruang</a>
-    <a href="/unit" class="nav-item"><i class="ri-shape-2-line"></i> Unit & Barang</a>
-</nav>
-        <div class="user-action">
-            <a href="#" class="btn-logout"><i class="ri-logout-box-r-line"></i> Logout</a>
-        </div>
-    </header>
-
-    <!-- Main Content Area -->
     <main class="container">
-        <!-- Page Title -->
         <div class="page-header">
             <h1>Dashboard dan Monitoring Perbaikan</h1>
             <p>Ringkasan performa pemeliharaan, tren kerusakan perangkat rumah sakit dan monitoring perbaikan real-time</p>
         </div>
 
-        <!-- Metric Cards Grid -->
         <div class="cards-grid">
             <div class="card">
                 <div class="card-body">
@@ -89,9 +66,7 @@
             </div>
         </div>
 
-        <!-- Charts Layout Grid -->
         <div class="charts-grid">
-            <!-- Left Chart Card -->
             <div class="chart-card">
                 <div class="chart-header">
                     <h3>Tren Laporan dan Penyelesaian (2026)</h3>
@@ -102,7 +77,6 @@
                 </div>
             </div>
 
-            <!-- Right Chart Card -->
             <div class="chart-card">
                 <div class="chart-header">
                     <div class="flex-between">
@@ -118,7 +92,6 @@
         </div>
     </main>
 
-    <!-- UI Scripts -->
     <script src="/assets/js/dashboard.js"></script>
 </body>
 </html>
