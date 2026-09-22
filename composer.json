@@ -1,5 +1,5 @@
 {
     "require": {
-        "byjg/migration": "^5.0"
+        "byjg/migration": "^6.0"
     }
 }

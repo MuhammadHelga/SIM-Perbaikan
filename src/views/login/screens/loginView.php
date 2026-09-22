@@ -1,5 +1,6 @@
 <?php
 $errorMessage = $errorMessage ?? null;
+$oldUsername  = $oldUsername ?? '';
 ?>
 
 <!DOCTYPE html>
