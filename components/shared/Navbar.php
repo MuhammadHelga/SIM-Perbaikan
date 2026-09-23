@@ -3,10 +3,10 @@
 $activeMenu = $activeMenu ?? '';
 
 $menus = [
-    'dashboard'   => ['label' => 'Dashboard',        'icon' => 'grid_view',     'url' => '/dashboard'],
-    'laporan'     => ['label' => 'Laporan Kegiatan', 'icon' => 'assignment',    'url' => '/laporan'],
-    'ruang'       => ['label' => 'Rekap Ruang',      'icon' => 'meeting_room',  'url' => '/ruang'],
-    'unit_barang' => ['label' => 'Unit & Barang',    'icon' => 'settings',      'url' => '/unit'],
+    'dashboard'   => ['label' => 'Dashboard',        'icon' => 'grid_view',     'url' => BASE_URL . '/dashboard'],
+    'laporan'     => ['label' => 'Laporan Kegiatan', 'icon' => 'assignment',    'url' => BASE_URL . '/laporan'],
+    'ruang'       => ['label' => 'Rekap Ruang',      'icon' => 'meeting_room',  'url' => BASE_URL . '/ruang'],
+    'unit_barang' => ['label' => 'Unit & Barang',    'icon' => 'settings',      'url' => BASE_URL . '/unit'],
 ];
 
 ?>
@@ -25,7 +25,7 @@ $menus = [
             <?php endforeach; ?>
         </nav>
 
-        <form method="post" action="/logout" class="app-navbar__logout-form">
+        <form method="post" action="<?= BASE_URL ?>/logout" class="app-navbar__logout-form">
             <button type="submit" class="btn-logout">
                 <span class="material-symbols-outlined" aria-hidden="true">logout</span>
                 Logout

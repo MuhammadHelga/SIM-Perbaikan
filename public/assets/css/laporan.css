@@ -175,6 +175,111 @@ main.page-wrap {
     margin-left: auto; 
 }
 
+.month-picker {
+    position: relative;
+}
+
+.month-picker__input {
+    cursor: pointer;
+    user-select: none;
+}
+
+.month-picker__trigger {
+    all: unset;
+    flex: 1;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: #000;
+    padding: 9px 4px;
+}
+
+.month-picker__chevron {
+    color: #a7adb8;
+    font-size: 18px;
+    transition: transform 0.15s ease;
+}
+
+.month-picker.is-open .month-picker__chevron {
+    transform: rotate(180deg);
+}
+
+.month-picker__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    width: 260px;
+    background: #fff;
+    border: 1px solid #D9D9D9;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(20, 30, 70, 0.14);
+    padding: 14px;
+    z-index: 50;
+
+    opacity: 0;
+    transform: translateY(-6px);
+    pointer-events: none;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
+.month-picker.is-open .month-picker__panel {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
+.month-picker__year-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.month-picker__year-label {
+    font-weight: 700;
+    font-size: 14.5px;
+    color: #000;
+}
+
+.month-picker__nav-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #a7adb8;
+    cursor: pointer;
+}
+.month-picker__nav-btn:hover { background: #f2f4f9; color: var(--text); }
+
+.month-picker__grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.month-picker__month {
+    border: none;
+    border-radius: 8px;
+    padding: 9px 0;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    color: #000;
+    background: #f7f8fb;
+    cursor: pointer;
+}
+.month-picker__month:hover { background: #e9ecf5; }
+
+.month-picker__month.is-selected {
+    background: #00288E;
+    color: #fff;
+    font-weight: 700;
+}
+
 .btn-print { 
     background: #059669; 
     color: #fff; 
@@ -331,7 +436,7 @@ main.page-wrap {
 }
 
 .pill-btn--green { 
-    background: var(--green); 
+    background: #059669; 
 }
 
 .pill-btn--green:hover { 
