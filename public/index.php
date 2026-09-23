@@ -3,7 +3,7 @@ session_start();
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../config/conf.php'; 
 
-$basePath = '/SIMKerusakan/SIM-Perbaikan';
+$basePath = '';
 
 $errorMessage = null;
 $oldUsername  = '';
@@ -106,25 +106,25 @@ switch ($path) {
             'selesai' => count(array_filter($laporanList, fn($r) => $r['hasil'] === 'selesai')),
         ];
 
-        require __DIR__ . '/../src/views/laporan/screens/laporanView.php';
+        require __DIR__ . '/../src/views/laporan/screens/LaporanView.php';
         break;
 
     case '/laporan/tambah':
         requireLogin($basePath);
 
-        require __DIR__ . '/../src/views/laporan/screens/tambahLaporanView.php';
+        require __DIR__ . '/../src/views/laporan/screens/TambahLaporanView.php';
         break;
 
     case '/ruang':
         requireLogin($basePath);
 
-        require __DIR__ . '/../src/views/ruang/screens/ruangView.php';
+        require __DIR__ . '/../src/views/ruang/screens/RuangView.php';
         break;
 
     case '/unit':
         requireLogin($basePath);
 
-        require __DIR__ . '/../src/views/unit_barang/screens/unitBarangView.php';
+        require __DIR__ . '/../src/views/unit_barang/screens/UnitBarangView.php';
         break;
 
     default:
