@@ -4,34 +4,31 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "921e5ed7bf6f63c899e2d7bd04108fc4",
+    "content-hash": "166a9c845eb688f701d95d504abfaee1",
     "packages": [
         {
             "name": "byjg/anydataset",
-            "version": "6.0.0",
+            "version": "5.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/byjg/php-anydataset.git",
-                "reference": "29667a59eb9b451327b3438f857410195374b1fb"
+                "reference": "88af0027b0734b058178eb1d5e175ecca0890ac6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/byjg/php-anydataset/zipball/29667a59eb9b451327b3438f857410195374b1fb",
-                "reference": "29667a59eb9b451327b3438f857410195374b1fb",
+                "url": "https://api.github.com/repos/byjg/php-anydataset/zipball/88af0027b0734b058178eb1d5e175ecca0890ac6",
+                "reference": "88af0027b0734b058178eb1d5e175ecca0890ac6",
                 "shasum": ""
             },
             "require": {
-                "byjg/serializer": "^6.0",
-                "byjg/xmlutil": "^6.0",
+                "byjg/serializer": "^5.0",
+                "byjg/xmlutil": "^5.0",
                 "ext-dom": "*",
-                "php": ">=8.3 <8.6"
-            },
-            "provide": {
-                "byjg/anydataset-implementation": "1.0"
+                "php": ">=8.1 <8.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^10.5|^11.5",
-                "vimeo/psalm": "^5.9|^6.13"
+                "phpunit/phpunit": "^9.6",
+                "vimeo/psalm": "^4.24"
             },
             "type": "library",
             "autoload": {
@@ -43,10 +40,10 @@
             "license": [
                 "MIT"
             ],
-            "description": "AnyDataset is a powerful data source abstraction layer for PHP that provides a simple and consistent interface to access different data sources. With AnyDataset, you can work with various data formats and storage systems using the same programming interface.",
+            "description": "Anydataset is an agnostic data source abstraction layer in PHP. Core Module.",
             "support": {
                 "issues": "https://github.com/byjg/php-anydataset/issues",
-                "source": "https://github.com/byjg/php-anydataset/tree/6.0.0"
+                "source": "https://github.com/byjg/php-anydataset/tree/5.0.2"
             },
             "funding": [
                 {
@@ -54,28 +51,76 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-25T03:57:38+00:00"
+            "time": "2025-07-30T19:30:29+00:00"
         },
         {
-            "name": "byjg/anydataset-db",
-            "version": "6.0.1",
+            "name": "byjg/anydataset-array",
+            "version": "5.0.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/byjg/php-anydataset-db.git",
-                "reference": "71953424029b9a4604d879931c28498a0591c1f1"
+                "url": "https://github.com/byjg/php-anydataset-array.git",
+                "reference": "c876551f1d90b7a281acf19bd7c1d27c8f7afcdd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/byjg/php-anydataset-db/zipball/71953424029b9a4604d879931c28498a0591c1f1",
-                "reference": "71953424029b9a4604d879931c28498a0591c1f1",
+                "url": "https://api.github.com/repos/byjg/php-anydataset-array/zipball/c876551f1d90b7a281acf19bd7c1d27c8f7afcdd",
+                "reference": "c876551f1d90b7a281acf19bd7c1d27c8f7afcdd",
                 "shasum": ""
             },
             "require": {
-                "byjg/anydataset": "^6.0",
-                "byjg/uri": "^6.0",
+                "byjg/anydataset": "^5.0",
+                "php": ">=8.1 <8.4"
+            },
+            "provide": {
+                "byjg/anydataset-implementation": "1.0"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ByJG\\AnyDataset\\Lists\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Anydataset Array abstraction. Anydataset is an agnostic data source abstraction layer in PHP.",
+            "support": {
+                "issues": "https://github.com/byjg/php-anydataset-array/issues",
+                "source": "https://github.com/byjg/php-anydataset-array/tree/5.0.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/byjg",
+                    "type": "github"
+                }
+            ],
+            "abandoned": "byjg/anydataset",
+            "time": "2024-12-17T18:23:23+00:00"
+        },
+        {
+            "name": "byjg/anydataset-db",
+            "version": "5.0.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/byjg/php-anydataset-db.git",
+                "reference": "7de3aac11146dcedfd02e01587c8e5bb96c9306c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/byjg/php-anydataset-db/zipball/7de3aac11146dcedfd02e01587c8e5bb96c9306c",
+                "reference": "7de3aac11146dcedfd02e01587c8e5bb96c9306c",
+                "shasum": ""
+            },
+            "require": {
+                "byjg/anydataset-array": "^5.0",
+                "byjg/uri": "^5.0",
                 "ext-json": "*",
                 "ext-pdo": "*",
-                "php": ">=8.3 <8.6",
+                "php": ">=8.1 <8.4",
                 "psr/cache": "^1.0|^2.0|^3.0",
                 "psr/log": "^1.1|^2.0|^3.0"
             },
@@ -83,12 +128,12 @@
                 "byjg/anydataset-implementation": "1.0"
             },
             "require-dev": {
-                "byjg/cache-engine": "^6.0",
-                "phpunit/phpunit": "^10.5|^11.5|^12.3",
-                "vimeo/psalm": "^5.9|^6.13"
+                "byjg/cache-engine": "^5.0",
+                "phpunit/phpunit": "^9.6",
+                "vimeo/psalm": "^5.9"
             },
             "suggest": {
-                "byjg/cache-engine": "^6.0",
+                "byjg/cache-engine": "^5.0",
                 "ext-curl": "*",
                 "ext-oci8": "*",
                 "ext-pdo_mysql": "*",
@@ -104,10 +149,10 @@
             "license": [
                 "MIT"
             ],
-            "description": "AnyDataset-DB provides a relational database abstraction layer. It is part of the Anydataset project, an agnostic data source abstraction layer for PHP.",
+            "description": "Anydataset Database Relational abstraction. Anydataset is an agnostic data source abstraction layer in PHP.",
             "support": {
                 "issues": "https://github.com/byjg/php-anydataset-db/issues",
-                "source": "https://github.com/byjg/php-anydataset-db/tree/6.0.1"
+                "source": "https://github.com/byjg/php-anydataset-db/tree/5.0.8"
             },
             "funding": [
                 {
@@ -115,34 +160,31 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-07-01T14:49:32+00:00"
+            "time": "2025-09-09T13:44:21+00:00"
         },
         {
             "name": "byjg/migration",
-            "version": "6.0.0",
+            "version": "5.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/byjg/php-migration.git",
-                "reference": "f0ea79307b4ad4c914652e6f77d588019ed73b58"
+                "reference": "d06b6fb1eb34d5f03e78e405049c6f45e77aeccc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/byjg/php-migration/zipball/f0ea79307b4ad4c914652e6f77d588019ed73b58",
-                "reference": "f0ea79307b4ad4c914652e6f77d588019ed73b58",
+                "url": "https://api.github.com/repos/byjg/php-migration/zipball/d06b6fb1eb34d5f03e78e405049c6f45e77aeccc",
+                "reference": "d06b6fb1eb34d5f03e78e405049c6f45e77aeccc",
                 "shasum": ""
             },
             "require": {
-                "byjg/anydataset-db": "^6.0",
-                "ext-pdo": "*",
-                "php": ">=8.3 <8.6"
+                "byjg/anydataset-db": "^5.0",
+                "ext-pdo": "*"
             },
             "require-dev": {
-                "phpunit/phpunit": "^10.5|^11.5",
-                "vimeo/psalm": "^6.13"
+                "php": ">=8.1 <8.4",
+                "phpunit/phpunit": "^9.6",
+                "vimeo/psalm": "^5.9"
             },
-            "bin": [
-                "bin/migrate"
-            ],
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -153,10 +195,10 @@
             "license": [
                 "MIT"
             ],
-            "description": "A simple, framework-agnostic database migration tool that uses pure SQL commands for versioning your database.",
+            "description": "Simple library in PHP for database version control. Supports Sqlite, MySql, Sql Server and Postgres.",
             "support": {
                 "issues": "https://github.com/byjg/php-migration/issues",
-                "source": "https://github.com/byjg/php-migration/tree/6.0.0"
+                "source": "https://github.com/byjg/php-migration/tree/5.0.2"
             },
             "funding": [
                 {
@@ -164,31 +206,31 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-25T03:10:48+00:00"
+            "time": "2025-01-07T13:14:19+00:00"
         },
         {
             "name": "byjg/serializer",
-            "version": "6.0.2",
+            "version": "5.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/byjg/php-serializer.git",
-                "reference": "735f52d5c6e5d6223962fdb50ad230971e35adbb"
+                "reference": "4d5e54deaa1d59a2227800596f8bbba80568c310"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/byjg/php-serializer/zipball/735f52d5c6e5d6223962fdb50ad230971e35adbb",
-                "reference": "735f52d5c6e5d6223962fdb50ad230971e35adbb",
+                "url": "https://api.github.com/repos/byjg/php-serializer/zipball/4d5e54deaa1d59a2227800596f8bbba80568c310",
+                "reference": "4d5e54deaa1d59a2227800596f8bbba80568c310",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "ext-simplexml": "*",
-                "php": ">=8.3 <8.6",
+                "php": ">=8.1 <8.4",
                 "symfony/yaml": "> 4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^10.5|^11.5",
-                "vimeo/psalm": "^5.9|^6.13"
+                "phpunit/phpunit": "^9.6",
+                "vimeo/psalm": "^5.9"
             },
             "suggest": {
                 "ext-curl": "*"
@@ -203,10 +245,10 @@
             "license": [
                 "MIT"
             ],
-            "description": "A powerful multi-format serialization library that converts objects, arrays, and data between JSON, XML, YAML, CSV, PHP serialize, and plain text formats with intelligent property mapping and transformation",
+            "description": "Serialize any object into array and format it JSON or XML",
             "support": {
                 "issues": "https://github.com/byjg/php-serializer/issues",
-                "source": "https://github.com/byjg/php-serializer/tree/6.0.2"
+                "source": "https://github.com/byjg/php-serializer/tree/5.0.0"
             },
             "funding": [
                 {
@@ -214,32 +256,32 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-07-01T14:15:11+00:00"
+            "time": "2024-10-27T15:46:21+00:00"
         },
         {
             "name": "byjg/uri",
-            "version": "6.0.0",
+            "version": "5.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/byjg/php-uri.git",
-                "reference": "5a749946ebde62d142f345c02ff62b472d2c97dc"
+                "reference": "59cf33132f93359e35afb00ff02cb22b36e97d16"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/byjg/php-uri/zipball/5a749946ebde62d142f345c02ff62b472d2c97dc",
-                "reference": "5a749946ebde62d142f345c02ff62b472d2c97dc",
+                "url": "https://api.github.com/repos/byjg/php-uri/zipball/59cf33132f93359e35afb00ff02cb22b36e97d16",
+                "reference": "59cf33132f93359e35afb00ff02cb22b36e97d16",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.3 <8.6",
+                "php": ">=8.1 <8.5",
                 "psr/http-message": "^1.0|^1.1|^2.0"
             },
             "provide": {
                 "psr/http-message-implementation": "1.0"
             },
             "require-dev": {
-                "phpunit/phpunit": "^10.5|^11.5",
-                "vimeo/psalm": "^5.9|^6.13"
+                "phpunit/phpunit": "^9.6",
+                "vimeo/psalm": "^6.0"
             },
             "type": "project",
             "autoload": {
@@ -251,10 +293,10 @@
             "license": [
                 "MIT"
             ],
-            "description": "A PHP implementation of PSR-7 UriInterface with additional utility methods",
+            "description": "An implementation of PSR-7 Uri Interface ",
             "support": {
                 "issues": "https://github.com/byjg/php-uri/issues",
-                "source": "https://github.com/byjg/php-uri/tree/6.0.0"
+                "source": "https://github.com/byjg/php-uri/tree/5.0.3"
             },
             "funding": [
                 {
@@ -262,32 +304,32 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-25T17:47:41+00:00"
+            "time": "2024-11-30T15:36:13+00:00"
         },
         {
             "name": "byjg/xmlutil",
-            "version": "6.0.0",
+            "version": "5.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/byjg/php-xmlutil.git",
-                "reference": "ae005cd5edfd223c3ab9ceaf50c12261b27178f0"
+                "reference": "e7ee827736337e475d36f4bfe8511390cc521dd5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/byjg/php-xmlutil/zipball/ae005cd5edfd223c3ab9ceaf50c12261b27178f0",
-                "reference": "ae005cd5edfd223c3ab9ceaf50c12261b27178f0",
+                "url": "https://api.github.com/repos/byjg/php-xmlutil/zipball/e7ee827736337e475d36f4bfe8511390cc521dd5",
+                "reference": "e7ee827736337e475d36f4bfe8511390cc521dd5",
                 "shasum": ""
             },
             "require": {
-                "byjg/serializer": "^6.0",
+                "byjg/serializer": "^5.0",
                 "ext-dom": "*",
                 "ext-libxml": "*",
                 "ext-simplexml": "*",
-                "php": ">=8.3 <8.6"
+                "php": ">=8.1 <8.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^10.5|^11.5",
-                "vimeo/psalm": "^5.9|^6.13"
+                "phpunit/phpunit": "^9.6",
+                "vimeo/psalm": "^5.20"
             },
             "type": "library",
             "autoload": {
@@ -299,10 +341,10 @@
             "license": [
                 "MIT"
             ],
-            "description": "A powerful and intuitive PHP library for working with XML documents. This utility makes XML manipulation, querying, and conversion simple and straightforward in PHP.",
+            "description": "A utility class to make easy work with XML in PHP.",
             "support": {
                 "issues": "https://github.com/byjg/php-xmlutil/issues",
-                "source": "https://github.com/byjg/php-xmlutil/tree/6.0.0"
+                "source": "https://github.com/byjg/php-xmlutil/tree/5.0.2"
             },
             "funding": [
                 {
@@ -310,7 +352,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2025-11-22T05:14:51+00:00"
+            "time": "2025-07-03T15:33:47+00:00"
         },
         {
             "name": "psr/cache",
@@ -465,6 +507,77 @@
             "time": "2024-09-11T13:17:53+00:00"
         },
         {
+            "name": "symfony/deprecation-contracts",
+            "version": "v3.7.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/symfony/deprecation-contracts.git",
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/symfony/deprecation-contracts/zipball/f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "reference": "f3202fa1b5097b0af062dc978b32ecf63404e31d",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "type": "library",
+            "extra": {
+                "thanks": {
+                    "url": "https://github.com/symfony/contracts",
+                    "name": "symfony/contracts"
+                },
+                "branch-alias": {
+                    "dev-main": "3.7-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "function.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Nicolas Grekas",
+                    "email": "p@tchwork.com"
+                },
+                {
+                    "name": "Symfony Community",
+                    "homepage": "https://symfony.com/contributors"
+                }
+            ],
+            "description": "A generic function and convention to trigger deprecation notices",
+            "homepage": "https://symfony.com",
+            "support": {
+                "source": "https://github.com/symfony/deprecation-contracts/tree/v3.7.1"
+            },
+            "funding": [
+                {
+                    "url": "https://symfony.com/sponsor",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/fabpot",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nicolas-grekas",
+                    "type": "github"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/symfony/symfony",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2026-06-05T06:23:12+00:00"
+        },
+        {
             "name": "symfony/polyfill-ctype",
             "version": "v1.37.0",
             "source": {
@@ -549,28 +662,28 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v8.1.6",
+            "version": "v7.4.18",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "0b4aa53a67f9fece88c665f1a1dadcfd25d93fe5"
+                "reference": "4cef939e55b8a21c5780418de0d98ab00d0736e1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/0b4aa53a67f9fece88c665f1a1dadcfd25d93fe5",
-                "reference": "0b4aa53a67f9fece88c665f1a1dadcfd25d93fe5",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/4cef939e55b8a21c5780418de0d98ab00d0736e1",
+                "reference": "4cef939e55b8a21c5780418de0d98ab00d0736e1",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.4.1",
+                "php": ">=8.2",
+                "symfony/deprecation-contracts": "^2.5|^3",
                 "symfony/polyfill-ctype": "^1.8"
             },
             "conflict": {
-                "symfony/console": "<7.4"
+                "symfony/console": "<6.4"
             },
             "require-dev": {
-                "symfony/console": "^7.4|^8.0",
-                "yaml/yaml-test-suite": "*"
+                "symfony/console": "^6.4|^7.0|^8.0"
             },
             "bin": [
                 "Resources/bin/yaml-lint"
@@ -601,7 +714,7 @@
             "description": "Loads and dumps YAML files",
             "homepage": "https://symfony.com",
             "support": {
-                "source": "https://github.com/symfony/yaml/tree/v8.1.6"
+                "source": "https://github.com/symfony/yaml/tree/v7.4.18"
             },
             "funding": [
                 {
@@ -621,16 +734,16 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-08-30T01:03:44+00:00"
+            "time": "2026-08-30T00:47:26+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": {},
-    "platform-dev": {},
-    "plugin-api-version": "2.9.0"
+    "platform": [],
+    "platform-dev": [],
+    "plugin-api-version": "2.6.0"
 }
