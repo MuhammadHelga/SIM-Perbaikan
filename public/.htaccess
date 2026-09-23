@@ -1,0 +1,9 @@
+RewriteEngine On
+
+# Jika file atau folder yang diminta benar-benar ada, biarkan Apache melayaninya langsung
+# (misalnya /assets/css/login.css).
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+
+# Selain itu, arahkan semua request ke front controller.
+RewriteRule ^ index.php [L]
