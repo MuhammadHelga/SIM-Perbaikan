@@ -5,15 +5,15 @@ require_once __DIR__ . '/../models/LaporanKerusakan.php';
 
 class LaporanKerusakanController
 {
-    private $laporan;
+    private $laporankerusakan;
 
     public function __construct($conn)
     {
-        $this->laporan = new Laporan($conn);
+        $this->laporankerusakan = new Laporan($conn);
     }
 
     public function index()
     {
-        return $this->laporan->getAll();
+        return $this->laporankerusakan->getAll();
     }
 }

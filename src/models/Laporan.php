@@ -11,9 +11,9 @@ class Laporan
 
     public function getAll()
     {
-        $query = "SELECT laporan.*,
-        barang. nama_barang, ruangan. nama_ruangan FROM laporan JOIN barang on laporan id_barang 
-        JOIN ruangan on laporan id_ruangan
+        $query = "SELECT laporankerusakan.*,
+        barang. nama_barang, ruangan. nama_ruangan FROM laporankerusakan JOIN barang on laporankerusakan.id_barang 
+        JOIN ruangan on laporankerusakan.id_ruangan
         ";
         return mysqli_query($this->conn, $query);
     }

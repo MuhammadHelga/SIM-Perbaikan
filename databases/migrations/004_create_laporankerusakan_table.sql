@@ -4,7 +4,7 @@ COLLATE utf8mb4_unicode_ci;
 
 USE lkah;
 
-CREATE TABLE IF NOT EXISTS laporan (
+CREATE TABLE IF NOT EXISTS laporankerusakan (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_barang INT NOT NULL,
     id_ruangan INT NOT NULL,
