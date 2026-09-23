@@ -53,6 +53,10 @@ switch ($path) {
         exit;
 
     case '/dashboard':
+        requireLogin($basePath);
+
+        require __DIR__ . '/../src/views/dashboard/screens/DashboardView.php';
+        break;
     case '/':
 
         if (empty($_SESSION['is_logged_in'])) {

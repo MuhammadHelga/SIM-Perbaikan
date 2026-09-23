@@ -30,7 +30,7 @@ $oldUsername  = $oldUsername ?? '';
                             <?= htmlspecialchars($errorMessage, ENT_QUOTES, 'UTF-8') ?>
                         </div>
                     <?php endif; ?>
-                    <form class="login-form" method="post" action="/login" autocomplete="on">
+                    <form class="login-form" method="post" action="<?= BASE_URL ?>/login" autocomplete="on">
                         <div class="field">
                             <label for="username">Username</label>
                             <div class="field__input">
