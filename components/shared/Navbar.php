@@ -25,7 +25,7 @@ $menus = [
             <?php endforeach; ?>
         </nav>
 
-        <form method="post" action="/logout" class="app-navbar__logout-form">
+        <form method="post" action="<?= BASE_URL ?>/logout" class="app-navbar__logout-form">
             <button type="submit" class="btn-logout">
                 <span class="material-symbols-outlined" aria-hidden="true">logout</span>
                 Logout
