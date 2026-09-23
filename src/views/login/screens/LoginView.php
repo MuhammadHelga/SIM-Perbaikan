@@ -14,7 +14,7 @@ $oldUsername  = $oldUsername ?? '';
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="/assets/css/login.css">
-    <script src="/assets/js/login.js" defer></script>
+    <script src="<?= BASE_URL ?>/assets/js/login.js" defer></script>
 </head>
 <body>
     <div class="login-page">
