@@ -11,13 +11,59 @@ class Ruangan
 
     public function getAll()
     {
-        $query = "SELECT * FROM ruangan";
-        return mysqli_query($this->conn, $query);
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM ruangan ORDER BY id DESC"
+        );
+
+        $stmt->execute();
+
+        return $stmt->get_result();
     }
 
-    public function tambah($nama_ruangan)
+    public function getById($id)
     {
-        $query = "INSERT INTO barang (nama_ruangan) VALUES ('$nama_ruangan')";
-        return mysqli_query($this->conn, $query);
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM ruangan WHERE id = ?"
+        );
+
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_assoc();
+    }
+
+    public function create($nama_ruangan)
+    {
+        $stmt = $this->conn->prepare(
+            "INSERT INTO ruangan (nama_ruangan) VALUES (?)"
+        );
+
+        $stmt->bind_param("s", $nama_ruangan);
+
+        return $stmt->execute();
+    }
+
+    public function update($id, $nama_ruangan)
+    {
+        $stmt = $this->conn->prepare(
+            "UPDATE ruangan
+             SET nama_ruangan = ?
+             WHERE id = ?"
+        );
+
+        $stmt->bind_param("si", $nama_ruangan, $id);
+
+        return $stmt->execute();
+    }
+
+    public function delete($id)
+    {
+        $stmt = $this->conn->prepare(
+            "DELETE FROM ruangan WHERE id = ?"
+        );
+
+        $stmt->bind_param("i", $id);
+
+        return $stmt->execute();
     }
 }

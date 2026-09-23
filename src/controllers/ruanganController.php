@@ -1,9 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Ruangan.php';
 
-class RuanganController
+class ruanganController
 {
     private $ruangan;
 
@@ -15,5 +14,25 @@ class RuanganController
     public function index()
     {
         return $this->ruangan->getAll();
+    }
+
+    public function show($id)
+    {
+        return $this->ruangan->getById($id);
+    }
+
+    public function store($nama_ruangan)
+    {
+        return $this->ruangan->create($nama_ruangan);
+    }
+
+    public function update($id, $nama_ruangan)
+    {
+        return $this->ruangan->update($id, $nama_ruangan);
+    }
+
+    public function destroy($id)
+    {
+        return $this->ruangan->delete($id);
     }
 }

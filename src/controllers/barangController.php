@@ -1,9 +1,8 @@
 <?php
 
-require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../models/Barang.php';
 
-class BarangController
+class barangControllerarangController
 {
     private $barang;
 
@@ -17,8 +16,23 @@ class BarangController
         return $this->barang->getAll();
     }
 
+    public function show($id)
+    {
+        return $this->barang->getById($id);
+    }
+
     public function store($nama_barang)
     {
-        return $this->barang->tambah($nama_barang);
+        return $this->barang->create($nama_barang);
+    }
+
+    public function update($id, $nama_barang)
+    {
+        return $this->barang->update($id, $nama_barang);
+    }
+
+    public function destroy($id)
+    {
+        return $this->barang->delete($id);
     }
 }
