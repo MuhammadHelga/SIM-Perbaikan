@@ -60,7 +60,7 @@ switch ($path) {
             exit;
         }
 
-        require __DIR__ . '/../src/views/dashboard/screens/DashboardView.php';
+        require __DIR__ . '/../src/views/login/screens/LoginView.php';
         break;
 
     case '/laporan':
