@@ -8,8 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="/assets/css/dashboard.css">
-    <link rel="stylesheet" href="/assets/css/navbar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/dashboard.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
 </head>
 <body>
     <?php $activeMenu = 'dashboard'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
@@ -92,6 +92,6 @@
         </div>
     </main>
 
-    <script src="/assets/js/dashboard.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/dashboard.js"></script>
 </body>
 </html>

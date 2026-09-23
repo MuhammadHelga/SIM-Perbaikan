@@ -4,6 +4,25 @@ $stats        = $stats ?? ['total' => 0, 'pending' => 0, 'selesai' => 0];
 $periode      = $periode ?? '';
 $statusFilter = $statusFilter ?? '';
 $search       = $search ?? '';
+
+$namaBulan = [
+    1=>'Januari',
+    2=>'Februari',
+    3=>'Maret',
+    4=>'April',
+    5=>'Mei',
+    6=>'Juni',
+    7=>'Juli',
+    8=>'Agustus',
+    9=>'September',
+    10=>'Oktober',
+    11=>'November',
+    12=>'Desember'
+];
+$periodeTahun = $periode !== '' ? (int)substr($periode, 0, 4) : (int)date('Y');
+$periodeBulan = $periode !== '' ? (int)substr($periode, 5, 2) : (int)date('n');
+$periodeLabel = $namaBulan[$periodeBulan] . ' ' . $periodeTahun;
+$periodeValue = sprintf('%04d-%02d', $periodeTahun, $periodeBulan);
 ?>
 
 <!DOCTYPE html>
@@ -14,10 +33,10 @@ $search       = $search ?? '';
     <title>SIM-Perbaikan - Laporan Kegiatan</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/navbar.css">
-    <link rel="stylesheet" href="/assets/css/laporan.css">
-    <link rel="stylesheet" href="/assets/css/modal.css">
-    <link rel="stylesheet" href="/assets/css/tambah-laporan-modal.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/laporan.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/modal.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/tambah-laporan-modal.css">
 </head>
 <body>
     <?php $activeMenu = 'laporan'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
@@ -53,15 +72,28 @@ $search       = $search ?? '';
 
         <div class="filter-card">
             <form method="get" class="filter-row" id="filterForm">
-                <div class="filter-field">
-                    <label for="periode">Periode Bulan</label>
-                    <div class="filter-input">
+                <div class="filter-field month-picker" id="periodePicker">
+                    <label for="periodeTrigger">Periode Bulan</label>
+                    <div class="filter-input month-picker__input">
                         <span class="material-symbols-outlined">calendar_month</span>
-                        <select name="periode" id="periode">
-                            <option value="2026-09">September 2026</option>
-                            <option value="2026-08">Agustus 2026</option>
-                            <option value="2026-07">Juli 2026</option>
-                        </select>
+                        <button type="button" class="month-picker__trigger" id="periodeTrigger">
+                            <?= htmlspecialchars($periodeLabel, ENT_QUOTES, 'UTF-8') ?>
+                        </button>
+                        <span class="material-symbols-outlined month-picker__chevron">expand_more</span>
+                    </div>
+                    <input type="hidden" name="periode" id="periodeValue" value="<?= htmlspecialchars($periodeValue, ENT_QUOTES, 'UTF-8') ?>">
+
+                    <div class="month-picker__panel" id="periodePanel">
+                        <div class="month-picker__year-nav">
+                            <button type="button" class="month-picker__nav-btn" id="periodePrevYear" aria-label="Tahun sebelumnya">
+                                <span class="material-symbols-outlined">chevron_left</span>
+                            </button>
+                            <span class="month-picker__year-label" id="periodeYearLabel"><?= htmlspecialchars($periodeTahun, ENT_QUOTES, 'UTF-8') ?></span>
+                            <button type="button" class="month-picker__nav-btn" id="periodeNextYear" aria-label="Tahun berikutnya">
+                                <span class="material-symbols-outlined">chevron_right</span>
+                            </button>
+                        </div>
+                        <div class="month-picker__grid" id="periodeGrid"></div>
                     </div>
                 </div>
 
@@ -185,5 +217,5 @@ $search       = $search ?? '';
     
 </body>
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
-<script src="/assets/js/laporan.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/laporan.js"></script>
 </html>

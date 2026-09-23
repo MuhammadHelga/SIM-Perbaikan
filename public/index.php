@@ -3,7 +3,7 @@ session_start();
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../config/conf.php'; 
 
-$basePath = '';
+$basePath = BASE_URL;
 
 $errorMessage = null;
 $oldUsername  = '';
@@ -128,6 +128,7 @@ switch ($path) {
         break;
 
     default:
-        require __DIR__ . '/../src/views/dashboard/screens/DashboardView.php';
+        http_response_code(404);
+        echo '404 - Halaman tidak ditemukan.';
         break;
 }
