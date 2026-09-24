@@ -126,3 +126,19 @@
     gap: 6px;
     color: white;
 }
+
+.form-body input:disabled,
+.form-body select:disabled,
+.form-body textarea:disabled {
+    background-color: #f1f5f9;
+    color: #475569;
+    cursor: not-allowed;
+    opacity: 1;
+}
+
+.form-body select:disabled {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: none;
+}

@@ -1,25 +1,27 @@
 <?php
 /**
- * components/TambahLaporanModal.php
- * Partial — di-include dari LaporanView.php, BUKAN halaman berdiri sendiri.
+ * components/modals/TambahLaporanModal.php
+ * Partial — dipakai untuk 3 mode: tambah, edit, dan lihat (read-only).
+ * Mode diatur lewat JS: openTambahModal(), openEditModal(id), openDetailModal(id).
  */
 ?>
-<div class="modal-overlay" id="modal-tambah-laporan">
+<div class="modal-overlay" id="modal-form-laporan">
     <div class="form-card">
         <div class="form-header">
             <div class="header-icon">
-                <span class="material-symbols-outlined">note_add</span>
+                <span class="material-symbols-outlined" id="formLaporanIcon">note_add</span>
             </div>
             <div class="header-text">
-                <h2>Tambah Laporan Baru</h2>
-                <p>Input catatan kerusakan perangkat fasilitas rumah sakit</p>
+                <h2 id="formLaporanTitle">Tambah Laporan Baru</h2>
+                <p id="formLaporanDesc">Input catatan kerusakan perangkat fasilitas rumah sakit</p>
             </div>
-            <button type="button" class="modal-close" onclick="closeModal('modal-tambah-laporan')" aria-label="Tutup">
+            <button type="button" class="modal-close" onclick="closeModal('modal-form-laporan')" aria-label="Tutup">
                 <span class="material-symbols-outlined">close</span>
             </button>
         </div>
 
         <form action="<?= BASE_URL ?>/laporan/simpan" method="POST" class="form-body" id="form-tambah-laporan">
+            <input type="hidden" id="form-laporan-id" name="id" value="">
 
             <div class="form-row">
                 <div class="form-group">
@@ -90,13 +92,16 @@
                 </div>
             </div>
 
-            <div class="form-actions">
-                <button type="button" class="btn btn-outline" onclick="closeModal('modal-tambah-laporan')">Batal</button>
-                <button type="submit" class="btn-simpan">
+            <div class="form-actions" id="formLaporanActions">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-form-laporan')">Batal</button>
+                <button type="submit" class="btn-simpan" id="formLaporanSubmitBtn">
                     <span class="material-symbols-outlined">save</span> Simpan
                 </button>
             </div>
 
+            <div class="form-actions" id="formLaporanViewActions" style="display:none;">
+                <button type="button" class="btn btn-outline" onclick="closeModal('modal-form-laporan')">Tutup</button>
+            </div>
         </form>
     </div>
 </div>

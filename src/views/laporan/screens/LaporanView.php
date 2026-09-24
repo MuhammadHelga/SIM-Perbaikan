@@ -195,9 +195,9 @@ $fmtTanggal = function ($tgl) {
                             </td>
                             <td class="col-aksi">
                                 <div class="action-icons">
-                                        <a href="<?= BASE_URL ?>/laporan/<?= (int)$row['id'] ?>" class="icon-btn icon-btn--view" title="Lihat detail">
-                                        <span class="material-symbols-outlined">visibility</span>
-                                    </a>
+                                        <button type="button" class="icon-btn icon-btn--view" title="Lihat detail" onclick="openDetailModal(<?= (int)$row['id'] ?>)">
+                                            <span class="material-symbols-outlined">visibility</span>
+                                        </button>
                                     <button type="button" class="icon-btn icon-btn--edit" title="Edit" onclick="openEditModal(<?= (int)$row['id'] ?>)">
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
@@ -239,6 +239,7 @@ $fmtTanggal = function ($tgl) {
     </div>
 </body>
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
+<script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js"></script>
 </html>

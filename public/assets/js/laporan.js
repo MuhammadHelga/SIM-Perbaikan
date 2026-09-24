@@ -14,14 +14,12 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // Tutup modal saat klik area gelap di luar form
     document.addEventListener('click', function (e) {
         if (e.target.classList.contains('modal-overlay')) {
             e.target.classList.remove('open');
         }
     });
 
-    // Tutup modal saat tekan ESC
     document.addEventListener('keydown', function (e) {
         if (e.key === 'Escape') {
             document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
@@ -42,13 +40,105 @@ function closeModal(id) {
 }
 
 function openTambahModal() {
+    setFormMode('create');
     const form = document.getElementById('form-tambah-laporan');
-    if (form) form.reset();
-    openModal('modal-tambah-laporan');
+    form.reset();
+    document.getElementById('form-laporan-id').value = '';
+    form.action = (window.BASE_URL || '') + '/laporan/simpan';
+
+    document.getElementById('formLaporanIcon').textContent = 'note_add';
+    document.getElementById('formLaporanTitle').textContent = 'Tambah Laporan Baru';
+    document.getElementById('formLaporanDesc').textContent = 'Input catatan kerusakan perangkat fasilitas rumah sakit';
+
+    openModal('modal-form-laporan');
 }
 
 function openEditModal(id) {
-    alert('Edit laporan #' + id + ' — modal edit belum dipasang.');
+    const row = findLaporanById(id);
+    if (!row) { alert('Data laporan tidak ditemukan.'); return; }
+
+    setFormMode('edit');
+    fillFormWithData(row);
+
+    const form = document.getElementById('form-tambah-laporan');
+    form.action = (window.BASE_URL || '') + '/laporan/update';
+
+    document.getElementById('formLaporanIcon').textContent = 'edit';
+    document.getElementById('formLaporanTitle').textContent = 'Edit Laporan';
+    document.getElementById('formLaporanDesc').textContent = 'Perbarui data laporan #' + id;
+
+    openModal('modal-form-laporan');
+}
+
+function openDetailModal(id) {
+    const row = findLaporanById(id);
+    if (!row) { alert('Data laporan tidak ditemukan.'); return; }
+
+    setFormMode('view');
+    fillFormWithData(row);
+
+    document.getElementById('formLaporanIcon').textContent = 'visibility';
+    document.getElementById('formLaporanTitle').textContent = 'Detail Laporan';
+    document.getElementById('formLaporanDesc').textContent = 'Laporan #' + id + ' (hanya lihat)';
+
+    openModal('modal-form-laporan');
+}
+
+function getLaporanData() {
+    const el = document.getElementById('laporanDataJson');
+    if (!el) return [];
+    try { return JSON.parse(el.textContent); } catch (e) { return []; }
+}
+
+function findLaporanById(id) {
+    return getLaporanData().find(r => Number(r.id) === Number(id));
+}
+
+function fillFormWithData(row) {
+    document.getElementById('form-laporan-id').value = row.id;
+    document.getElementById('tanggal').value = toDateInputValue(row.tanggal);
+
+    selectOptionByText('unit', row.urusan);
+    selectOptionByText('jenis_barang', row.barang);
+
+    document.getElementById('no_seri').value = (row.serial_number && row.serial_number !== '-') ? row.serial_number : '';
+    document.getElementById('rincian_kerusakan').value = row.kerusakan || '';
+    document.getElementById('uraian_kegiatan').value = row.uraian || '';
+
+    const statusValue = row.hasil === 'selesai' ? 'Selesai' : (row.hasil === 'pending' ? 'Pending' : 'Proses');
+    document.getElementById('status').value = statusValue;
+}
+
+function selectOptionByText(selectId, text) {
+    const select = document.getElementById(selectId);
+    if (!select || !text) return;
+    const match = Array.from(select.options).find(
+        opt => opt.textContent.trim().toLowerCase() === String(text).trim().toLowerCase()
+    );
+    select.value = match ? match.value : '';
+}
+
+function toDateInputValue(rawDate) {
+    if (!rawDate) return '';
+    const d = new Date(rawDate);
+    if (isNaN(d.getTime())) return '';
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+}
+
+function setFormMode(mode) {
+    const form = document.getElementById('form-tambah-laporan');
+    const isView = mode === 'view';
+
+    form.querySelectorAll('input, select, textarea').forEach(function (field) {
+        if (field.id === 'form-laporan-id') return; // hidden id, selalu aktif
+        field.disabled = isView;
+    });
+
+    document.getElementById('formLaporanActions').style.display = isView ? 'none' : 'flex';
+    document.getElementById('formLaporanViewActions').style.display = isView ? 'flex' : 'none';
 }
 
 function confirmDelete(id) {
@@ -148,7 +238,7 @@ function initMonthPicker() {
     const [selectedYearStr, selectedMonthStr] = hiddenInput.value.split('-');
     let selectedYear  = parseInt(selectedYearStr, 10) || new Date().getFullYear();
     let selectedMonth = parseInt(selectedMonthStr, 10) || (new Date().getMonth() + 1);
-    let viewYear = selectedYear; // tahun yang sedang ditampilkan di panel (bisa beda dari yang terpilih, saat browsing)
+    let viewYear = selectedYear;
 
     function renderGrid() {
         yearLabel.textContent = viewYear;
