@@ -41,6 +41,7 @@ class Barang
             "INSERT INTO barang (nama_barang) VALUES (?)"
         );
 
+  //  
         $stmt->bind_param("s", $nama_barang);
 
         return $stmt->execute();

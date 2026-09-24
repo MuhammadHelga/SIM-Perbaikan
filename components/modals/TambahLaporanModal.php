@@ -19,7 +19,7 @@
             </button>
         </div>
 
-        <form action="/laporan/simpan" method="POST" class="form-body" id="form-tambah-laporan">
+        <form action="<?= BASE_URL ?>/laporan/simpan" method="POST" class="form-body" id="form-tambah-laporan">
 
             <div class="form-row">
                 <div class="form-group">
@@ -36,9 +36,9 @@
                         <span class="material-symbols-outlined field-icon">meeting_room</span>
                         <select id="unit" name="unit_id" required>
                             <option value="" disabled selected>Pilih Unit / Ruang</option>
-                            <option value="1">POLI</option>
-                            <option value="2">UGD</option>
-                            <option value="3">MJKN</option>
+                            <?php foreach (($ruanganList ?? []) as $ruangan): ?>
+                                <option value="<?= (int)$ruangan['id'] ?>"><?= htmlspecialchars($ruangan['nama_ruangan']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>
@@ -51,9 +51,9 @@
                         <span class="material-symbols-outlined field-icon">inventory_2</span>
                         <select id="jenis_barang" name="barang_id" required>
                             <option value="" disabled selected>Pilih Jenis Barang</option>
-                            <option value="1">Komputer</option>
-                            <option value="2">Printer</option>
-                            <option value="3">AC</option>
+                            <?php foreach (($barangList ?? []) as $barang): ?>
+                                <option value="<?= (int)$barang['id'] ?>"><?= htmlspecialchars($barang['nama_barang']) ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </div>
                 </div>

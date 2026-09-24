@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Kalau request sudah menuju ke dalam public/, biarkan saja
+RewriteRule ^public/ - [L]
+
+# Semua request lain lempar ke public/
+RewriteRule ^(.*)$ public/$1 [L]

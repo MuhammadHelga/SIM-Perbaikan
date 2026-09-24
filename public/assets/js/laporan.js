@@ -52,15 +52,15 @@ function openEditModal(id) {
 }
 
 function confirmDelete(id) {
-    if (confirm('Yakin hapus laporan #' + id + '?')) window.location.href = '/laporan/hapus/' + id;
+    if (confirm('Yakin hapus laporan #' + id + '?')) window.location.href = (window.BASE_URL || '') + '/laporan/hapus/' + id;
 }
 
 function kirimBarang(id) {
-    if (confirm('Tandai barang #' + id + ' sudah dikirim?')) window.location.href = '/laporan/kirim/' + id;
+    if (confirm('Tandai barang #' + id + ' sudah dikirim?')) window.location.href = (window.BASE_URL || '') + '/laporan/kirim/' + id;
 }
 
 function terimaBarang(id) {
-    if (confirm('Tandai barang #' + id + ' sudah diterima?')) window.location.href = '/laporan/terima/' + id;
+    if (confirm('Tandai barang #' + id + ' sudah diterima?')) window.location.href = (window.BASE_URL || '') + '/laporan/terima/' + id;
 }
 
 function initMonthPicker() {

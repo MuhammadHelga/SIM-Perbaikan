@@ -1,9 +1,0 @@
-CREATE DATABASE IF NOT EXIST lkah
-    CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
-CREATE TABLE IF NOT EXIST users (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    public_id VARCHAR(50) NOT NULL,
-    username VARCHAR(50) NOT NULL,
-    password_hash VARCHAR(25)
-)

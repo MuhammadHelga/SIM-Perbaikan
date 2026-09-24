@@ -25,17 +25,23 @@ class laporankerusakanController
         $id_barang,
         $id_ruangan,
         $tanggal,
+        $serial_number,
         $rincian_kerusakan,
         $uraian_kegiatan,
-        $status_penanganan
+        $status_penanganan,
+        $prioritas = 'Sedang',
+        $id_user = null
     ) {
         return $this->laporankerusakan->create(
             $id_barang,
             $id_ruangan,
             $tanggal,
+            $serial_number,
             $rincian_kerusakan,
             $uraian_kegiatan,
-            $status_penanganan
+            $status_penanganan,
+            $prioritas,
+            $id_user
         );
     }
 
@@ -44,24 +50,45 @@ class laporankerusakanController
         $id_barang,
         $id_ruangan,
         $tanggal,
+        $serial_number,
         $rincian_kerusakan,
         $uraian_kegiatan,
-        $status_penanganan
+        $status_penanganan,
+        $prioritas = 'Sedang'
     ) {
         return $this->laporankerusakan->update(
             $id,
             $id_barang,
             $id_ruangan,
             $tanggal,
+            $serial_number,
             $rincian_kerusakan,
             $uraian_kegiatan,
-            $status_penanganan
+            $status_penanganan,
+            $prioritas
         );
     }
 
     public function destroy($id)
     {
         return $this->laporankerusakan->delete($id);
+    }
+
+    // ===== ALUR KIRIM / TERIMA =====
+
+    public function kirim($id, $tgl)
+    {
+        return $this->laporankerusakan->kirim($id, $tgl);
+    }
+
+    public function terima($id, $tgl)
+    {
+        return $this->laporankerusakan->terima($id, $tgl);
+    }
+
+    public function ubahStatus($id, $status)
+    {
+        return $this->laporankerusakan->updateStatus($id, $status);
     }
 
     public function getBarang()

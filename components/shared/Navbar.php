@@ -13,7 +13,7 @@ $menus = [
 <header class="app-navbar">
     <div class="app-navbar__accent" aria-hidden="true"></div>
     <div class="app-navbar__inner">
-        <a href="/dashboard" class="app-navbar__brand">SIM-Perbaikan</a>
+        <a href="<?= BASE_URL ?>/dashboard" class="app-navbar__brand">SIM-Perbaikan</a>
 
         <nav class="app-navbar__menu">
             <?php foreach ($menus as $key => $menu): ?>

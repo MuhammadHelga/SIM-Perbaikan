@@ -23,6 +23,15 @@ $periodeTahun = $periode !== '' ? (int)substr($periode, 0, 4) : (int)date('Y');
 $periodeBulan = $periode !== '' ? (int)substr($periode, 5, 2) : (int)date('n');
 $periodeLabel = $namaBulan[$periodeBulan] . ' ' . $periodeTahun;
 $periodeValue = sprintf('%04d-%02d', $periodeTahun, $periodeBulan);
+
+// Tanggal dari DB berformat Y-m-d -> tampilkan d M Y
+$fmtTanggal = function ($tgl) {
+    if (empty($tgl)) {
+        return '-';
+    }
+    $ts = strtotime((string)$tgl);
+    return $ts ? date('d M Y', $ts) : (string)$tgl;
+};
 ?>
 
 <!DOCTYPE html>
@@ -157,7 +166,7 @@ $periodeValue = sprintf('%04d-%02d', $periodeTahun, $periodeBulan);
                     <?php endif; ?>
                     <?php foreach ($laporanList as $row): ?>
                         <tr>
-                            <td class="nowrap"><?= htmlspecialchars($row['tanggal']) ?></td>
+                            <td class="nowrap"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
                             <td><?= htmlspecialchars($row['urusan']) ?></td>
                             <td><?= htmlspecialchars($row['barang']) ?></td>
                             <td><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
@@ -175,18 +184,18 @@ $periodeValue = sprintf('%04d-%02d', $periodeTahun, $periodeBulan);
                                     <button type="button" class="pill-btn pill-btn--navy" onclick="kirimBarang(<?= (int)$row['id'] ?>)">Kirim</button>
                                 <?php elseif ($row['kirim_status'] === 'dikirim'): ?>
                                     <div class="pill-stack">
-                                        <span class="pill-text"><?= htmlspecialchars($row['tgl_kirim']) ?></span>
+                                        <span class="pill-text"><?= htmlspecialchars($fmtTanggal($row['tgl_kirim'] ?? null)) ?></span>
                                         <button type="button" class="pill-btn pill-btn--green" onclick="terimaBarang(<?= (int)$row['id'] ?>)">Terima</button>
                                     </div>
                                 <?php elseif ($row['kirim_status'] === 'diterima'): ?>
-                                    <span class="pill-text">Diterima: <?= htmlspecialchars($row['tgl_terima']) ?></span>
+                                    <span class="pill-text">Diterima: <?= htmlspecialchars($fmtTanggal($row['tgl_terima'] ?? null)) ?></span>
                                 <?php else: ?>
                                     <span class="pill-btn pill-btn--disabled">Kirim</span>
                                 <?php endif; ?>
                             </td>
                             <td class="col-aksi">
                                 <div class="action-icons">
-                                    <a href="/laporan/<?= (int)$row['id'] ?>" class="icon-btn icon-btn--view" title="Lihat detail">
+                                        <a href="<?= BASE_URL ?>/laporan/<?= (int)$row['id'] ?>" class="icon-btn icon-btn--view" title="Lihat detail">
                                         <span class="material-symbols-outlined">visibility</span>
                                     </a>
                                     <button type="button" class="icon-btn icon-btn--edit" title="Edit" onclick="openEditModal(<?= (int)$row['id'] ?>)">
@@ -217,5 +226,6 @@ $periodeValue = sprintf('%04d-%02d', $periodeTahun, $periodeBulan);
     
 </body>
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
+<script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js"></script>
 </html>
