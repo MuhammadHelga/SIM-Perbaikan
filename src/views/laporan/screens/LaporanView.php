@@ -184,7 +184,7 @@ $fmtTanggal = function ($tgl) {
                                     <button type="button" class="pill-btn pill-btn--navy" onclick="kirimBarang(<?= (int)$row['id'] ?>)">Kirim</button>
                                 <?php elseif ($row['kirim_status'] === 'dikirim'): ?>
                                     <div class="pill-stack">
-                                        <span class="pill-text"><?= htmlspecialchars($fmtTanggal($row['tgl_kirim'] ?? null)) ?></span>
+                                        <span class="pill-text">Dikirim: <?= htmlspecialchars($fmtTanggal($row['tgl_kirim'] ?? null)) ?></span>
                                         <button type="button" class="pill-btn pill-btn--green" onclick="terimaBarang(<?= (int)$row['id'] ?>)">Terima</button>
                                     </div>
                                 <?php elseif ($row['kirim_status'] === 'diterima'): ?>
@@ -223,7 +223,20 @@ $fmtTanggal = function ($tgl) {
             </div>
         </div>
     </main>
-    
+
+    <div class="modal-overlay" id="modal-konfirmasi">
+        <div class="confirm-card">
+            <div class="confirm-card__icon">
+                <span class="material-symbols-outlined" id="confirmIcon">local_shipping</span>
+            </div>
+            <h3 class="confirm-card__title" id="confirmTitle">Konfirmasi</h3>
+            <p class="confirm-card__text" id="confirmText">Apakah kamu yakin?</p>
+            <div class="confirm-card__actions">
+                <button type="button" class="confirm-btn confirm-btn--cancel" onclick="closeModal('modal-konfirmasi')">Batal</button>
+                <button type="button" class="confirm-btn confirm-btn--primary" id="confirmActionBtn">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
 </body>
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
 <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>

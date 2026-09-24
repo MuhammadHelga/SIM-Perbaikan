@@ -52,15 +52,82 @@ function openEditModal(id) {
 }
 
 function confirmDelete(id) {
-    if (confirm('Yakin hapus laporan #' + id + '?')) window.location.href = (window.BASE_URL || '') + '/laporan/hapus/' + id;
-}
-
-function kirimBarang(id) {
-    if (confirm('Tandai barang #' + id + ' sudah dikirim?')) window.location.href = (window.BASE_URL || '') + '/laporan/kirim/' + id;
+    openConfirmModal({
+        icon: 'delete',
+        title: 'Hapus Barang',
+        text: 'Yakin hapus laporan #' + id + '? Tindakan ini tidak bisa dibatalkan.',
+        confirmLabel: 'Ya, Hapus',
+        variant: 'red',
+        onConfirm: function () {
+            window.location.href = (window.BASE_URL || '') + '/laporan/hapus/' + id;
+        }
+    });
 }
 
 function terimaBarang(id) {
-    if (confirm('Tandai barang #' + id + ' sudah diterima?')) window.location.href = (window.BASE_URL || '') + '/laporan/terima/' + id;
+    openConfirmModal({
+        icon: 'inventory_2',
+        title: 'Terima Barang',
+        text: 'Tandai laporan #' + id + ' sebagai sudah diterima kembali dari vendor/service?',
+        confirmLabel: 'Ya, Terima',
+        variant: 'green',
+        onConfirm: function () {
+            window.location.href = (window.BASE_URL || '') + '/laporan/terima/' + id;
+        }
+    });
+}
+
+function kirimBarang(id) {
+    openConfirmModal({
+        icon: 'local_shipping',
+        title: 'Kirim Barang',
+        text: 'Tandai laporan #' + id + ' sebagai sudah dikirim ke vendor/service?',
+        confirmLabel: 'Ya, Kirim',
+        onConfirm: function () {
+            window.location.href = (window.BASE_URL || '') + '/laporan/kirim/' + id;
+        }
+    });
+}
+
+function openConfirmModal({ icon, title, text, confirmLabel, variant = 'primary', onConfirm }) {
+    const iconEl = document.getElementById('confirmIcon');
+    const iconWrap = iconEl.parentElement;
+
+    iconEl.textContent = icon || 'help';
+    document.getElementById('confirmTitle').textContent = title || 'Konfirmasi';
+    document.getElementById('confirmText').textContent = text || 'Apakah kamu yakin?';
+
+    iconWrap.classList.remove('confirm-card__icon--green');
+    if (variant === 'green') {
+        iconWrap.classList.add('confirm-card__icon--green');
+    }
+
+    iconWrap.classList.remove('confirm-card__icon--red');
+    if (variant === 'red') {
+        iconWrap.classList.add('confirm-card__icon--red');
+    }
+
+    const oldBtn = document.getElementById('confirmActionBtn');
+    oldBtn.textContent = confirmLabel || 'Ya, Lanjutkan';
+    
+    let buttonClass = 'confirm-btn--primary';
+
+    if (variant === 'green') {
+        buttonClass = 'confirm-btn--success';
+    } else if (variant === 'red') {
+        buttonClass = 'confirm-btn--danger';
+    }
+
+    oldBtn.className = 'confirm-btn ' + buttonClass;
+
+    const freshBtn = oldBtn.cloneNode(true);
+    oldBtn.parentNode.replaceChild(freshBtn, oldBtn);
+    freshBtn.addEventListener('click', function () {
+        closeModal('modal-konfirmasi');
+        onConfirm();
+    });
+
+    openModal('modal-konfirmasi');
 }
 
 function initMonthPicker() {
