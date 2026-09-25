@@ -32,6 +32,49 @@
   color-scheme: dark;
 }
 
+/* Transisi tema: reveal lingkaran dari tombol */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+::view-transition-new(root) {
+  z-index: 2;
+}
+
+/* Morph warna saat ganti tema (fallback browser tanpa View Transitions, mis. Firefox).
+   Aktif hanya sesaat, ditandai class .theme-transition pada <html>. */
+html.theme-transition,
+html.theme-transition body,
+html.theme-transition .container,
+html.theme-transition .page-wrap,
+html.theme-transition .app-navbar,
+html.theme-transition .app-navbar__link,
+html.theme-transition .card,
+html.theme-transition .chart-card,
+html.theme-transition .table-card,
+html.theme-transition .filter-card,
+html.theme-transition .filter-bar,
+html.theme-transition .data-table th,
+html.theme-transition .data-table td,
+html.theme-transition .rekap-table th,
+html.theme-transition .rekap-table td,
+html.theme-transition .form-card,
+html.theme-transition .confirm-card,
+html.theme-transition .form-body input,
+html.theme-transition .form-body select,
+html.theme-transition .form-body textarea,
+html.theme-transition .filter-input,
+html.theme-transition .form-control,
+html.theme-transition .theme-toggle {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease;
+}
+
 /* ==================== Global ==================== */
 [data-theme='dark'] body {
   background: var(--bg);

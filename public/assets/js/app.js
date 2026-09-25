@@ -23,16 +23,63 @@ function initTheme() {
 
     paint(current);
 
+    const applyTheme = function (next) {
+        root.setAttribute('data-theme', next);
+        document.cookie = 'theme=' + next + '; path=/; max-age=' + (365 * 24 * 3600) + '; samesite=lax';
+        paint(next);
+
+        document.dispatchEvent(new CustomEvent('themechange', { detail: { theme: next } }));
+    };
+
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
     btns.forEach(function (btn) {
         btn.addEventListener('click', function () {
             const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-            root.setAttribute('data-theme', next);
-            document.cookie = 'theme=' + next + '; path=/; max-age=' + (365 * 24 * 3600) + '; samesite=lax';
-            paint(next);
 
-            if (typeof window.onThemeChange === 'function') {
-                window.onThemeChange(next);
+            // User minta minim animasi: langsung tanpa transisi
+            if (reduceMotion) {
+                applyTheme(next);
+                return;
             }
+
+            // Browser tanpa View Transitions (mis. Firefox): morph warna via CSS
+            if (!document.startViewTransition) {
+                root.classList.add('theme-transition');
+                applyTheme(next);
+                window.setTimeout(function () {
+                    root.classList.remove('theme-transition');
+                }, 400);
+                return;
+            }
+
+            const rect = btn.getBoundingClientRect();
+            const x = rect.left + rect.width / 2;
+            const y = rect.top + rect.height / 2;
+            const endRadius = Math.hypot(
+                Math.max(x, window.innerWidth - x),
+                Math.max(y, window.innerHeight - y)
+            );
+
+            const transition = document.startViewTransition(function () {
+                applyTheme(next);
+            });
+
+            transition.ready.then(function () {
+                document.documentElement.animate(
+                    {
+                        clipPath: [
+                            'circle(0px at ' + x + 'px ' + y + 'px)',
+                            'circle(' + endRadius + 'px at ' + x + 'px ' + y + 'px)'
+                        ]
+                    },
+                    {
+                        duration: 500,
+                        easing: 'ease-in-out',
+                        pseudoElement: '::view-transition-new(root)'
+                    }
+                );
+            }).catch(function () { /* transisi dilewati, abaikan */ });
         });
     });
 }

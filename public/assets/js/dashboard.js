@@ -70,9 +70,7 @@ function renderCharts() {
     });
 }
 
-/* Dipanggil lagi saat tema diganti (dari app.js) */
-window.onThemeChange = function () {
-    renderCharts();
-};
+/* Render ulang chart saat tema diganti (event dari app.js) */
+document.addEventListener('themechange', renderCharts);
 
 document.addEventListener('DOMContentLoaded', renderCharts);
