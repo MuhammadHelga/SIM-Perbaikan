@@ -369,6 +369,6 @@ switch ($path) {
 
     default:
         http_response_code(404);
-        echo '404 - Halaman tidak ditemukan.';
+        require __DIR__ . '/../src/views/errors/screens/404View.php';
         break;
 }
