@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (filterForm) {
         ['periode', 'filterStatus'].forEach(function (id) {
             const el = document.getElementById(id);
-            if (el) el.addEventListener('change', () => filterForm.requestSubmit());
+            if (el) el.addEventListener('change', () => filterForm.r    equestSubmit());
         });
     }
 
