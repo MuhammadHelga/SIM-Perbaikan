@@ -16,7 +16,7 @@ $namaBulanSingkat = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',7=>'J
 $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun'];
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,6 +27,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
     
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/dashboard.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
 </head>
 <body>
     <?php $activeMenu = 'dashboard'; include BASE_PATH . '/components/shared/Navbar.php'; ?>

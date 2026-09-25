@@ -4,7 +4,7 @@ $oldUsername  = $oldUsername ?? '';
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,9 +14,13 @@ $oldUsername  = $oldUsername ?? '';
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/login.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
     <script src="<?= BASE_URL ?>/assets/js/login.js" defer></script>
 </head>
 <body>
+    <button type="button" class="theme-toggle theme-toggle--floating" aria-label="Ganti tema">
+        <span class="material-symbols-outlined">dark_mode</span>
+    </button>
     <div class="login-page">
         <section class="login-form-side">
             <div class="login-card">

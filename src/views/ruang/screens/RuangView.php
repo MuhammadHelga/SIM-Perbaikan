@@ -23,7 +23,7 @@ $peakLabel    = $peakMonths
     : '—';
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,6 +33,7 @@ $peakLabel    = $peakMonths
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/ruang.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
 </head>
 <body>
     <?php $activeMenu = 'ruang'; include BASE_PATH . '/components/shared/Navbar.php'; ?>

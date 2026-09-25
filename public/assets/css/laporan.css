@@ -623,10 +623,15 @@ main.page-wrap {
 }
 
 /* ===== Cetak ===== */
-.print-only { display: none; }
+.print-only {
+  display: none;
+}
 
 @media print {
-  @page { size: A4 landscape; margin: 12mm; }
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
 
   .app-navbar,
   .flash,
@@ -636,20 +641,46 @@ main.page-wrap {
   .col-aksi,
   .btn,
   .icon-btn,
-  .pill-btn { display: none !important; }
+  .pill-btn {
+    display: none !important;
+  }
 
-  .print-only { display: block !important; }
-  .print-head { margin-bottom: 10px; }
-  .print-head h1 { font-size: 15px; margin: 0; }
-  .print-head h2 { font-size: 14px; margin: 2px 0; }
-  .print-head p { font-size: 11px; margin: 2px 0; }
+  .print-only {
+    display: block !important;
+  }
+  .print-head {
+    margin-bottom: 10px;
+  }
+  .print-head h1 {
+    font-size: 15px;
+    margin: 0;
+  }
+  .print-head h2 {
+    font-size: 14px;
+    margin: 2px 0;
+  }
+  .print-head p {
+    font-size: 11px;
+    margin: 2px 0;
+  }
 
-  .page-wrap { padding: 0; }
-  .table-scroll { overflow: visible !important; }
+  .page-wrap {
+    padding: 0;
+  }
+  .table-scroll {
+    overflow: visible !important;
+  }
 
-  .data-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+  }
   .data-table th,
-  .data-table td { border: 1px solid #999 !important; padding: 4px 6px !important; }
+  .data-table td {
+    border: 1px solid #999 !important;
+    padding: 4px 6px !important;
+  }
 
   .data-table .truncate {
     white-space: normal !important;
@@ -658,10 +689,15 @@ main.page-wrap {
     max-width: none !important;
   }
 
-  thead { display: table-header-group; }
-  tr { break-inside: avoid; }
+  thead {
+    display: table-header-group;
+  }
+  tr {
+    break-inside: avoid;
+  }
 
-  html, body {
+  html,
+  body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }

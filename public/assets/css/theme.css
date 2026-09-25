@@ -1,0 +1,443 @@
+/* ============================================================
+   Tema (Light default + Dark override)
+   Dimuat terakhir di <head> supaya override menang.
+   Aktif bila <html data-theme="dark">.
+   ============================================================ */
+
+:root {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #f1f5f9;
+  --text: #021311;
+  --muted: #64748b;
+  --border: #cbd5e1;
+  --primary: #00288e;
+  --chart-grid: #f1f5f9;
+  --chart-text: #64748b;
+}
+
+[data-theme='dark'] {
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --surface-2: #273449;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: #334155;
+  --primary: #4f8ef7;
+  --chart-grid: #334155;
+  --chart-text: #94a3b8;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* ==================== Global ==================== */
+[data-theme='dark'] body {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme='dark'] .container,
+[data-theme='dark'] .page-wrap {
+  background: var(--bg);
+  color: var(--text);
+}
+
+[data-theme='dark'] .page-title,
+[data-theme='dark'] .page-title h1,
+[data-theme='dark'] .page-header h1,
+[data-theme='dark'] .table-title,
+[data-theme='dark'] .card-value,
+[data-theme='dark'] .card-value .text-dark,
+[data-theme='dark'] .text-dark {
+  color: var(--text);
+}
+
+[data-theme='dark'] .page-header p,
+[data-theme='dark'] .card-subtitle,
+[data-theme='dark'] .card-footnote,
+[data-theme='dark'] .badge-info {
+  color: #5f656d;
+}
+
+/* ==================== Navbar ==================== */
+[data-theme='dark'] .app-navbar {
+  background: var(--surface);
+  box-shadow: 0 0.5px 8px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme='dark'] .app-navbar__brand {
+  color: #7fb0ff;
+}
+
+[data-theme='dark'] .app-navbar__link {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .app-navbar__link:hover {
+  background: var(--surface-2);
+  color: #e2e8f0;
+}
+
+[data-theme='dark'] .app-navbar__link.is-active {
+  color: #7fb0ff;
+}
+
+[data-theme='dark'] .app-navbar__link.is-active::after {
+  background: #7fb0ff;
+}
+
+[data-theme='dark'] .app-navbar__user {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .app-navbar__user small {
+  color: var(--muted);
+}
+
+/* Tombol toggle tema */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4d4d4d;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.theme-toggle:hover {
+  background: #f2f4f9;
+}
+
+[data-theme='dark'] .theme-toggle {
+  color: #cbd5e1;
+}
+
+[data-theme='dark'] .theme-toggle:hover {
+  background: var(--surface-2);
+}
+
+.theme-toggle--floating {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 50;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 12px rgba(20, 30, 70, 0.12);
+}
+
+[data-theme='dark'] .theme-toggle--floating {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* ==================== Cards & sections ==================== */
+[data-theme='dark'] .card,
+[data-theme='dark'] .chart-card,
+[data-theme='dark'] .table-card,
+[data-theme='dark'] .filter-card,
+[data-theme='dark'] .filter-bar {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .table-header,
+[data-theme='dark'] .header-title h3 {
+  color: var(--text);
+}
+
+[data-theme='dark'] .table-card-header {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .stat-box {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .page-head {
+  background: var(--surface);
+}
+
+[data-theme='dark'] .stat-box__value {
+  color: #ffffff;
+}
+
+[data-theme='dark'] .value-blue {
+  color: #7fb0ff;
+}
+
+[data-theme='dark'] .value-green {
+  color: #66c5b8;
+}
+
+[data-theme='dark'] .value-red {
+  color: #c85f51;
+}
+
+[data-theme='dark'] .stat-box__label {
+  color: #ffffff;
+}
+
+/* ==================== Tabel ==================== */
+[data-theme='dark'] .data-table th,
+[data-theme='dark'] .rekap-table th {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .data-table td,
+[data-theme='dark'] .rekap-table td {
+  color: var(--text);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .data-table tbody tr:hover,
+[data-theme='dark'] .rekap-table tbody tr:hover {
+  background: var(--surface-2);
+}
+
+[data-theme='dark'] .row-total {
+  background-color: var(--surface);
+  color: #e2e8f0;
+}
+
+[data-theme='dark'] .empty-row {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .table-footer {
+  background-color: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+[data-theme='dark'] .table-footer span {
+  color: var(--muted);
+  font-weight: bold;
+}
+
+/* ==================== Filter / kontrol ==================== */
+[data-theme='dark'] .filter-field label,
+[data-theme='dark'] .filter-active__label,
+[data-theme='dark'] .month-picker__trigger,
+[data-theme='dark'] .month-picker__year-label,
+[data-theme='dark'] .year-step-label {
+  color: var(--text);
+}
+
+[data-theme='dark'] .filter-input,
+[data-theme='dark'] .form-control,
+[data-theme='dark'] .search-box input,
+[data-theme='dark'] .year-stepper,
+[data-theme='dark'] .month-picker__panel {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .filter-input select,
+[data-theme='dark'] .filter-input input,
+[data-theme='dark'] .form-control select,
+[data-theme='dark'] .search-box input,
+[data-theme='dark'] .year-step-btn {
+  color: var(--text);
+}
+
+/* Panah dropdown select.form-control (Rekap Ruang) — lebih terang saat gelap */
+[data-theme='dark'] select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+}
+
+[data-theme='dark'] .month-picker__month:hover,
+[data-theme='dark'] .year-step-btn:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+[data-theme='dark'] .month-picker__month.is-selected {
+  background: var(--primary);
+  color: #fff;
+}
+
+[data-theme='dark'] .filter-active {
+  border-top-color: var(--border);
+}
+
+[data-theme='dark'] .chip {
+  background: #1e3a8a;
+  color: #c7dbff;
+}
+
+[data-theme='dark'] .chip:hover {
+  background: #1d4ed8;
+}
+
+[data-theme='dark'] .chip--empty {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+[data-theme='dark'] .month-picker__month {
+  background: #293d4d;
+  color: #ffffff;
+}
+
+[data-theme='dark'] option {
+  background-color: var(--surface);   /* #1e293b */
+  color: var(--text);                 /* #e2e8f0 */
+}
+
+/* ==================== Badge status (biarkan terang, tetap terbaca) ===== */
+[data-theme='dark'] .badge--green {
+  background: #0f766e;
+  color: #d1fae5;
+}
+[data-theme='dark'] .badge--orange {
+  background: #92400e;
+  color: #fde68a;
+}
+[data-theme='dark'] .badge--red {
+  background: #7f1d1d;
+  color: #fecaca;
+}
+
+/* ==================== Heatmap Rekap Ruang ==================== */
+[data-theme='dark'] .cell-medium {
+  background-color: #78350f !important;
+  color: #fde68a !important;
+}
+
+[data-theme='dark'] .cell-high {
+  background-color: #7f1d1d !important;
+  color: #fecaca !important;
+}
+
+[data-theme='dark'] .legend-box.bg-normal {
+  background: #475569;
+}
+[data-theme='dark'] .legend-box.bg-medium {
+  background: #b45309;
+}
+[data-theme='dark'] .legend-box.bg-high {
+  background: #b91c1c;
+}
+
+/* ==================== Modal ==================== */
+[data-theme='dark'] .form-card,
+[data-theme='dark'] .confirm-card {
+  background: var(--surface);
+  color: var(--text);
+}
+
+[data-theme='dark'] .form-header {
+  background: var(--surface-2);
+  border-bottom-color: var(--border);
+}
+
+[data-theme='dark'] .header-text h2,
+[data-theme='dark'] .confirm-card__title {
+  color: var(--text);
+}
+
+[data-theme='dark'] .header-text p,
+[data-theme='dark'] .confirm-card__text {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .form-group label {
+  color: var(--text);
+}
+
+[data-theme='dark'] .form-body input,
+[data-theme='dark'] .form-body select,
+[data-theme='dark'] .form-body textarea {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .modal-close {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .modal-close:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+[data-theme='dark'] .confirm-btn--cancel {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+[data-theme='dark'] .confirm-btn--cancel:hover {
+  background: #334155;
+}
+
+[data-theme='dark'] .btn-outline {
+  background: var(--surface-2);
+  color: var(--text);
+}
+
+[data-theme='dark'] .btn-outline:hover {
+  background: #334155;
+}
+
+/* ==================== Login ==================== */
+[data-theme='dark'] .login-page {
+  background: var(--bg);
+}
+
+[data-theme='dark'] .login-form-side {
+  background: var(--bg);
+}
+
+[data-theme='dark'] .login-card {
+  background: var(--surface);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme='dark'] .login-card h1,
+[data-theme='dark'] .login-card__title,
+[data-theme='dark'] .login-form label,
+[data-theme='dark'] .checkbox {
+  color: var(--text);
+}
+
+[data-theme='dark'] .login-card p {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .login-form input {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* ==================== Cetak: paksa terang ==================== */
+@media print {
+  [data-theme='dark'] body,
+  [data-theme='dark'] .page-wrap,
+  [data-theme='dark'] .container,
+  [data-theme='dark'] .table-card,
+  [data-theme='dark'] .data-table th,
+  [data-theme='dark'] .data-table td,
+  [data-theme='dark'] .rekap-table th,
+  [data-theme='dark'] .rekap-table td {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border-color: #999999 !important;
+  }
+}

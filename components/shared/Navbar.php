@@ -35,6 +35,10 @@ unset($_SESSION['flash']);
             <?php endforeach; ?>
         </nav>
 
+        <button type="button" class="theme-toggle" aria-label="Ganti tema">
+            <span class="material-symbols-outlined">dark_mode</span>
+        </button>
+
         <span class="app-navbar__user">
             <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
             <?= htmlspecialchars($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>

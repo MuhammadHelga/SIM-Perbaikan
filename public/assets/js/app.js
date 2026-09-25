@@ -1,8 +1,41 @@
 document.addEventListener('DOMContentLoaded', function () {
+    initTheme();
     initFlash();
     initFilterFocus();
     initYearStepper();
 });
+
+/* Toggle tema terang/gelap. Disimpan di cookie 'theme', tanpa reload. */
+function initTheme() {
+    const root = document.documentElement;
+    const btns = document.querySelectorAll('.theme-toggle');
+    if (!btns.length) return;
+
+    const current = root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+
+    const paint = function (theme) {
+        btns.forEach(function (btn) {
+            const icon = btn.querySelector('.material-symbols-outlined');
+            if (icon) icon.textContent = (theme === 'dark') ? 'light_mode' : 'dark_mode';
+            btn.setAttribute('aria-label', theme === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap');
+        });
+    };
+
+    paint(current);
+
+    btns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            const next = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            root.setAttribute('data-theme', next);
+            document.cookie = 'theme=' + next + '; path=/; max-age=' + (365 * 24 * 3600) + '; samesite=lax';
+            paint(next);
+
+            if (typeof window.onThemeChange === 'function') {
+                window.onThemeChange(next);
+            }
+        });
+    });
+}
 
 /* Toast pesan flash: auto-hilang, pause saat hover, tombol close */
 function initFlash() {
