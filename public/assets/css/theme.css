@@ -498,6 +498,16 @@ html.theme-transition .theme-toggle {
   color: #fecaca;
 }
 
+/* Gradient pelebur foto -> panel (tengah halaman login) — versi gelap */
+[data-theme='dark'] .login-visual-side::after {
+  background: linear-gradient(
+    90deg,
+    var(--bg) 0%,
+    rgba(15, 23, 42, 0.4) 50%,
+    rgba(15, 23, 42, 0) 100%
+  );
+}
+
 /* ==================== Cetak: paksa terang ==================== */
 @media print {
   [data-theme='dark'] body,
