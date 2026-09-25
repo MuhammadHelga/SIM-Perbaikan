@@ -266,37 +266,59 @@ class LaporanKerusakan
 
     // ===== AGREGAT UNTUK DASHBOARD =====
 
-    public function countAll(): int
+    /**
+     * Bangun klausa periode (tahun wajib opsional, bulan opsional).
+     * Mengisi $types & $params untuk bind_param.
+     */
+    private function periodeClause(?int $tahun, ?int $bulan, array &$types, array &$params): string
     {
-        $res = $this->conn->query("SELECT COUNT(*) AS j FROM laporankerusakan");
-        return (int) $res->fetch_assoc()['j'];
+        $sql = '';
+        if ($tahun !== null) {
+            $sql    .= " AND YEAR(tanggal) = ?";
+            $types[] = 'i';
+            $params[] = $tahun;
+        }
+        if ($bulan !== null) {
+            $sql    .= " AND MONTH(tanggal) = ?";
+            $types[] = 'i';
+            $params[] = $bulan;
+        }
+        return $sql;
     }
 
-    public function countDalamPenanganan(): int
+    private function countWhere(string $where, ?int $tahun, ?int $bulan): int
     {
-        $res = $this->conn->query(
-            "SELECT COUNT(*) AS j FROM laporankerusakan
-             WHERE status_penanganan IN ('Pending','Proses')"
-        );
-        return (int) $res->fetch_assoc()['j'];
+        $types  = [];
+        $params = [];
+        $sql = "SELECT COUNT(*) AS j FROM laporankerusakan WHERE 1=1 " . $where
+             . $this->periodeClause($tahun, $bulan, $types, $params);
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types) {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
+        $stmt->execute();
+        return (int) $stmt->get_result()->fetch_assoc()['j'];
     }
 
-    public function countSelesai(): int
+    public function countAll(?int $tahun = null, ?int $bulan = null): int
     {
-        $res = $this->conn->query(
-            "SELECT COUNT(*) AS j FROM laporankerusakan
-             WHERE status_penanganan = 'Selesai'"
-        );
-        return (int) $res->fetch_assoc()['j'];
+        return $this->countWhere('', $tahun, $bulan);
     }
 
-    public function countKritis(): int
+    public function countDalamPenanganan(?int $tahun = null, ?int $bulan = null): int
     {
-        $res = $this->conn->query(
-            "SELECT COUNT(*) AS j FROM laporankerusakan
-             WHERE prioritas = 'Tinggi' AND status_penanganan <> 'Selesai'"
-        );
-        return (int) $res->fetch_assoc()['j'];
+        return $this->countWhere("AND status_penanganan IN ('Pending','Proses')", $tahun, $bulan);
+    }
+
+    public function countSelesai(?int $tahun = null, ?int $bulan = null): int
+    {
+        return $this->countWhere("AND status_penanganan = 'Selesai'", $tahun, $bulan);
+    }
+
+    public function countKritis(?int $tahun = null, ?int $bulan = null): int
+    {
+        return $this->countWhere("AND prioritas = 'Tinggi' AND status_penanganan <> 'Selesai'", $tahun, $bulan);
     }
 
     public function countPeriode(int $tahun, ?int $bulan = null): int
@@ -369,6 +391,125 @@ class LaporanKerusakan
         while ($row = $res->fetch_assoc()) {
             $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
         }
+        return $out;
+    }
+
+    /**
+     * Hitung COUNT(*) dikelompokkan per kolom/label.
+     * @return array<int, array{label:string, jumlah:int}>
+     */
+    private function groupCount(
+        string $select,
+        string $join,
+        string $group,
+        string $order,
+        ?int $tahun,
+        ?int $bulan,
+        int $limit = 0
+    ): array {
+        $types  = [];
+        $params = [];
+        $sql = "SELECT $select FROM laporankerusakan lk $join WHERE 1=1 "
+             . $this->periodeClause($tahun, $bulan, $types, $params)
+             . " GROUP BY $group ORDER BY $order";
+        if ($limit > 0) {
+            $sql .= " LIMIT $limit";
+        }
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types) {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $out = [];
+        while ($row = $res->fetch_assoc()) {
+            $label = $row['label'];
+            if ($label === null || $label === '') {
+                $label = 'Lainnya';
+            }
+            $out[] = ['label' => (string) $label, 'jumlah' => (int) $row['jumlah']];
+        }
+        return $out;
+    }
+
+    public function countByKategori(?int $tahun = null, ?int $bulan = null): array
+    {
+        return $this->groupCount(
+            "b.kategori AS label, COUNT(*) AS jumlah",
+            "INNER JOIN barang b ON lk.id_barang = b.id",
+            "b.kategori",
+            "jumlah DESC",
+            $tahun,
+            $bulan
+        );
+    }
+
+    public function countByRuangan(?int $tahun = null, ?int $bulan = null, int $limit = 10): array
+    {
+        return $this->groupCount(
+            "r.nama_ruangan AS label, COUNT(*) AS jumlah",
+            "INNER JOIN ruangan r ON lk.id_ruangan = r.id",
+            "r.id, r.nama_ruangan",
+            "jumlah DESC",
+            $tahun,
+            $bulan,
+            $limit
+        );
+    }
+
+    public function countByStatus(?int $tahun = null, ?int $bulan = null): array
+    {
+        return $this->groupCount(
+            "lk.status_penanganan AS label, COUNT(*) AS jumlah",
+            "",
+            "lk.status_penanganan",
+            "FIELD(lk.status_penanganan, 'Pending','Proses','Selesai')",
+            $tahun,
+            $bulan
+        );
+    }
+
+    public function countByPrioritas(?int $tahun = null, ?int $bulan = null): array
+    {
+        return $this->groupCount(
+            "lk.prioritas AS label, COUNT(*) AS jumlah",
+            "",
+            "lk.prioritas",
+            "FIELD(lk.prioritas, 'Rendah','Sedang','Tinggi')",
+            $tahun,
+            $bulan
+        );
+    }
+
+    public function countByKirimStatus(?int $tahun = null, ?int $bulan = null): array
+    {
+        return $this->groupCount(
+            "lk.kirim_status AS label, COUNT(*) AS jumlah",
+            "",
+            "lk.kirim_status",
+            "FIELD(lk.kirim_status, 'belum','dikirim','diterima')",
+            $tahun,
+            $bulan
+        );
+    }
+
+    /**
+     * Persentase laporan selesai per bulan dalam satu tahun.
+     * @return int[] indeks 1..12
+     */
+    public function solveRatePerBulan(int $tahun): array
+    {
+        $recap = $this->monthlyRecap($tahun);
+        $out   = array_fill(1, 12, 0);
+
+        for ($b = 1; $b <= 12; $b++) {
+            $masuk   = $recap['masuk'][$b] ?? 0;
+            $selesai = $recap['selesai'][$b] ?? 0;
+            $out[$b] = $masuk > 0 ? (int) round($selesai / $masuk * 100) : 0;
+        }
+
         return $out;
     }
 
