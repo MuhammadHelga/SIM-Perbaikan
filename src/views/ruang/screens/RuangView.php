@@ -132,8 +132,20 @@ $peakLabel    = $peakMonths
             </div>
 
             <!-- Heatmap-style Matrix Table -->
-            <div class="table-responsive">
+            <?php
+                // Lebar kolom didefinisikan sekali, dipakai bersama tabel data & tabel footer,
+                // supaya kolomnya selalu sejajar persis (total 100%).
+                $colWidths = array_merge([16], array_fill(0, 12, 7));
+            ?>
+
+            <!-- Heatmap-style Matrix Table -->
+            <div class="table-responsive" id="tableScrollBody">
                 <table class="rekap-table">
+                    <colgroup>
+                        <?php foreach ($colWidths as $w): ?>
+                            <col style="width: <?= $w ?>%;">
+                        <?php endforeach; ?>
+                    </colgroup>
                     <thead>
                         <tr>
                             <th class="text-left">Nama Unit</th>
@@ -156,17 +168,29 @@ $peakLabel    = $peakMonths
                             </tr>
                         <?php endforeach; ?>
                     </tbody>
-                    <tfoot>
+                </table>
+            </div>
+
+            <div class="table-footer" id="tableFooterScroll">
+                <table class="rekap-table rekap-table--footer">
+                    <colgroup>
+                        <?php foreach ($colWidths as $w): ?>
+                            <col style="width: <?= $w ?>%;">
+                        <?php endforeach; ?>
+                    </colgroup>
+                    <tbody>
                         <tr class="row-total">
                             <td class="text-left font-bold text-primary">TOTAL</td>
                             <?php for ($b = 1; $b <= 12; $b++): ?>
                                 <td><?= (int) ($totalPerBulan[$b] ?? 0) ?></td>
                             <?php endfor; ?>
                         </tr>
-                    </tfoot>
+                    </tbody>
                 </table>
             </div>
         </div>
     </main>
+    <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
+    <script src="<?= BASE_URL ?>/assets/js/ruang.js"></script>
 </body>
 </html>
