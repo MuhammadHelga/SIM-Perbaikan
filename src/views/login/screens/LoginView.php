@@ -16,6 +16,7 @@ $oldUsername  = $oldUsername ?? '';
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/login.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
     <script src="<?= BASE_URL ?>/assets/js/login.js" defer></script>
+    <script src="<?= BASE_URL ?>/assets/js/app.js" defer></script>
 </head>
 <body>
     <button type="button" class="theme-toggle theme-toggle--floating" aria-label="Ganti tema">

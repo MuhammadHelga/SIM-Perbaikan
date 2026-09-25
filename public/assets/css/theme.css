@@ -463,10 +463,39 @@ html.theme-transition .theme-toggle {
   color: var(--muted);
 }
 
-[data-theme='dark'] .login-form input {
+[data-theme='dark'] .field label {
+  color: var(--text);
+}
+
+[data-theme='dark'] .field__input {
   background: var(--surface-2);
   border-color: var(--border);
+}
+
+[data-theme='dark'] .field__input:focus-within {
+  border-color: var(--primary);
+}
+
+[data-theme='dark'] .field__input input {
   color: var(--text);
+}
+
+[data-theme='dark'] .field__input input::placeholder {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .field__icon,
+[data-theme='dark'] .field__toggle {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .field__toggle.is-active {
+  color: var(--primary);
+}
+
+[data-theme='dark'] .login-alert {
+  background: #7f1d1d;
+  color: #fecaca;
 }
 
 /* ==================== Cetak: paksa terang ==================== */
