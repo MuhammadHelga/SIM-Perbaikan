@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const filterForm = document.getElementById('filterForm');
     if (filterForm) {
-        ['periode', 'filterStatus'].forEach(function (id) {
+        ['periode', 'status'].forEach(function (id) {
             const el = document.getElementById(id);
             if (el) el.addEventListener('change', () => filterForm.requestSubmit());
         });
@@ -11,16 +11,6 @@ document.addEventListener('DOMContentLoaded', function () {
     if (btnCetak) {
         btnCetak.addEventListener('click', function () {
             window.print();
-        });
-    }
-
-    // "Menampilkan ... Laporan": ubah jumlah baris lewat parameter GET
-    const perPage = document.getElementById('perPage');
-    const perPageValue = document.getElementById('perPageValue');
-    if (perPage && perPageValue && filterForm) {
-        perPage.addEventListener('change', function () {
-            perPageValue.value = perPage.value;
-            filterForm.requestSubmit();
         });
     }
 
@@ -54,7 +44,6 @@ function openTambahModal() {
     const form = document.getElementById('form-tambah-laporan');
     form.reset();
     document.getElementById('form-laporan-id').value = '';
-    document.getElementById('prioritas').value = 'Sedang';
     form.action = (window.BASE_URL || '') + '/laporan/simpan';
 
     document.getElementById('formLaporanIcon').textContent = 'note_add';
@@ -116,11 +105,8 @@ function fillFormWithData(row) {
     document.getElementById('rincian_kerusakan').value = row.kerusakan || '';
     document.getElementById('uraian_kegiatan').value = row.uraian || '';
 
-    const statusValue = row.status_penanganan
-        || (row.hasil === 'selesai' ? 'Selesai' : 'Pending');
+    const statusValue = row.hasil === 'selesai' ? 'Selesai' : (row.hasil === 'pending' ? 'Pending' : 'Proses');
     document.getElementById('status').value = statusValue;
-
-    document.getElementById('prioritas').value = row.prioritas || 'Sedang';
 }
 
 function selectOptionByText(selectId, text) {
@@ -292,9 +278,7 @@ function initMonthPicker() {
         wrapper.classList.remove('is-open');
     }
 
-    // Seluruh kotak (ikon + teks + chevron) bisa dipencet, bukan cuma teksnya
-    const box = wrapper.querySelector('.month-picker__input') || trigger;
-    box.addEventListener('click', function (e) {
+    trigger.addEventListener('click', function (e) {
         e.stopPropagation();
         wrapper.classList.contains('is-open') ? closePanel() : openPanel();
     });
