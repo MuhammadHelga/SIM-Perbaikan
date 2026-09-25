@@ -12,7 +12,7 @@ class Ruangan
     public function getAll()
     {
         $stmt = $this->conn->prepare(
-            "SELECT * FROM ruangan ORDER BY id DESC"
+            "SELECT * FROM ruangan ORDER BY nama_ruangan ASC"
         );
 
         $stmt->execute();
@@ -32,26 +32,30 @@ class Ruangan
         return $stmt->get_result()->fetch_assoc();
     }
 
-    public function create($nama_ruangan)
+    public function create($kode_ruangan, $nama_ruangan)
     {
+        $kode = ($kode_ruangan === '' ? null : $kode_ruangan);
+
         $stmt = $this->conn->prepare(
-            "INSERT INTO ruangan (nama_ruangan) VALUES (?)"
+            "INSERT INTO ruangan (kode_ruangan, nama_ruangan) VALUES (?, ?)"
         );
 
-        $stmt->bind_param("s", $nama_ruangan);
+        $stmt->bind_param("ss", $kode, $nama_ruangan);
 
         return $stmt->execute();
     }
 
-    public function update($id, $nama_ruangan)
+    public function update($id, $kode_ruangan, $nama_ruangan)
     {
+        $kode = ($kode_ruangan === '' ? null : $kode_ruangan);
+
         $stmt = $this->conn->prepare(
             "UPDATE ruangan
-             SET nama_ruangan = ?
+             SET kode_ruangan = ?, nama_ruangan = ?
              WHERE id = ?"
         );
 
-        $stmt->bind_param("si", $nama_ruangan, $id);
+        $stmt->bind_param("ssi", $kode, $nama_ruangan, $id);
 
         return $stmt->execute();
     }

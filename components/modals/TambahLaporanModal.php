@@ -79,16 +79,31 @@
                 <textarea id="uraian_kegiatan" name="uraian_kegiatan" rows="3" placeholder="Contoh: Melakukan konfigurasi jaringan IP static"></textarea>
             </div>
 
-            <div class="form-group">
-                <label for="status">Status Penanganan</label>
-                <div class="input-icon-wrapper">
-                    <span class="material-symbols-outlined field-icon">build</span>
-                    <select id="status" name="status" required>
-                        <option value="" disabled selected>Pilih Status</option>
-                        <option value="Proses">Proses</option>
-                        <option value="Selesai">Selesai</option>
-                        <option value="Pending">Pending</option>
-                    </select>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="status">Status Penanganan</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">build</span>
+                        <select id="status" name="status" required>
+                            <option value="" disabled selected>Pilih Status</option>
+                            <option value="Proses">Proses</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Selesai">Selesai</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="prioritas">Prioritas</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">priority_high</span>
+                        <select id="prioritas" name="prioritas" required>
+                            <option value="" disabled selected>Pilih Prioritas</option>
+                            <option value="Rendah">Rendah</option>
+                            <option value="Sedang">Sedang</option>
+                            <option value="Tinggi">Tinggi</option>
+                        </select>
+                    </div>
                 </div>
             </div>
 

@@ -4,6 +4,7 @@ $stats        = $stats ?? ['total' => 0, 'pending' => 0, 'selesai' => 0];
 $periode      = $periode ?? '';
 $statusFilter = $statusFilter ?? '';
 $search       = $search ?? '';
+$perPage      = $perPage ?? 25;
 
 $namaBulan = [
     1=>'Januari',
@@ -32,6 +33,34 @@ $fmtTanggal = function ($tgl) {
     $ts = strtotime((string)$tgl);
     return $ts ? date('d M Y', $ts) : (string)$tgl;
 };
+
+// Chip "Filter Aktif" (masing-masing bisa dihapus lewat link)
+$chipUrl = function (array $overrides) use ($periode, $statusFilter, $search, $perPage) {
+    $params = [
+        'periode'  => $periode,
+        'status'   => $statusFilter,
+        'search'   => $search,
+        'per_page' => $perPage,
+    ];
+    foreach ($overrides as $k => $v) {
+        $params[$k] = $v;
+    }
+
+    $query = http_build_query(array_filter($params, fn($v) => $v !== '' && $v !== null));
+
+    return BASE_URL . '/laporan' . ($query !== '' ? '?' . $query : '');
+};
+
+$activeChips = [];
+if ($periode !== '') {
+    $activeChips[] = ['label' => 'Periode: ' . $periodeLabel, 'url' => $chipUrl(['periode' => ''])];
+}
+if ($statusFilter !== '') {
+    $activeChips[] = ['label' => 'Status: ' . $statusFilter, 'url' => $chipUrl(['status' => ''])];
+}
+if ($search !== '') {
+    $activeChips[] = ['label' => 'Cari: ' . $search, 'url' => $chipUrl(['search' => ''])];
+}
 ?>
 
 <!DOCTYPE html>
@@ -49,6 +78,13 @@ $fmtTanggal = function ($tgl) {
 </head>
 <body>
     <?php $activeMenu = 'laporan'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
+
+    <div class="print-only print-head">
+        <h1>SIM-Perbaikan &mdash; RS Al-Huda</h1>
+        <h2>Rekap Laporan Kegiatan &amp; Kerusakan</h2>
+        <p>Periode: <?= htmlspecialchars($periodeLabel, ENT_QUOTES, 'UTF-8') ?> &middot; Dicetak: <?= date('d M Y') ?></p>
+        <p>Total: <?= (int)$stats['total'] ?> &middot; Pending/Proses: <?= (int)$stats['pending'] ?> &middot; Selesai: <?= (int)$stats['selesai'] ?></p>
+    </div>
     
     <main class="page-wrap">
         <div class="page-head">
@@ -81,6 +117,7 @@ $fmtTanggal = function ($tgl) {
 
         <div class="filter-card">
             <form method="get" class="filter-row" id="filterForm">
+                <input type="hidden" name="per_page" id="perPageValue" value="<?= (int)$perPage ?>">
                 <div class="filter-field month-picker" id="periodePicker">
                     <label for="periodeTrigger">Periode Bulan</label>
                     <div class="filter-input month-picker__input">
@@ -107,12 +144,13 @@ $fmtTanggal = function ($tgl) {
                 </div>
 
                 <div class="filter-field">
-                    <label for="status">Status</label>
-                    <div class="filter-input">
-                        <select name="status" id="status">
+                    <label for="filterStatus">Status</label>
+                    <div class="filter-input filter-input--select">
+                        <select name="status" id="filterStatus">
                             <option value="" <?= $statusFilter === '' ? 'selected' : '' ?>>Semua</option>
-                            <option value="selesai" <?= $statusFilter === 'selesai' ? 'selected' : '' ?>>Selesai</option>
-                            <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="Pending" <?= $statusFilter === 'Pending' ? 'selected' : '' ?>>Pending</option>
+                            <option value="Proses" <?= $statusFilter === 'Proses' ? 'selected' : '' ?>>Proses</option>
+                            <option value="Selesai" <?= $statusFilter === 'Selesai' ? 'selected' : '' ?>>Selesai</option>
                         </select>
                     </div>
                 </div>
@@ -140,7 +178,18 @@ $fmtTanggal = function ($tgl) {
 
             <div class="filter-active">
                 <span class="filter-active__label">Filter Aktif:</span>
-                <span id="activeChips"></span>
+                <span id="activeChips">
+                    <?php if (!$activeChips): ?>
+                        <span class="chip chip--empty">Tidak ada</span>
+                    <?php else: ?>
+                        <?php foreach ($activeChips as $chip): ?>
+                            <a class="chip" href="<?= htmlspecialchars($chip['url'], ENT_QUOTES, 'UTF-8') ?>">
+                                <?= htmlspecialchars($chip['label'], ENT_QUOTES, 'UTF-8') ?>
+                                <span class="chip__x" aria-hidden="true">&times;</span>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </span>
             </div>
         </div>
 
@@ -173,11 +222,15 @@ $fmtTanggal = function ($tgl) {
                             <td class="truncate" title="<?= htmlspecialchars($row['kerusakan']) ?>"><?= htmlspecialchars($row['kerusakan']) ?></td>
                             <td class="truncate" title="<?= htmlspecialchars($row['uraian']) ?>"><?= htmlspecialchars($row['uraian']) ?></td>
                             <td>
-                                <?php if ($row['hasil'] === 'selesai'): ?>
-                                    <span class="badge badge--green">Selesai</span>
-                                <?php else: ?>
-                                    <span class="badge badge--red">Pending</span>
-                                <?php endif; ?>
+                                <?php
+                                    $statusPenanganan = $row['status_penanganan'] ?? 'Pending';
+                                    $badgeClass = match ($statusPenanganan) {
+                                        'Selesai' => 'badge--green',
+                                        'Proses'  => 'badge--orange',
+                                        default   => 'badge--red',
+                                    };
+                                ?>
+                                <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($statusPenanganan) ?></span>
                             </td>
                             <td class="nowrap">
                                 <?php if ($row['kirim_status'] === 'belum'): ?>
@@ -201,9 +254,11 @@ $fmtTanggal = function ($tgl) {
                                     <button type="button" class="icon-btn icon-btn--edit" title="Edit" onclick="openEditModal(<?= (int)$row['id'] ?>)">
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
+                                    <?php if (($_SESSION['role'] ?? '') === 'admin'): ?>
                                     <button type="button" class="icon-btn icon-btn--delete" title="Hapus" onclick="confirmDelete(<?= (int)$row['id'] ?>)">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
@@ -215,9 +270,10 @@ $fmtTanggal = function ($tgl) {
             <div class="table-footer">
                 <span>Menampilkan</span>
                 <select id="perPage">
-                    <option value="25" selected>25</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
+                    <option value="25" <?= $perPage === 25 ? 'selected' : '' ?>>25</option>
+                    <option value="50" <?= $perPage === 50 ? 'selected' : '' ?>>50</option>
+                    <option value="100" <?= $perPage === 100 ? 'selected' : '' ?>>100</option>
+                    <option value="200" <?= $perPage === 200 ? 'selected' : '' ?>>200</option>
                 </select>
                 <span>Laporan</span>
             </div>

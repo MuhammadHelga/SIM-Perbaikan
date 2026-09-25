@@ -1,3 +1,27 @@
+<?php
+$tahun         = $tahun ?? (int) date('Y');
+$q             = $q ?? '';
+$sort          = $sort ?? 'desc';
+$tahunList     = $tahunList ?? [(int) date('Y')];
+$rows          = $rows ?? [];
+$totalPerBulan = $totalPerBulan ?? array_fill(1, 12, 0);
+$topUnit       = $topUnit ?? null;
+$peakMonths    = $peakMonths ?? [];
+$peakTotal     = $peakTotal ?? 0;
+$jumlahRuangan = $jumlahRuangan ?? 0;
+
+$namaBulan = [
+    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember',
+];
+
+$topUnitNama  = $topUnit['nama'] ?? '—';
+$topUnitTotal = (int) ($topUnit['total'] ?? 0);
+$peakLabel    = $peakMonths
+    ? implode(' & ', array_map(fn($m) => mb_substr($m, 0, 3), $peakMonths))
+    : '—';
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -12,6 +36,13 @@
 </head>
 <body>
     <?php $activeMenu = 'ruang'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
+
+    <div class="print-only print-head">
+        <h1>SIM-Perbaikan &mdash; RS Al-Huda</h1>
+        <h2>Total Barang Diperbaiki per Ruang/Urusan &mdash; Tahun <?= (int)$tahun ?></h2>
+        <p>Dicetak: <?= date('d M Y') ?></p>
+        <p>Keterangan: 1&ndash;5 Normal &middot; 6&ndash;10 Sedang &middot; &gt;10 Tinggi</p>
+    </div>
     <main class="container">
         <!-- Page Title & Primary Action -->
         <div class="header-section">
@@ -19,7 +50,7 @@
                 <h1>Total Barang Diperbaiki per Ruang/Urusan</h1>
                 <p>Dihitung dari laporan dengan status Selesai di semua bulan periode tahun berjalan (Rekap Tahunan)</p>
             </div>
-            <button class="btn btn-success"><i class="ri-printer-line"></i> Cetak Rekap Ruang</button>
+            <button class="btn btn-success" onclick="window.print()"><span class="material-symbols-outlined">print</span> Cetak Rekap Ruang</button>
         </div>
 
         <!-- Metric Cards Grid -->
@@ -27,57 +58,63 @@
             <div class="card border-blue">
                 <div class="card-body">
                     <span class="card-subtitle">UNIT KERUSAKAN TERTINGGI</span>
-                    <div class="card-value text-blue">POLI <span class="text-dark">123 Kasus</span></div>
+                    <div class="card-value text-blue"><?= htmlspecialchars($topUnitNama) ?> <span class="text-dark"><?= $topUnitTotal ?> Kasus</span></div>
                     <span class="card-footnote">Dengan akumulasi per tahun</span>
                 </div>
                 <div class="card-icon bg-blue">
-                    <i class="ri-door-open-line"></i>
+                    <span class="material-symbols-outlined">meeting_room</span>
                 </div>
             </div>
 
             <div class="card border-amber">
                 <div class="card-body">
                     <span class="card-subtitle">BULAN PUNCAK KERUSAKAN</span>
-                    <div class="card-value text-amber">Ags & Nov <span class="text-dark">23 Kasus</span></div>
+                    <div class="card-value text-amber"><?= htmlspecialchars($peakLabel) ?> <span class="text-dark"><?= (int)$peakTotal ?> Kasus</span></div>
                     <span class="card-footnote">Dengan akumulasi per tahun</span>
                 </div>
                 <div class="card-icon bg-amber">
-                    <i class="ri-calendar-event-line"></i>
+                    <span class="material-symbols-outlined">calendar_month</span>
                 </div>
             </div>
 
             <div class="card border-teal">
                 <div class="card-body">
                     <span class="card-subtitle">TINGKAT KECEPATAN SERVIS</span>
-                    <div class="card-value text-teal">96% <small class="text-success-sm">meningkat 2%</small></div>
-                    <span class="card-footnote">Dengan akumulasi per tahun</span>
+                    <div class="card-value text-teal">—</div>
+                    <span class="card-footnote">Belum dihitung</span>
                 </div>
                 <div class="card-icon bg-teal">
-                    <i class="ri-flashlight-line"></i>
+                    <span class="material-symbols-outlined">bolt</span>
                 </div>
             </div>
         </div>
 
         <!-- Filter Bar -->
-        <div class="filter-bar">
+        <form method="get" class="filter-bar" id="ruangFilter">
             <div class="filter-left">
-                <select class="form-control select-year">
-                    <option>Tahun 2026</option>
-                    <option>Tahun 2025</option>
-                </select>
+                <div class="year-stepper" data-years="<?= htmlspecialchars(implode(',', $tahunList)) ?>">
+                    <button type="button" class="year-step-btn" id="tahunPrev" aria-label="Tahun sebelumnya">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <span class="year-step-label">Tahun <?= (int)$tahun ?></span>
+                    <button type="button" class="year-step-btn" id="tahunNext" aria-label="Tahun berikutnya">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                    <input type="hidden" name="tahun" id="tahunValue" value="<?= (int)$tahun ?>">
+                </div>
                 <div class="search-box">
-                    <i class="ri-search-line"></i>
-                    <input type="text" placeholder="Cari unit atau ruangan">
+                    <span class="material-symbols-outlined">search</span>
+                    <input type="text" id="search" name="q" value="<?= htmlspecialchars($q, ENT_QUOTES, 'UTF-8') ?>" placeholder="Cari unit atau ruangan">
                 </div>
             </div>
             <div class="filter-right">
                 <label>Urut Berdasarkan:</label>
-                <select class="form-control">
-                    <option>Total Tertinggi</option>
-                    <option>Total Terendah</option>
+                <select class="form-control" name="sort" onchange="this.form.submit()">
+                    <option value="desc" <?= $sort === 'desc' ? 'selected' : '' ?>>Total Tertinggi</option>
+                    <option value="asc" <?= $sort === 'asc' ? 'selected' : '' ?>>Total Terendah</option>
                 </select>
             </div>
-        </div>
+        </form>
 
         <!-- Main Data Table Container -->
         <div class="table-card">
@@ -91,7 +128,7 @@
                         <span class="legend-item"><span class="legend-box bg-high"></span> Intensitas Tinggi (>10)</span>
                     </div>
                 </div>
-                <span class="badge-info">28 Unit/Ruangan Terdaftar</span>
+                <span class="badge-info"><?= count($rows) ?> Unit/Ruangan Terdaftar</span>
             </div>
 
             <!-- Heatmap-style Matrix Table -->
@@ -100,89 +137,36 @@
                     <thead>
                         <tr>
                             <th class="text-left">Nama Unit</th>
-                            <th>Januari</th>
-                            <th>Februari</th>
-                            <th>Maret</th>
-                            <th>April</th>
-                            <th>Mei</th>
-                            <th>Juni</th>
-                            <th>Juli</th>
-                            <th>Agustus</th>
-                            <th>September</th>
-                            <th>Oktober</th>
-                            <th>November</th>
-                            <th>Desember</th>
+                            <?php for ($b = 1; $b <= 12; $b++): ?>
+                                <th><?= htmlspecialchars($namaBulan[$b]) ?></th>
+                            <?php endfor; ?>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td class="text-left font-bold">MJKN</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td class="cell-medium">10</td>
-                            <td>8</td>
-                            <td>5</td>
-                            <td class="cell-medium">3</td>
-                            <td class="cell-high">15</td>
-                            <td>7</td>
-                            <td>3</td>
-                            <td>6</td>
-                            <td>5</td>
-                            <td class="cell-high">17</td>
-                        </tr>
-                        <!-- Baris Tambahan (Dapat diulang menggunakan perulangan foreach PHP) -->
-                        <tr>
-                            <td class="text-left font-bold">MJKN</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td class="cell-medium">10</td>
-                            <td>8</td>
-                            <td>5</td>
-                            <td class="cell-medium">3</td>
-                            <td class="cell-high">15</td>
-                            <td>7</td>
-                            <td>3</td>
-                            <td>6</td>
-                            <td>5</td>
-                            <td class="cell-high">17</td>
-                        </tr>
-                        <tr>
-                            <td class="text-left font-bold">MJKN</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td class="cell-medium">10</td>
-                            <td>8</td>
-                            <td>5</td>
-                            <td class="cell-medium">3</td>
-                            <td class="cell-high">15</td>
-                            <td>7</td>
-                            <td>3</td>
-                            <td>6</td>
-                            <td>5</td>
-                            <td class="cell-high">17</td>
-                        </tr>
+                        <?php if (!$rows): ?>
+                            <tr><td colspan="13" class="text-left">Belum ada data.</td></tr>
+                        <?php endif; ?>
+                        <?php foreach ($rows as $row): ?>
+                            <tr>
+                                <td class="text-left font-bold"><?= htmlspecialchars($row['nama']) ?></td>
+                                <?php for ($b = 1; $b <= 12; $b++): ?>
+                                    <?php $v = (int) ($row['bulan'][$b] ?? 0); ?>
+                                    <td class="<?= $v > 10 ? 'cell-high' : ($v >= 6 ? 'cell-medium' : '') ?>"><?= $v ?></td>
+                                <?php endfor; ?>
+                            </tr>
+                        <?php endforeach; ?>
                     </tbody>
                     <tfoot>
                         <tr class="row-total">
                             <td class="text-left font-bold text-primary">TOTAL</td>
-                            <td>0</td>
-                            <td>0</td>
-                            <td>10</td>
-                            <td>8</td>
-                            <td>5</td>
-                            <td>3</td>
-                            <td>15</td>
-                            <td>7</td>
-                            <td>3</td>
-                            <td>6</td>
-                            <td>5</td>
-                            <td>17</td>
+                            <?php for ($b = 1; $b <= 12; $b++): ?>
+                                <td><?= (int) ($totalPerBulan[$b] ?? 0) ?></td>
+                            <?php endfor; ?>
                         </tr>
                     </tfoot>
                 </table>
             </div>
         </div>
     </main>
-
 </body>
 </html>

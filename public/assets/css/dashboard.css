@@ -82,6 +82,10 @@ body {
     font-size: 1.25rem;
 }
 
+.card-icon .material-symbols-outlined {
+    font-size: 1.25rem;
+}
+
 /* Background Utility Colors */
 .bg-light-purple { background: #f3e8ff; color: #7e22ce; }
 .bg-light-yellow { background: #fef9c3; color: #ca8a04; }

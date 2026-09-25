@@ -13,7 +13,7 @@ class Barang
     public function getAll()
     {
         $stmt = $this->conn->prepare(
-            "SELECT * FROM barang ORDER BY id DESC"
+            "SELECT * FROM barang ORDER BY nama_barang ASC"
         );
 
         $stmt->execute();
@@ -35,28 +35,31 @@ class Barang
     }
 
     // CREATE
-    public function create($nama_barang)
+    public function create($kode_barang, $nama_barang)
     {
+        $kode = ($kode_barang === '' ? null : $kode_barang);
+
         $stmt = $this->conn->prepare(
-            "INSERT INTO barang (nama_barang) VALUES (?)"
+            "INSERT INTO barang (kode_barang, nama_barang) VALUES (?, ?)"
         );
 
-  //  
-        $stmt->bind_param("s", $nama_barang);
+        $stmt->bind_param("ss", $kode, $nama_barang);
 
         return $stmt->execute();
     }
 
     // UPDATE
-    public function update($id, $nama_barang)
+    public function update($id, $kode_barang, $nama_barang)
     {
+        $kode = ($kode_barang === '' ? null : $kode_barang);
+
         $stmt = $this->conn->prepare(
             "UPDATE barang
-             SET nama_barang = ?
+             SET kode_barang = ?, nama_barang = ?
              WHERE id = ?"
         );
 
-        $stmt->bind_param("si", $nama_barang, $id);
+        $stmt->bind_param("ssi", $kode, $nama_barang, $id);
 
         return $stmt->execute();
     }

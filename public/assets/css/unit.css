@@ -138,6 +138,7 @@ body {
 }
 
 .btn-primary { background: #002b9a; }
+.btn-primary:hover { background: #001f70; }
 
 /* Data Table Styling */
 .table-responsive {
@@ -173,9 +174,41 @@ body {
 }
 
 .icon-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: none;
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
     text-decoration: none;
-    font-size: 1.1rem;
+}
+
+.icon-action .material-symbols-outlined {
+    font-size: 19px;
 }
 
 .text-warning { color: #f97316; }
 .text-danger { color: #dc2626; }
+
+/* Warna & hover ikon samakan dengan halaman Laporan Kegiatan */
+.icon-action.text-warning { color: #e0921d; }
+.icon-action.text-warning:hover { background: #fdf2e1; }
+.icon-action.text-danger { color: #ba1a1a; }
+.icon-action.text-danger:hover { background: #ffdad6; }
+
+/* Tombol Batal di modal (kelas btn-outline dipakai bareng modal laporan) */
+.btn-outline {
+    background: #f1f5f9;
+    color: #334155;
+}
+.btn-outline:hover {
+    background: #e2e8f0;
+}
+
+/* Pesan flash sekarang global (lihat navbar.css) */

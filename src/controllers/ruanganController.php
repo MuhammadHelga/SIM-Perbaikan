@@ -21,14 +21,14 @@ class ruanganController
         return $this->ruangan->getById($id);
     }
 
-    public function store($nama_ruangan)
+    public function store($kode_ruangan, $nama_ruangan)
     {
-        return $this->ruangan->create($nama_ruangan);
+        return $this->ruangan->create($kode_ruangan, $nama_ruangan);
     }
 
-    public function update($id, $nama_ruangan)
+    public function update($id, $kode_ruangan, $nama_ruangan)
     {
-        return $this->ruangan->update($id, $nama_ruangan);
+        return $this->ruangan->update($id, $kode_ruangan, $nama_ruangan);
     }
 
     public function destroy($id)

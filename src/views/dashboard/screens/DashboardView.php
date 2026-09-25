@@ -1,3 +1,20 @@
+<?php
+$dashboard = $dashboard ?? [
+    'total' => 0, 'dalam' => 0, 'selesai' => 0, 'kritis' => 0,
+    'solveRate' => 0, 'delta' => null, 'tahun' => (int) date('Y'), 'bulan' => (int) date('n'),
+    'monthly' => ['masuk' => array_fill(1, 12, 0), 'selesai' => array_fill(1, 12, 0)],
+    'byBarang' => [],
+];
+
+$delta      = $dashboard['delta'];
+$deltaText  = $delta === null
+    ? 'Belum ada pembanding'
+    : ($delta >= 0 ? '+' . $delta . ' % vs bulan lalu' : $delta . ' % vs bulan lalu');
+$deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-success';
+
+$namaBulanSingkat = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',7=>'Jul',8=>'Ags',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'];
+$periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun'];
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -24,44 +41,44 @@
             <div class="card">
                 <div class="card-body">
                     <span class="card-title">TOTAL LAPORAN</span>
-                    <div class="card-value">150 <small>KASUS</small></div>
-                    <span class="card-badge text-success"><i class="ri-arrow-up-line"></i> +12 % vs bulan lalu</span>
+                    <div class="card-value"><?= (int)$dashboard['total'] ?> <small>KASUS</small></div>
+                    <span class="card-badge <?= $deltaClass ?>"><?= htmlspecialchars($deltaText) ?></span>
                 </div>
                 <div class="card-icon bg-light-purple">
-                    <i class="ri-sigma-line"></i>
+                    <span class="material-symbols-outlined">functions</span>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-body">
                     <span class="card-title">DALAM PENANGANAN</span>
-                    <div class="card-value text-warning">15 <small>UNIT</small></div>
+                    <div class="card-value text-warning"><?= (int)$dashboard['dalam'] ?> <small>UNIT</small></div>
                     <span class="card-badge text-warning">• Butuh tindakan cepat</span>
                 </div>
                 <div class="card-icon bg-light-yellow">
-                    <i class="ri-time-line"></i>
+                    <span class="material-symbols-outlined">schedule</span>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-body">
                     <span class="card-title">SELESAI DITANGANI</span>
-                    <div class="card-value text-success">15 <small>UNIT</small></div>
-                    <span class="card-badge text-success">97% Solve Rate</span>
+                    <div class="card-value text-success"><?= (int)$dashboard['selesai'] ?> <small>UNIT</small></div>
+                    <span class="card-badge text-success"><?= (int)$dashboard['solveRate'] ?>% Solve Rate</span>
                 </div>
                 <div class="card-icon bg-light-green">
-                    <i class="ri-checkbox-circle-line"></i>
+                    <span class="material-symbols-outlined">check_circle</span>
                 </div>
             </div>
 
             <div class="card">
                 <div class="card-body">
-                    <span class="card-title">KERUSAKAN KRITIS</span>
-                    <div class="card-value text-danger">12 <small>UNIT</small></div>
+                    <span class="card-title">KERUSAKAN KRITIS (BELUM SELESAI)</span>
+                    <div class="card-value text-danger"><?= (int)$dashboard['kritis'] ?> <small>UNIT</small></div>
                     <span class="card-badge text-danger">Prioritas tinggi perbaikan</span>
                 </div>
                 <div class="card-icon bg-light-red">
-                    <i class="ri-error-warning-line"></i>
+                    <span class="material-symbols-outlined">error</span>
                 </div>
             </div>
         </div>
@@ -69,7 +86,7 @@
         <div class="charts-grid">
             <div class="chart-card">
                 <div class="chart-header">
-                    <h3>Tren Laporan dan Penyelesaian (2026)</h3>
+                    <h3>Tren Laporan dan Penyelesaian (<?= (int)$dashboard['tahun'] ?>)</h3>
                     <p>Perbandingan jumlah tiket laporan masuk vs perbaikan terselesaikan</p>
                 </div>
                 <div class="chart-wrapper">
@@ -81,7 +98,7 @@
                 <div class="chart-header">
                     <div class="flex-between">
                         <h3>Distribusi Kategori Perbaikan</h3>
-                        <span class="text-muted">Sep 2026</span>
+                        <span class="text-muted"><?= htmlspecialchars($periodeLabel) ?></span>
                     </div>
                     <p>Perangkat paling sering membutuhkan tindakan</p>
                 </div>
@@ -92,6 +109,10 @@
         </div>
     </main>
 
+    <script id="dashboardDataJson" type="application/json"><?= json_encode([
+        'monthly'  => $dashboard['monthly'],
+        'byBarang' => $dashboard['byBarang'],
+    ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
     <script src="<?= BASE_URL ?>/assets/js/dashboard.js"></script>
 </body>
 </html>
