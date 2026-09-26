@@ -5,14 +5,21 @@
  */
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>404 - Halaman Tidak Ditemukan | SIM-Perbaikan</title>
+    <link rel="icon" href="<?= BASE_URL ?>/favicon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#00288e">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/404.css">
 </head>
 <body>
+
+<button type="button" class="theme-toggle" aria-label="Ganti tema">
+    <span class="material-symbols-outlined">dark_mode</span>
+</button>
 
 <section class="wrapper">
     <div class="container">
@@ -66,5 +73,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/parallax/3.1.0/parallax.min.js"></script>
 <script src="<?= BASE_URL ?>/assets/js/404.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/app.js" defer></script>
 </body>
 </html>

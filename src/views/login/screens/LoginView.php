@@ -9,6 +9,8 @@ $oldUsername  = $oldUsername ?? '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIM-Perbaikan</title>
+    <link rel="icon" href="<?= BASE_URL ?>/favicon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#00288e">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -36,6 +38,7 @@ $oldUsername  = $oldUsername ?? '';
                         </div>
                     <?php endif; ?>
                     <form class="login-form" method="post" action="<?= BASE_URL ?>/login" autocomplete="on">
+                        <?= csrfField() ?>
                         <div class="field">
                             <label for="username">Username</label>
                             <div class="field__input">

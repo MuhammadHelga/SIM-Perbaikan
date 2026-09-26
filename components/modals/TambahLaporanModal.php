@@ -21,6 +21,7 @@
         </div>
 
         <form action="<?= BASE_URL ?>/laporan/simpan" method="POST" class="form-body" id="form-tambah-laporan">
+            <?= csrfField() ?>
             <input type="hidden" id="form-laporan-id" name="id" value="">
 
             <div class="form-row">

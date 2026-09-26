@@ -4,7 +4,26 @@ document.addEventListener('DOMContentLoaded', function () {
     initFilterFocus();
     initYearStepper();
     initSidebar();
+    initSubmitGuard();
 });
+
+/* Cegah kirim form dua kali: nonaktifkan tombol submit setelah submit */
+function initSubmitGuard() {
+    document.addEventListener('submit', function (e) {
+        const form = e.target;
+        if (!form || form.tagName !== 'FORM') return;
+
+        const btn = form.querySelector('button[type="submit"], input[type="submit"]');
+        if (!btn) return;
+
+        window.setTimeout(function () {
+            if (e.defaultPrevented) return; // dibatalkan handler lain (mis. validasi)
+            btn.disabled = true;
+            btn.style.opacity = '0.65';
+            btn.style.cursor = 'not-allowed';
+        }, 0);
+    }, true);
+}
 
 /* Sidebar: lipat (desktop) + off-canvas (mobile) */
 function initSidebar() {

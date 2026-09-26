@@ -65,6 +65,7 @@ unset($_SESSION['flash']);
             </button>
 
             <form method="post" action="<?= BASE_URL ?>/logout" class="app-navbar__logout-form">
+                <?= csrfField() ?>
                 <button type="submit" class="btn-logout">
                     <span class="material-symbols-outlined" aria-hidden="true">logout</span>
                     <span class="btn-logout__text">Logout</span>

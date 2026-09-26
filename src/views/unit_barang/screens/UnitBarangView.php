@@ -10,6 +10,8 @@ $totalBarang  = count($barangList);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIM-Perbaikan - Unit & Barang</title>
+    <link rel="icon" href="<?= BASE_URL ?>/favicon.svg" type="image/svg+xml">
+    <meta name="theme-color" content="#00288e">
     <!-- Font Inter & Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
@@ -175,6 +177,7 @@ $totalBarang  = count($barangList);
             </div>
 
             <form method="post" class="form-body" id="form-unit">
+                <?= csrfField() ?>
                 <input type="hidden" name="id" id="unit-id" value="">
 
                 <div class="form-group">

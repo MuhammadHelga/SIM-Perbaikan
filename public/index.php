@@ -1,8 +1,36 @@
 <?php
 session_start();
+
+// ===== Header keamanan (via PHP, tanpa perlu mod_headers) =====
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: SAMEORIGIN');
+header('Referrer-Policy: strict-origin-when-cross-origin');
+
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../config/conf.php';
 require __DIR__ . '/../config/database.php';
+
+// ===== CSRF token per session =====
+if (empty($_SESSION['csrf'])) {
+    $_SESSION['csrf'] = bin2hex(random_bytes(32));
+}
+
+function csrfToken(): string
+{
+    return $_SESSION['csrf'] ?? '';
+}
+
+function csrfField(): string
+{
+    return '<input type="hidden" name="csrf" value="' . htmlspecialchars(csrfToken(), ENT_QUOTES, 'UTF-8') . '">';
+}
+
+function csrfValid(): bool
+{
+    return isset($_POST['csrf'])
+        && is_string($_POST['csrf'])
+        && hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf']);
+}
 
 $conn = db();
 
@@ -112,14 +140,28 @@ switch ($path) {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $username = trim($_POST['username'] ?? '');
             $password = $_POST['password'] ?? '';
+            $now      = time();
 
-            if ($username === '' || $password === '') {
+            if (!csrfValid()) {
+                $errorMessage = 'Sesi tidak valid. Silakan coba lagi.';
+                $oldUsername  = $username;
+            } elseif (($_SESSION['login_lock_until'] ?? 0) > $now) {
+                $sisa = (int) ($_SESSION['login_lock_until'] - $now);
+                $errorMessage = "Terlalu banyak percobaan. Coba lagi dalam {$sisa} detik.";
+                $oldUsername  = $username;
+            } elseif ($username === '' || $password === '') {
                 $errorMessage = 'Username dan password wajib diisi!';
                 $oldUsername  = $username;
             } elseif ($authService->login($username, $password, !empty($_POST['remember']))) {
+                unset($_SESSION['login_fail'], $_SESSION['login_lock_until']);
                 header('Location: ' . $basePath . '/dashboard');
                 exit;
             } else {
+                $_SESSION['login_fail'] = ($_SESSION['login_fail'] ?? 0) + 1;
+                if ($_SESSION['login_fail'] >= 5) {
+                    $_SESSION['login_lock_until'] = $now + 60;
+                    $_SESSION['login_fail'] = 0;
+                }
                 $errorMessage = 'Username atau password salah!';
                 $oldUsername  = $username;
             }
@@ -129,6 +171,11 @@ switch ($path) {
         break;
 
     case '/logout':
+        if (!csrfValid()) {
+            $_SESSION['flash'] = ['type' => 'error', 'text' => 'Sesi tidak valid. Silakan coba lagi.'];
+            header('Location: ' . $basePath . '/dashboard');
+            exit;
+        }
         $authService->logout();
         header('Location: ' . $basePath . '/login');
         exit;
@@ -207,6 +254,12 @@ switch ($path) {
         requireLogin($basePath);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!csrfValid()) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Sesi tidak valid. Silakan coba lagi.'];
+                header('Location: ' . $basePath . '/laporan');
+                exit;
+            }
+
             require_once __DIR__ . '/../src/controllers/laporankerusakanController.php';
             $laporanController = new laporankerusakanController($conn);
 
@@ -232,6 +285,12 @@ switch ($path) {
         requireLogin($basePath);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!csrfValid()) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Sesi tidak valid. Silakan coba lagi.'];
+                header('Location: ' . $basePath . '/laporan');
+                exit;
+            }
+
             require_once __DIR__ . '/../src/controllers/laporankerusakanController.php';
             $laporanController = new laporankerusakanController($conn);
 
@@ -298,6 +357,12 @@ switch ($path) {
         requireRole($basePath, ['admin']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!csrfValid()) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Sesi tidak valid. Silakan coba lagi.'];
+                header('Location: ' . $basePath . '/unit');
+                exit;
+            }
+
             require_once __DIR__ . '/../src/controllers/ruanganController.php';
             $controller = new ruanganController($conn);
 
@@ -327,6 +392,12 @@ switch ($path) {
         requireRole($basePath, ['admin']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!csrfValid()) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Sesi tidak valid. Silakan coba lagi.'];
+                header('Location: ' . $basePath . '/unit');
+                exit;
+            }
+
             require_once __DIR__ . '/../src/controllers/barangController.php';
             $controller = new barangController($conn);
 

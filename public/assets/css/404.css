@@ -20,7 +20,7 @@ body {
     height: auto;
     font-family: "Barlow", sans-serif;
     background: #fff;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 /* ---------- Nav sederhana (brand saja) ---------- */
@@ -57,7 +57,7 @@ nav .menu {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 .wrapper .container {
@@ -336,3 +336,61 @@ nav .menu {
 .three .content .piece:nth-child(1) { left: 25%; top: 35%; height: 20px; width: 80px; animation-name: pieceLeft; animation-delay: 3.5s; }
 .three .content .piece:nth-child(2) { right: 10%; top: 55%; width: 140px; height: 40px; animation-name: pieceRight; animation-delay: 4s; }
 .three .content .piece:nth-child(3) { left: 40%; top: 68%; height: 20px; width: 80px; animation-name: pieceLeft; animation-delay: 4.5s; }
+
+/* ===================== Mode gelap ===================== */
+html[data-theme='dark'],
+html[data-theme='dark'] body {
+    background: #160f2a;
+}
+
+/* Lingkaran/glow: ungu lebih terang biar tetap terlihat di latar gelap */
+html[data-theme='dark'] .circle:before,
+html[data-theme='dark'] .one .content:before {
+    background-color: rgba(120, 80, 180, 0.22);
+}
+
+/* Bayangan blur "404" di belakang */
+html[data-theme='dark'] .p404:nth-of-type(2) {
+    color: #5a3a86;
+}
+
+/* Tombol outline disesuaikan ke tema gelap */
+html[data-theme='dark'] .text article .btn-404--outline {
+    background: #2a1c46;
+    color: #e6dcff;
+}
+html[data-theme='dark'] .text article .btn-404--outline:hover {
+    background: #00288e;
+    color: #fff;
+}
+
+/* ===================== Tombol ganti tema ===================== */
+.theme-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 20;
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+    color: #00288e;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(20, 30, 70, 0.15);
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.theme-toggle .material-symbols-outlined {
+    font-size: 22px;
+}
+
+html[data-theme='dark'] .theme-toggle {
+    background: #2a1c46;
+    border-color: rgba(255, 255, 255, 0.15);
+    color: #e6dcff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
