@@ -702,3 +702,45 @@ main.page-wrap {
     print-color-adjust: exact !important;
   }
 }
+
+/* ===== Responsif ===== */
+@media (max-width: 1024px) {
+  .filter-row {
+    flex-wrap: wrap;
+  }
+  .filter-actions {
+    margin-left: 0;
+    width: 100%;
+  }
+  .filter-actions .btn {
+    flex: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-wrap {
+    padding: 16px;
+  }
+  .stat-row {
+    grid-template-columns: 1fr;
+  }
+  .filter-field {
+    min-width: 0;
+    width: 100%;
+  }
+  .filter-field--grow {
+    min-width: 0;
+  }
+  .page-title {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 560px) {
+  .page-title {
+    font-size: 1.25rem;
+  }
+  .filter-actions .btn {
+    width: 100%;
+  }
+}

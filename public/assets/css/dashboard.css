@@ -12,7 +12,7 @@ body {
 
 /* Container & Header */
 .container {
-    max-width: 1280px;
+    max-width: 100%;
     margin: 32px auto;
     padding: 0 24px;
 }
@@ -110,6 +110,7 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 10px;
     padding: 20px;
+    min-width: 0;
 }
 
 .chart-header h3 {
@@ -128,10 +129,41 @@ body {
     margin-top: 20px;
     position: relative;
     height: 280px;
+    min-width: 0;
+}
+
+.chart-wrapper canvas {
+    max-width: 100%;
 }
 
 .flex-between {
     display: flex;
     justify-content: space-between;
     align-items: center;
+}
+
+/* ===== Responsif ===== */
+@media (max-width: 1024px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        margin: 20px auto;
+        padding: 0 16px;
+    }
+    .page-header h1 {
+        font-size: 1.3rem;
+    }
+}
+
+@media (max-width: 560px) {
+    .cards-grid {
+        grid-template-columns: 1fr;
+    }
+    .card-value {
+        font-size: 1.5rem;
+    }
 }

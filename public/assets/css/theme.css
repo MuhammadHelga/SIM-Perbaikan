@@ -139,6 +139,18 @@ html.theme-transition .theme-toggle {
   color: var(--muted);
 }
 
+[data-theme='dark'] .app-navbar__link.is-active {
+  background: rgba(79, 142, 247, 0.18);
+}
+
+[data-theme='dark'] .nav-collapse {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .nav-toggle {
+  color: #7fb0ff;
+}
+
 /* Tombol toggle tema */
 .theme-toggle {
   display: inline-flex;

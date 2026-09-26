@@ -148,3 +148,14 @@
   background: #001c64;
 }
 
+/* ===== Responsif ===== */
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 16px;
+    align-items: flex-start;
+  }
+  .confirm-card {
+    max-width: 100%;
+  }
+}
+

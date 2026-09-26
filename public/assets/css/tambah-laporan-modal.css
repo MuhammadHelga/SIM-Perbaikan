@@ -153,3 +153,19 @@
     -moz-appearance: none;
     background-image: none;
 }
+
+/* ===== Responsif ===== */
+@media (max-width: 640px) {
+    .form-card {
+        max-width: 100%;
+    }
+    .form-body {
+        padding: 18px;
+    }
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    .form-header {
+        padding: 16px;
+    }
+}

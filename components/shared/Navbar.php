@@ -20,39 +20,68 @@ $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
 ?>
-<header class="app-navbar">
+<div class="nav-backdrop" id="navBackdrop"></div>
+
+<button type="button" class="nav-toggle" id="navToggle" aria-label="Buka menu">
+    <span class="material-symbols-outlined">menu</span>
+</button>
+
+<aside class="app-navbar" id="appNavbar">
     <div class="app-navbar__accent" aria-hidden="true"></div>
+
     <div class="app-navbar__inner">
-        <a href="<?= BASE_URL ?>/dashboard" class="app-navbar__brand">SIM-Perbaikan</a>
+        <div class="app-navbar__top">
+            <a href="<?= BASE_URL ?>/dashboard" class="app-navbar__brand">
+                <span class="material-symbols-outlined app-navbar__brand-icon">handyman</span>
+                <span class="app-navbar__brand-text">SIM-Perbaikan</span>
+            </a>
+            <button type="button" class="nav-collapse" id="navCollapse" aria-label="Lipat menu">
+                <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+        </div>
+
+        <div class="app-navbar__user">
+            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+            <span class="app-navbar__user-text">
+                <?= htmlspecialchars($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>
+                <?php if ($role !== ''): ?><small>(<?= htmlspecialchars($role) ?>)</small><?php endif; ?>
+            </span>
+        </div>
 
         <nav class="app-navbar__menu">
             <?php foreach ($menus as $key => $menu): ?>
                 <a href="<?= htmlspecialchars($menu['url']) ?>"
-                   class="app-navbar__link <?= $activeMenu === $key ? 'is-active' : '' ?>">
+                   class="app-navbar__link <?= $activeMenu === $key ? 'is-active' : '' ?>"
+                   title="<?= htmlspecialchars($menu['label']) ?>">
                     <span class="material-symbols-outlined" aria-hidden="true"><?= $menu['icon'] ?></span>
-                    <span><?= htmlspecialchars($menu['label']) ?></span>
+                    <span class="app-navbar__link-text"><?= htmlspecialchars($menu['label']) ?></span>
                 </a>
             <?php endforeach; ?>
         </nav>
 
-        <button type="button" class="theme-toggle" aria-label="Ganti tema">
-            <span class="material-symbols-outlined">dark_mode</span>
-        </button>
-
-        <span class="app-navbar__user">
-            <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
-            <?= htmlspecialchars($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>
-            <?php if ($role !== ''): ?><small>(<?= htmlspecialchars($role) ?>)</small><?php endif; ?>
-        </span>
-
-        <form method="post" action="<?= BASE_URL ?>/logout" class="app-navbar__logout-form">
-            <button type="submit" class="btn-logout">
-                <span class="material-symbols-outlined" aria-hidden="true">logout</span>
-                Logout
+        <div class="app-navbar__foot">
+            <button type="button" class="theme-toggle" aria-label="Ganti tema">
+                <span class="material-symbols-outlined">dark_mode</span>
             </button>
-        </form>
+
+            <form method="post" action="<?= BASE_URL ?>/logout" class="app-navbar__logout-form">
+                <button type="submit" class="btn-logout">
+                    <span class="material-symbols-outlined" aria-hidden="true">logout</span>
+                    <span class="btn-logout__text">Logout</span>
+                </button>
+            </form>
+        </div>
     </div>
-</header>
+</aside>
+
+<script>
+/* Terapkan status lipat sedini mungkin supaya tidak berkedip saat load */
+try {
+    if (localStorage.getItem('sidebarCollapsed') === '1') {
+        document.body.classList.add('nav-collapsed');
+    }
+} catch (e) {}
+</script>
 
 <?php if ($flash): ?>
     <div class="flash flash--<?= htmlspecialchars($flash['type']) ?>">

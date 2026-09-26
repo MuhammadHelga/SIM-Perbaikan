@@ -3,7 +3,55 @@ document.addEventListener('DOMContentLoaded', function () {
     initFlash();
     initFilterFocus();
     initYearStepper();
+    initSidebar();
 });
+
+/* Sidebar: lipat (desktop) + off-canvas (mobile) */
+function initSidebar() {
+    const body = document.body;
+    const collapse = document.getElementById('navCollapse');
+    const toggle = document.getElementById('navToggle');
+    const backdrop = document.getElementById('navBackdrop');
+
+    if (collapse) {
+        collapse.addEventListener('click', function () {
+            body.classList.toggle('nav-collapsed');
+            try {
+                localStorage.setItem('sidebarCollapsed', body.classList.contains('nav-collapsed') ? '1' : '0');
+            } catch (e) {}
+        });
+    }
+
+    const isMobile = function () {
+        return window.matchMedia('(max-width: 992px)').matches;
+    };
+
+    if (toggle) {
+        toggle.addEventListener('click', function () {
+            body.classList.toggle('nav-open');
+        });
+    }
+
+    if (backdrop) {
+        backdrop.addEventListener('click', function () {
+            body.classList.remove('nav-open');
+        });
+    }
+
+    document.querySelectorAll('.app-navbar__link').forEach(function (link) {
+        link.addEventListener('click', function () {
+            if (isMobile()) body.classList.remove('nav-open');
+        });
+    });
+
+    window.addEventListener('resize', function () {
+        if (!isMobile()) body.classList.remove('nav-open');
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') body.classList.remove('nav-open');
+    });
+}
 
 /* Toggle tema terang/gelap. Disimpan di cookie 'theme', tanpa reload. */
 function initTheme() {
