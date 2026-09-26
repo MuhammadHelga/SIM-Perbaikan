@@ -391,6 +391,30 @@ select.form-control {
   color: #334155;
 }
 
+/* Kolom pertama (Nama Unit / TOTAL) tetap di kiri saat scroll horizontal */
+.rekap-table tbody td:first-child,
+.rekap-table--footer tbody td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background-color: var(--surface, #ffffff);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
+}
+
+.rekap-table thead th:first-child {
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 4;
+  background-color: var(--surface-2, #f1f5f9);
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Baris TOTAL: sel pertama ikut warna barisnya */
+.rekap-table--footer tbody td:first-child {
+  background-color: inherit;
+}
+
 .text-left {
   text-align: left !important;
   padding-left: 20px !important;
