@@ -54,7 +54,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
                 <div class="card-body">
                     <span class="card-title">DALAM PENANGANAN</span>
                     <div class="card-value text-warning"><?= (int)$dashboard['dalam'] ?> <small>UNIT</small></div>
-                    <span class="card-badge text-warning">• Butuh tindakan cepat</span>
+                    <span class="card-badge text-warning">Butuh tindakan cepat</span>
                 </div>
                 <div class="card-icon bg-light-yellow">
                     <span class="material-symbols-outlined">schedule</span>
