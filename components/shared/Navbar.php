@@ -49,6 +49,7 @@ unset($_SESSION['flash']);
         </div>
 
         <nav class="app-navbar__menu">
+            <span class="nav-indicator" id="navIndicator" aria-hidden="true"></span>
             <?php foreach ($menus as $key => $menu): ?>
                 <a href="<?= htmlspecialchars($menu['url']) ?>"
                    class="app-navbar__link <?= $activeMenu === $key ? 'is-active' : '' ?>"

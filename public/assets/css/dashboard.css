@@ -58,7 +58,7 @@ body {
     font-size: 1.75rem;
     font-weight: 800;
     margin: 8px 0;
-    color: #0f172a;
+    color: #992ac9;
 }
 
 .card-value small {
@@ -92,6 +92,7 @@ body {
 .bg-light-green  { background: #dcfce7; color: #15803d; }
 .bg-light-red    { background: #fee2e2; color: #b91c1c; }
 
+.text-purple  { color: #992ac9 !important; }
 .text-warning { color: #d97706 !important; }
 .text-success { color: #16a34a !important; }
 .text-danger  { color: #dc2626 !important; }
@@ -116,7 +117,7 @@ body {
 .chart-header h3 {
     font-size: 1.1rem;
     font-weight: 600;
-    color: #0f172a;
+    color: #d1d2d4;
 }
 
 .chart-header p {

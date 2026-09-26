@@ -10,7 +10,7 @@ $delta      = $dashboard['delta'];
 $deltaText  = $delta === null
     ? 'Belum ada pembanding'
     : ($delta >= 0 ? '+' . $delta . ' % vs bulan lalu' : $delta . ' % vs bulan lalu');
-$deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-success';
+$deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
 
 $namaBulanSingkat = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',7=>'Jul',8=>'Ags',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'];
 $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun'];
@@ -44,7 +44,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
             <div class="card">
                 <div class="card-body">
                     <span class="card-title">TOTAL LAPORAN</span>
-                    <div class="card-value"><?= (int)$dashboard['total'] ?> <small>KASUS</small></div>
+                    <div class="card-value text-purple"><?= (int)$dashboard['total'] ?> <small>KASUS</small></div>
                     <span class="card-badge <?= $deltaClass ?>"><?= htmlspecialchars($deltaText) ?></span>
                 </div>
                 <div class="card-icon bg-light-purple">

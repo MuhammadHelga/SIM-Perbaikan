@@ -4,8 +4,49 @@ document.addEventListener('DOMContentLoaded', function () {
     initFilterFocus();
     initYearStepper();
     initSidebar();
+    initNavIndicator();
     initSubmitGuard();
 });
+
+/* Garis indikator di kanan: meluncur ke item aktif / yang diklik */
+function initNavIndicator() {
+    const menu = document.querySelector('.app-navbar__menu');
+    const indicator = document.getElementById('navIndicator');
+    if (!menu || !indicator) return;
+
+    const links = Array.prototype.slice.call(menu.querySelectorAll('.app-navbar__link'));
+
+    const place = function (el, animate) {
+        if (!el) return;
+        if (!animate) indicator.style.transition = 'none';
+        indicator.style.top = el.offsetTop + 'px';
+        indicator.style.height = el.offsetHeight + 'px';
+        if (!animate) {
+            void indicator.offsetHeight; // paksa reflow
+            indicator.style.transition = '';
+        }
+    };
+
+    const active = menu.querySelector('.app-navbar__link.is-active');
+    place(active || links[0], false);
+
+    window.requestAnimationFrame(function () {
+        window.setTimeout(function () { indicator.classList.add('is-ready'); }, 60);
+    });
+
+    links.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            if (link.classList.contains('is-active')) return; // halaman sama, biarkan normal
+            e.preventDefault();
+            place(link, true);
+            window.setTimeout(function () { window.location.href = link.href; }, 280);
+        });
+    });
+
+    window.addEventListener('resize', function () {
+        place(menu.querySelector('.app-navbar__link.is-active'), false);
+    });
+}
 
 /* Cegah kirim form dua kali: nonaktifkan tombol submit setelah submit */
 function initSubmitGuard() {
