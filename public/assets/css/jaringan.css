@@ -309,6 +309,9 @@ body {
     text-transform: uppercase; 
     border-bottom: 1px solid var(--jr-border); 
     white-space: nowrap; 
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 .jr-table tbody td { 
     padding: 12px 16px; 
@@ -366,12 +369,7 @@ body {
     color: #fff; 
     padding: 3px 9px; 
     border-radius: 6px; 
-}
-.jr-ip__octet--blue { 
     background: var(--jr-navy); 
-}
-.jr-ip__octet--red { 
-    background: #BA1A1A; 
 }
 
 .jr-action-icons { 
@@ -408,6 +406,7 @@ body {
     padding: 12px 18px; 
     font-size: 12.5px; 
     color: var(--jr-text-muted); 
+    flex-shrink: 0;
 }
 .jr-pagination { 
     display: flex; 

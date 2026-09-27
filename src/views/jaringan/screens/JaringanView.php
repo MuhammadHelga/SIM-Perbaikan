@@ -157,7 +157,7 @@ $utilisasi = $stats['total_unit'] > 0
                                 <td>
                                     <span class="jr-ip">
                                         <span class="jr-ip__prefix"><?= htmlspecialchars($subnet['prefix']) ?>.</span>
-                                        <span class="jr-ip__octet <?= $row['status'] === 'offline' ? 'jr-ip__octet--red' : 'jr-ip__octet--blue' ?>">
+                                        <span class="jr-ip__octet">
                                             <?= (int)$row['host_octet'] ?>
                                         </span>
                                     </span>
@@ -177,17 +177,7 @@ $utilisasi = $stats['total_unit'] > 0
             </div>
 
             <div class="jr-table-footer">
-                <span>Menampilkan <?= $totalRows ? (($page - 1) * $perPage + 1) : 0 ?>&ndash;<?= min($page * $perPage, $totalRows) ?> dari <?= $totalRows ?> alokasi komputer terpasang</span>
-                <div class="jr-pagination">
-                    <a class="jr-page-btn <?= $page <= 1 ? 'jr-page-btn--disabled' : '' ?>"
-                       href="<?= $page > 1 ? '?page=' . ($page - 1) : '#' ?>">Sebelumnya</a>
-                    <?php for ($p = 1; $p <= min($totalPages, 5); $p++): ?>
-                        <a class="jr-page-num <?= $p === $page ? 'jr-page-num--active' : '' ?>" href="?page=<?= $p ?>"><?= $p ?></a>
-                    <?php endfor; ?>
-                    <?php if ($totalPages > 5): ?><span class="jr-page-dots">&hellip;</span><a class="jr-page-num" href="?page=<?= $totalPages ?>"><?= $totalPages ?></a><?php endif; ?>
-                    <a class="jr-page-btn <?= $page >= $totalPages ? 'jr-page-btn--disabled' : '' ?>"
-                       href="<?= $page < $totalPages ? '?page=' . ($page + 1) : '#' ?>">Berikutnya</a>
-                </div>
+                <span>Menampilkan <?= $totalRows ?> alokasi komputer terpasang</span>
             </div>
         </div>
 
