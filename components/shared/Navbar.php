@@ -9,6 +9,7 @@ $menus = [
     'laporan'     => ['label' => 'Laporan Kegiatan', 'icon' => 'assignment',    'url' => BASE_URL . '/laporan'],
     'ruang'       => ['label' => 'Rekap Ruang',      'icon' => 'meeting_room',  'url' => BASE_URL . '/ruang'],
     'unit_barang' => ['label' => 'Unit & Barang',    'icon' => 'settings',      'url' => BASE_URL . '/unit'],
+    'jaringan'    => ['label' => 'Jaringan & IP',    'icon' => 'lan',         'url' => BASE_URL . '/jaringan'],
 ];
 
 // Menu Unit & Barang hanya untuk admin

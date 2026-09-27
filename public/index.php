@@ -437,6 +437,78 @@ switch ($path) {
 
         require __DIR__ . '/../src/views/unit_barang/screens/UnitBarangView.php';
         break;
+    
+    case '/jaringan':
+        requireLogin($basePath);
+
+        $subnet = ['gateway' => '192.100.99.1', 'mask' => '255.255.255.0', 'prefix' => '192.100.99'];
+
+        // TODO: ganti dengan query asli ke database (tabel komputer/alokasi_ip)
+        $komputerListAll = [
+            ['id'=>1,'unit_id'=>1,'unit'=>'Loket Admisi 1 (Rawat Inap)','lokasi'=>'Gedung A - Lantai 1','hostname'=>'PC-ADMISI-01','host_octet'=>18,'status'=>'online','mac'=>'D4:5D:64:A2:18:01','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Admisi - Port G0/03','catatan'=>'Meja Admisi 01'],
+            ['id'=>2,'unit_id'=>2,'unit'=>'BPJS Center Loket 2 (SEP)','lokasi'=>'Gedung A - Lantai 1','hostname'=>'PC-BPJS-02','host_octet'=>15,'status'=>'online','mac'=>'D4:5D:64:A2:18:02','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Admisi - Port G0/05','catatan'=>'Loket BPJS 2'],
+            ['id'=>3,'unit_id'=>3,'unit'=>'Laboratorium Patologi Klinik','lokasi'=>'Gedung B - Ruang Lab 02','hostname'=>'PC-LAB-PAT-01','host_octet'=>22,'status'=>'online','mac'=>'D4:5D:64:A2:18:03','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Lab - Port G0/02','catatan'=>''],
+            ['id'=>4,'unit_id'=>4,'unit'=>'Poli Jantung & Pembuluh Darah','lokasi'=>'Klinik Spesialis - Poli 11','hostname'=>'PC-POLI-JTG','host_octet'=>34,'status'=>'online','mac'=>'D4:5D:64:A2:18:04','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Poli Lt.2 - Port G0/11','catatan'=>''],
+            ['id'=>5,'unit_id'=>5,'unit'=>'Farmasi Rawat Jalan (Depo 1)','lokasi'=>'Instalasi Farmasi Sentral','hostname'=>'PC-FARM-R2-03','host_octet'=>45,'status'=>'online','mac'=>'D4:5D:64:A2:18:05','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Farmasi - Port G0/03','catatan'=>''],
+            ['id'=>6,'unit_id'=>6,'unit'=>'Kasir Pembayaran Utama','lokasi'=>'Gedung A - Loket Finansial','hostname'=>'PC-KASIR-01','host_octet'=>50,'status'=>'online','mac'=>'D4:5D:64:A2:18:06','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Kasir - Port G0/01','catatan'=>''],
+            ['id'=>7,'unit_id'=>7,'unit'=>'Radiologi - Ruang USG 2','lokasi'=>'Instalasi Radiologi PACS','hostname'=>'PC-RAD-02','host_octet'=>65,'status'=>'offline','mac'=>'D4:5D:64:A2:18:07','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Radiologi - Port G0/02','catatan'=>'Kabel putus, menunggu perbaikan'],
+            ['id'=>8,'unit_id'=>8,'unit'=>'Rekam Medis (Filing & Scan)','lokasi'=>'Gedung Penunjang - RM 01','hostname'=>'PC-RM-04','host_octet'=>72,'status'=>'online','mac'=>'D4:5D:64:A2:18:08','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch RM - Port G0/04','catatan'=>''],
+            ['id'=>9,'unit_id'=>9,'unit'=>'IGD Triase & Resusitasi','lokasi'=>'Instalasi Gawat Darurat','hostname'=>'PC-IGD-01','host_octet'=>88,'status'=>'online','mac'=>'D4:5D:64:A2:18:09','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch IGD - Port G0/01','catatan'=>''],
+            ['id'=>10,'unit_id'=>10,'unit'=>'Poli Anak & Tumbuh Kembang','lokasi'=>'Gedung B Lt. 2','hostname'=>'PC-POLI-ANAK','host_octet'=>95,'status'=>'online','mac'=>'D4:5D:64:A2:18:95','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Poli Lt.2 - Port G0/19','catatan'=>'Meja Pendaftaran Poli Anak 01'],
+        ];
+
+        $unitOptions = array_values(array_unique(array_column($komputerListAll, 'unit')));
+        $unitList = array_map(fn($r) => ['id' => $r['unit_id'], 'label' => $r['hostname'] . ' — ' . $r['unit'] . ' (' . $r['lokasi'] . ')'], $komputerListAll);
+
+        $search       = $_GET['search'] ?? '';
+        $filterUnit   = $_GET['unit'] ?? '';
+        $filterStatus = $_GET['status'] ?? '';
+        $page         = max(1, (int)($_GET['page'] ?? 1));
+        $perPage      = 9;
+
+        $filtered = array_values(array_filter($komputerListAll, function ($r) use ($search, $filterUnit, $filterStatus) {
+            if ($filterUnit !== '' && $r['unit'] !== $filterUnit) return false;
+            if ($filterStatus !== '' && $r['status'] !== $filterStatus) return false;
+            if ($search !== '') {
+                $keyword = mb_strtolower($search);
+                $haystack = mb_strtolower($r['unit'] . ' ' . $r['hostname'] . ' ' . $r['host_octet']);
+                if (!str_contains($haystack, $keyword)) return false;
+            }
+            return true;
+        }));
+
+        $totalRows    = count($filtered);
+        $komputerList = array_slice($filtered, ($page - 1) * $perPage, $perPage);
+
+        // Statistik & peta okupansi dihitung dari SELURUH data (bukan cuma yang terfilter/halaman aktif)
+        $occupancyMap = [];
+        foreach ($komputerListAll as $r) {
+            $occupancyMap[(int)$r['host_octet']] = $r['status'];
+        }
+        $terisi   = count($komputerListAll);
+        $offline  = count(array_filter($komputerListAll, fn($r) => $r['status'] === 'offline'));
+        $online   = $terisi - $offline;
+        $kosong   = 245 - $terisi; // range host valid 10-254 = 245 alamat
+
+        $occupancy = [
+            'core'            => 9,
+            'terisi'          => $terisi,
+            'kosong'          => $kosong,
+            'tersedia_persen' => round(($kosong / 245) * 100, 1),
+            'map'             => $occupancyMap,
+        ];
+
+        $stats = [
+            'total_unit'     => $terisi,
+            'ip_terpakai'    => $terisi,
+            'host_kosong'    => $kosong,
+            'uptime_percent' => $terisi > 0 ? round(($online / $terisi) * 100, 1) : 100,
+            'online'         => $online,
+            'offline'        => $offline,
+        ];
+
+        require __DIR__ . '/../src/views/jaringan/screens/JaringanView.php';
+        break;
 
     default:
         http_response_code(404);
