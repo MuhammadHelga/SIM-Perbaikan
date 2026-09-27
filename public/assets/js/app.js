@@ -263,3 +263,76 @@ function initYearStepper() {
         next.disabled = (idx - 1 < 0);
     }
 }
+
+/* ==================== Modal Helpers Global ==================== */
+function openModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.add('open');
+}
+
+function closeModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('open');
+}
+
+function openConfirmModal(options) {
+    options = options || {};
+    const icon = options.icon || 'help';
+    const title = options.title || 'Konfirmasi';
+    const text = options.text || 'Apakah Anda yakin?';
+    const confirmLabel = options.confirmLabel || 'Ya, Lanjutkan';
+    const variant = options.variant;
+    const onConfirm = options.onConfirm;
+
+    const iconEl = document.getElementById('confirmIcon');
+    if (iconEl) iconEl.textContent = icon;
+
+    const titleEl = document.getElementById('confirmTitle');
+    if (titleEl) titleEl.textContent = title;
+
+    const textEl = document.getElementById('confirmText');
+    if (textEl) textEl.textContent = text;
+
+    const iconWrap = document.querySelector('.confirm-card__icon');
+    if (iconWrap) {
+        iconWrap.className = 'confirm-card__icon';
+        if (variant === 'green') iconWrap.classList.add('confirm-card__icon--green');
+        if (variant === 'red')   iconWrap.classList.add('confirm-card__icon--red');
+    }
+
+    const oldBtn = document.getElementById('confirmActionBtn');
+    if (oldBtn) {
+        oldBtn.textContent = confirmLabel;
+
+        let buttonClass = 'confirm-btn--primary';
+        if (variant === 'green') buttonClass = 'confirm-btn--success';
+        else if (variant === 'red') buttonClass = 'confirm-btn--danger';
+        oldBtn.className = 'confirm-btn ' + buttonClass;
+
+        const freshBtn = oldBtn.cloneNode(true);
+        if (oldBtn.parentNode) oldBtn.parentNode.replaceChild(freshBtn, oldBtn);
+        freshBtn.addEventListener('click', function () {
+            closeModal('modal-konfirmasi');
+            if (typeof onConfirm === 'function') onConfirm();
+        });
+    }
+
+    openModal('modal-konfirmasi');
+}
+
+/* Event Handler Tutup Modal (Klik Backdrop & Esc) */
+document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('click', function (e) {
+        if (e.target && e.target.classList.contains('modal-overlay')) {
+            e.target.classList.remove('open');
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            document.querySelectorAll('.modal-overlay.open').forEach(function (m) {
+                m.classList.remove('open');
+            });
+        }
+    });
+});

@@ -26,6 +26,20 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+if (typeof openModal === 'undefined') {
+    window.openModal = function (id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.add('open');
+    };
+}
+
+if (typeof closeModal === 'undefined') {
+    window.closeModal = function (id) {
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('open');
+    };
+}
+
 function getKomputerData() {
     const el = document.getElementById('komputerDataJson');
     if (!el) return [];
@@ -38,9 +52,14 @@ function findKomputerById(id) {
 
 function openAlokasiModal() {
     const form = document.getElementById('form-alokasi-ip');
-    form.reset();
-    document.getElementById('alokasiId').value = '';
-    document.getElementById('alokasiTitle').textContent = 'Alokasi Host IP Komputer Unit';
+    if (form) form.reset();
+
+    const idEl = document.getElementById('alokasiId');
+    if (idEl) idEl.value = '';
+
+    const titleEl = document.getElementById('alokasiTitle');
+    if (titleEl) titleEl.textContent = 'Alokasi Host IP Komputer Unit';
+
     updateAlokasiPreview();
     openModal('modal-alokasi-ip');
 }
@@ -49,14 +68,29 @@ function openEditAlokasiModal(id) {
     const row = findKomputerById(id);
     if (!row) { alert('Data tidak ditemukan.'); return; }
 
-    document.getElementById('alokasiId').value = row.id;
-    document.getElementById('alokasiUnit').value = row.unit_id || '';
-    document.getElementById('alokasiOctet').value = row.host_octet;
-    document.getElementById('alokasiInterface').value = row.interface || 'LAN Port RJ-45 (Gigabit)';
-    document.getElementById('alokasiMac').value = row.mac || '';
-    document.getElementById('alokasiPort').value = row.port_switch || '';
-    document.getElementById('alokasiCatatan').value = row.catatan || '';
-    document.getElementById('alokasiTitle').textContent = 'Edit Alokasi Host IP Komputer Unit';
+    const idEl = document.getElementById('alokasiId');
+    if (idEl) idEl.value = row.id;
+
+    const unitEl = document.getElementById('alokasiUnit');
+    if (unitEl) unitEl.value = row.unit_id || '';
+
+    const octetEl = document.getElementById('alokasiOctet');
+    if (octetEl) octetEl.value = row.host_octet;
+
+    const interfaceEl = document.getElementById('alokasiInterface');
+    if (interfaceEl) interfaceEl.value = row.interface || 'LAN Port RJ-45 (Gigabit)';
+
+    const macEl = document.getElementById('alokasiMac');
+    if (macEl) macEl.value = row.mac || '';
+
+    const portEl = document.getElementById('alokasiPort');
+    if (portEl) portEl.value = row.port_switch || '';
+
+    const catatanEl = document.getElementById('alokasiCatatan');
+    if (catatanEl) catatanEl.value = row.catatan || '';
+
+    const titleEl = document.getElementById('alokasiTitle');
+    if (titleEl) titleEl.textContent = 'Edit Alokasi Host IP Komputer Unit';
 
     updateAlokasiPreview();
     openModal('modal-alokasi-ip');
@@ -65,38 +99,46 @@ function openEditAlokasiModal(id) {
 function updateAlokasiPreview() {
     const prefix = window.JR_PREFIX || '192.100.99';
     const octetInput = document.getElementById('alokasiOctet');
+    if (!octetInput) return;
     const val = parseInt(octetInput.value, 10);
 
     const statusEl = document.getElementById('alokasiOctetStatus');
     const fullIpEl = document.getElementById('alokasiFullIp');
+    const prefixLabelEl = document.getElementById('alokasiPrefixLabel');
+    const prefixInlineEl = document.getElementById('alokasiPrefixInline');
 
-    document.getElementById('alokasiPrefixLabel').textContent = prefix;
-    document.getElementById('alokasiPrefixInline').textContent = prefix;
+    if (prefixLabelEl) prefixLabelEl.textContent = prefix;
+    if (prefixInlineEl) prefixInlineEl.textContent = prefix;
 
     if (!val || isNaN(val)) {
-        fullIpEl.textContent = prefix + '.—';
-        statusEl.innerHTML = 'Status: <span>—</span>';
-        statusEl.className = 'alokasi-status';
+        if (fullIpEl) fullIpEl.textContent = prefix + '.—';
+        if (statusEl) {
+            statusEl.innerHTML = 'Status: <span>—</span>';
+            statusEl.className = 'alokasi-status';
+        }
         return;
     }
 
-    fullIpEl.textContent = prefix + '.' + val;
+    if (fullIpEl) fullIpEl.textContent = prefix + '.' + val;
 
-    const currentId = document.getElementById('alokasiId').value;
+    const currentIdEl = document.getElementById('alokasiId');
+    const currentId = currentIdEl ? currentIdEl.value : '';
     const used = getKomputerData().find(r => Number(r.host_octet) === val && String(r.id) !== String(currentId));
 
-    if (val >= 1 && val <= 9) {
-        statusEl.innerHTML = 'Status: <span>Reserved (Core/Gateway)</span>';
-        statusEl.className = 'alokasi-status is-core';
-    } else if (used) {
-        statusEl.innerHTML = 'Status: <span>Sudah Dipakai (' + used.hostname + ')</span>';
-        statusEl.className = 'alokasi-status is-taken';
-    } else if (val < 10 || val > 254) {
-        statusEl.innerHTML = 'Status: <span>Di luar range valid</span>';
-        statusEl.className = 'alokasi-status is-taken';
-    } else {
-        statusEl.innerHTML = 'Status: <span>Kosong &amp; Tersedia</span>';
-        statusEl.className = 'alokasi-status is-available';
+    if (statusEl) {
+        if (val >= 1 && val <= 9) {
+            statusEl.innerHTML = 'Status: <span>Reserved (Core/Gateway)</span>';
+            statusEl.className = 'alokasi-status is-core';
+        } else if (used) {
+            statusEl.innerHTML = 'Status: <span>Sudah Dipakai (' + used.hostname + ')</span>';
+            statusEl.className = 'alokasi-status is-taken';
+        } else if (val < 10 || val > 254) {
+            statusEl.innerHTML = 'Status: <span>Di luar range valid</span>';
+            statusEl.className = 'alokasi-status is-taken';
+        } else {
+            statusEl.innerHTML = 'Status: <span>Kosong &amp; Tersedia</span>';
+            statusEl.className = 'alokasi-status is-available';
+        }
     }
 }
 

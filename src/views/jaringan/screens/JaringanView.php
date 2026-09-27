@@ -1,13 +1,5 @@
 <?php
-/**
- * Variabel dari controller (index.php):
- * - array $subnet        ['gateway','mask','prefix']
- * - array $stats         ['total_unit','ip_terpakai','host_kosong','uptime_percent','online','offline']
- * - array $occupancy     ['core'=>int,'terisi'=>int,'kosong'=>int,'tersedia_persen'=>float,'map'=>array oktet=>status]
- * - array $komputerList  daftar baris tabel
- * - string $search, $filterUnit, $filterStatus
- * - int $page, $perPage, $totalRows
- */
+
 $subnet        = $subnet ?? ['gateway' => '192.100.99.1', 'mask' => '255.255.255.0', 'prefix' => '192.100.99'];
 $stats         = $stats ?? ['total_unit' => 0, 'ip_terpakai' => 0, 'host_kosong' => 0, 'uptime_percent' => 0, 'online' => 0, 'offline' => 0];
 $occupancy     = $occupancy ?? ['core' => 9, 'terisi' => 0, 'kosong' => 245, 'tersedia_persen' => 100, 'map' => []];
@@ -25,16 +17,17 @@ $utilisasi = $stats['total_unit'] > 0
     : 0;
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SIM-Perbaikan - Jaringan &amp; Alokasi IP</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/jaringan.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/modal.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
 </head>
 <body>
     <?php $activeMenu = 'jaringan'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
@@ -183,7 +176,7 @@ $utilisasi = $stats['total_unit'] > 0
 
     </main>
 
-    <?php include __DIR__ . '/modals/AlokasiIpModal.php'; ?>
+    <?php include dirname(__DIR__) . '/modals/AlokasiIpModal.php'; ?>
 
     <div class="modal-overlay" id="modal-konfirmasi">
         <div class="confirm-card">

@@ -21,6 +21,15 @@ $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
 ?>
+<script>
+/* Terapkan status lipat sedini mungkin supaya tidak berkedip saat load */
+try {
+    if (localStorage.getItem('sidebarCollapsed') === '1') {
+        document.body.classList.add('nav-collapsed');
+    }
+} catch (e) {}
+</script>
+
 <div class="nav-backdrop" id="navBackdrop"></div>
 
 <button type="button" class="nav-toggle" id="navToggle" aria-label="Buka menu">
@@ -76,15 +85,6 @@ unset($_SESSION['flash']);
         </div>
     </div>
 </aside>
-
-<script>
-/* Terapkan status lipat sedini mungkin supaya tidak berkedip saat load */
-try {
-    if (localStorage.getItem('sidebarCollapsed') === '1') {
-        document.body.classList.add('nav-collapsed');
-    }
-} catch (e) {}
-</script>
 
 <?php if ($flash): ?>
     <div class="flash flash--<?= htmlspecialchars($flash['type']) ?>">

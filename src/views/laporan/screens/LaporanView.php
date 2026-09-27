@@ -71,7 +71,7 @@ if ($search !== '') {
     <title>SIM-Perbaikan - Laporan Kegiatan</title>
     <link rel="icon" href="<?= BASE_URL ?>/favicon.svg" type="image/svg+xml">
     <meta name="theme-color" content="#00288e">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/laporan.css">
