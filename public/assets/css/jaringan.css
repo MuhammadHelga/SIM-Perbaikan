@@ -504,11 +504,11 @@ body {
 .alokasi-field .req { 
     color: #BA1A1A; 
 }
-.alokasi-field input, .alokasi-field select {
+.alokasi-field input {
     border: 1px solid var(--jr-border); border-radius: 8px; padding: 9px 12px;
     font-family: inherit; font-size: 13px; outline: none;
 }
-.alokasi-field input:focus, .alokasi-field select:focus { 
+.alokasi-field input:focus { 
     border-color: var(--jr-navy); 
     box-shadow: 0 0 0 3px rgba(0,40,142,0.1); 
 }

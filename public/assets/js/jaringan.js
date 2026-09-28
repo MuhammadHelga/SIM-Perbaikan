@@ -68,29 +68,12 @@ function openEditAlokasiModal(id) {
     const row = findKomputerById(id);
     if (!row) { alert('Data tidak ditemukan.'); return; }
 
-    const idEl = document.getElementById('alokasiId');
-    if (idEl) idEl.value = row.id;
-
-    const unitEl = document.getElementById('alokasiUnit');
-    if (unitEl) unitEl.value = row.unit_id || '';
-
-    const octetEl = document.getElementById('alokasiOctet');
-    if (octetEl) octetEl.value = row.host_octet;
-
-    const interfaceEl = document.getElementById('alokasiInterface');
-    if (interfaceEl) interfaceEl.value = row.interface || 'LAN Port RJ-45 (Gigabit)';
-
-    const macEl = document.getElementById('alokasiMac');
-    if (macEl) macEl.value = row.mac || '';
-
-    const portEl = document.getElementById('alokasiPort');
-    if (portEl) portEl.value = row.port_switch || '';
-
-    const catatanEl = document.getElementById('alokasiCatatan');
-    if (catatanEl) catatanEl.value = row.catatan || '';
-
-    const titleEl = document.getElementById('alokasiTitle');
-    if (titleEl) titleEl.textContent = 'Edit Alokasi Host IP Komputer Unit';
+    document.getElementById('alokasiId').value = row.id;
+    document.getElementById('alokasiUnit').value = row.unit || '';
+    document.getElementById('alokasiLokasi').value = row.lokasi || '';
+    document.getElementById('alokasiHostname').value = row.hostname || '';
+    document.getElementById('alokasiOctet').value = row.host_octet;
+    document.getElementById('alokasiTitle').textContent = 'Edit Alokasi Host IP Komputer Unit';
 
     updateAlokasiPreview();
     openModal('modal-alokasi-ip');

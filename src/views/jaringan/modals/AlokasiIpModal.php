@@ -23,13 +23,19 @@
             <input type="hidden" name="id" id="alokasiId" value="">
 
             <div class="alokasi-field">
-                <label for="alokasiUnit">Pilih Komputer Unit / Ruangan <span class="req">*</span></label>
-                <select name="unit_id" id="alokasiUnit" required>
-                    <option value="" disabled selected>Pilih Unit / Ruangan</option>
-                    <?php foreach (($unitList ?? []) as $u): ?>
-                        <option value="<?= (int)$u['id'] ?>"><?= htmlspecialchars($u['label']) ?></option>
-                    <?php endforeach; ?>
-                </select>
+                <label for="alokasiUnit">Nama Unit / Ruangan <span class="req">*</span></label>
+                <input type="text" name="unit" id="alokasiUnit" placeholder="Contoh: Loket Admisi 1 (Rawat Inap)" required>
+            </div>
+
+            <div class="alokasi-row">
+                <div class="alokasi-field">
+                    <label for="alokasiLokasi">Lokasi / Gedung</label>
+                    <input type="text" name="lokasi" id="alokasiLokasi" placeholder="Contoh: Gedung A - Lantai 1">
+                </div>
+                <div class="alokasi-field">
+                    <label for="alokasiHostname">Hostname Komputer <span class="req">*</span></label>
+                    <input type="text" name="hostname" id="alokasiHostname" placeholder="Contoh: PC-ADMISI-01" required>
+                </div>
             </div>
 
             <div class="alokasi-field">
@@ -51,32 +57,6 @@
                 <span class="alokasi-result__badge" id="alokasiReadyBadge">
                     <span class="material-symbols-outlined">check_circle</span> Siap Diterapkan
                 </span>
-            </div>
-
-            <div class="alokasi-row">
-                <div class="alokasi-field">
-                    <label for="alokasiInterface">Tipe Koneksi &amp; Interface</label>
-                    <select name="interface" id="alokasiInterface">
-                        <option value="LAN Port RJ-45 (Gigabit)">LAN Port RJ-45 (Gigabit)</option>
-                        <option value="LAN Port RJ-45 (Fast Ethernet)">LAN Port RJ-45 (Fast Ethernet)</option>
-                        <option value="WiFi Access Point">WiFi Access Point</option>
-                        <option value="Fiber Optic">Fiber Optic</option>
-                    </select>
-                </div>
-                <div class="alokasi-field">
-                    <label for="alokasiMac">MAC Address Workstation</label>
-                    <input type="text" name="mac_address" id="alokasiMac" placeholder="D4:5D:64:A2:18:95">
-                </div>
-            </div>
-
-            <div class="alokasi-field">
-                <label for="alokasiPort">Keterangan Port Switch / Patch Panel</label>
-                <input type="text" name="port_switch" id="alokasiPort" placeholder="Switch Poli Lt.2 - Port G0/19">
-            </div>
-
-            <div class="alokasi-field">
-                <label for="alokasiCatatan">Catatan / Posisi Meja Unit</label>
-                <input type="text" name="catatan" id="alokasiCatatan" placeholder="Meja Pendaftaran Poli Anak 01">
             </div>
 
             <div class="alokasi-actions">

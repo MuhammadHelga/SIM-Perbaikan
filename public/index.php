@@ -458,7 +458,6 @@ switch ($path) {
         ];
 
         $unitOptions = array_values(array_unique(array_column($komputerListAll, 'unit')));
-        $unitList = array_map(fn($r) => ['id' => $r['unit_id'], 'label' => $r['hostname'] . ' — ' . $r['unit'] . ' (' . $r['lokasi'] . ')'], $komputerListAll);
 
         $search       = $_GET['search'] ?? '';
         $filterUnit   = $_GET['unit'] ?? '';
