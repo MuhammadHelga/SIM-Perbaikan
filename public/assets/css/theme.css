@@ -250,6 +250,13 @@ html.theme-transition .alokasi-card {
 }
 
 /* ==================== Tabel ==================== */
+[data-theme='dark'] .table-head-wrap,
+[data-theme='dark'] .rekap-head-wrap,
+[data-theme='dark'] .unit-head-wrap {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
 [data-theme='dark'] .data-table th,
 [data-theme='dark'] .rekap-table th {
   background: var(--surface-2);

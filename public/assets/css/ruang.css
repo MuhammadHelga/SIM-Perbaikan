@@ -345,14 +345,18 @@ select.form-control {
 }
 
 /* Matrix Table Styling */
+.rekap-head-wrap {
+  flex-shrink: 0;
+  overflow: hidden;
+  background-color: #f1f5f9;
+  border-bottom: 1px solid #e2e8f0;
+  box-sizing: border-box;
+}
+
 .table-responsive {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  scrollbar-width: none;
-}
-.table-responsive::-webkit-scrollbar {
-  display: none;
 }
 
 .table-footer {
@@ -383,9 +387,8 @@ select.form-control {
   padding: 10px;
   font-weight: 600;
   border-bottom: 1px solid #e2e8f0;
-  position: sticky;
-  top: 0;
-  z-index: 2;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
 .rekap-table td {

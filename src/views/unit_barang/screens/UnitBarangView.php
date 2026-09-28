@@ -66,16 +66,32 @@ $totalBarang  = count($barangList);
                         <span class="material-symbols-outlined">add_circle</span> Tambah Unit
                     </button>
                 </div>
-                <div class="table-responsive">
+                <div class="unit-head-wrap" id="ruanganHeadWrap">
                     <table class="data-table">
+                        <colgroup>
+                            <col style="width:10%">
+                            <col style="width:25%">
+                            <col style="width:45%">
+                            <col style="width:20%">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th width="10%">No</th>
-                                <th width="25%">Kode</th>
-                                <th width="45%">Nama Ruang</th>
-                                <th width="20%">Aksi</th>
+                                <th>No</th>
+                                <th>Kode</th>
+                                <th>Nama Ruang</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
+                    </table>
+                </div>
+                <div class="table-responsive" id="ruanganScroll">
+                    <table class="data-table">
+                        <colgroup>
+                            <col style="width:10%">
+                            <col style="width:25%">
+                            <col style="width:45%">
+                            <col style="width:20%">
+                        </colgroup>
                         <tbody>
                             <?php if (!$ruanganList): ?>
                                 <tr><td colspan="4">Belum ada data.</td></tr>
@@ -117,16 +133,32 @@ $totalBarang  = count($barangList);
                         <span class="material-symbols-outlined">add_circle</span> Tambah Barang
                     </button>
                 </div>
-                <div class="table-responsive">
+                <div class="unit-head-wrap" id="barangHeadWrap">
                     <table class="data-table">
+                        <colgroup>
+                            <col style="width:10%">
+                            <col style="width:25%">
+                            <col style="width:45%">
+                            <col style="width:20%">
+                        </colgroup>
                         <thead>
                             <tr>
-                                <th width="10%">No</th>
-                                <th width="25%">Kode</th>
-                                <th width="45%">Nama Barang</th>
-                                <th width="20%">Aksi</th>
+                                <th>No</th>
+                                <th>Kode</th>
+                                <th>Nama Barang</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
+                    </table>
+                </div>
+                <div class="table-responsive" id="barangScroll">
+                    <table class="data-table">
+                        <colgroup>
+                            <col style="width:10%">
+                            <col style="width:25%">
+                            <col style="width:45%">
+                            <col style="width:20%">
+                        </colgroup>
                         <tbody>
                             <?php if (!$barangList): ?>
                                 <tr><td colspan="4">Belum ada data.</td></tr>

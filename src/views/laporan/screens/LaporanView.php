@@ -197,34 +197,61 @@ if ($search !== '') {
         </div>
 
         <div class="table-card">
-            <div class="table-scroll">
-                <table class="data-table">
+            <div class="table-head-wrap" id="tableHeadWrap">
+                <table class="data-table data-table--head">
+                    <colgroup>
+                        <col class="col-tgl">
+                        <col class="col-urusan">
+                        <col class="col-barang">
+                        <col class="col-sn">
+                        <col class="col-kerusakan">
+                        <col class="col-uraian">
+                        <col class="col-hasil">
+                        <col class="col-tgl-kirim">
+                        <col class="col-aksi">
+                    </colgroup>
                     <thead>
                         <tr>
-                            <th>Tanggal</th>
-                            <th>Urusan/Ruangan</th>
-                            <th>Barang</th>
-                            <th>Serial Number</th>
-                            <th>Kerusakan</th>
-                            <th>Uraian Kegiatan</th>
-                            <th>Hasil</th>
-                            <th>Tgl Kirim/Terima</th>
+                            <th class="col-tgl">Tanggal</th>
+                            <th class="col-urusan">Urusan/Ruangan</th>
+                            <th class="col-barang">Barang</th>
+                            <th class="col-sn">Serial Number</th>
+                            <th class="col-kerusakan">Kerusakan</th>
+                            <th class="col-uraian">Uraian Kegiatan</th>
+                            <th class="col-hasil">Hasil</th>
+                            <th class="col-tgl-kirim">Tgl Kirim/Terima</th>
                             <th class="col-aksi">Aksi</th>
                         </tr>
                     </thead>
+                </table>
+            </div>
+
+            <div class="table-scroll" id="tableScroll">
+                <table class="data-table data-table--body">
+                    <colgroup>
+                        <col class="col-tgl">
+                        <col class="col-urusan">
+                        <col class="col-barang">
+                        <col class="col-sn">
+                        <col class="col-kerusakan">
+                        <col class="col-uraian">
+                        <col class="col-hasil">
+                        <col class="col-tgl-kirim">
+                        <col class="col-aksi">
+                    </colgroup>
                     <tbody>
                     <?php if (!$laporanList): ?>
                         <tr><td colspan="9" class="empty-row">Belum ada laporan.</td></tr>
                     <?php endif; ?>
                     <?php foreach ($laporanList as $row): ?>
                         <tr>
-                            <td class="nowrap"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
-                            <td><?= htmlspecialchars($row['urusan']) ?></td>
-                            <td><?= htmlspecialchars($row['barang']) ?></td>
-                            <td><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
-                            <td class="truncate" title="<?= htmlspecialchars($row['kerusakan']) ?>"><?= htmlspecialchars($row['kerusakan']) ?></td>
-                            <td class="truncate" title="<?= htmlspecialchars($row['uraian']) ?>"><?= htmlspecialchars($row['uraian']) ?></td>
-                            <td>
+                            <td class="nowrap col-tgl"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
+                            <td class="col-urusan"><?= htmlspecialchars($row['urusan']) ?></td>
+                            <td class="col-barang"><?= htmlspecialchars($row['barang']) ?></td>
+                            <td class="col-sn"><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
+                            <td class="truncate col-kerusakan" title="<?= htmlspecialchars($row['kerusakan']) ?>"><?= htmlspecialchars($row['kerusakan']) ?></td>
+                            <td class="truncate col-uraian" title="<?= htmlspecialchars($row['uraian']) ?>"><?= htmlspecialchars($row['uraian']) ?></td>
+                            <td class="col-hasil">
                                 <?php
                                     $statusPenanganan = $row['status_penanganan'] ?? 'Pending';
                                     $badgeClass = match ($statusPenanganan) {
@@ -235,7 +262,7 @@ if ($search !== '') {
                                 ?>
                                 <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($statusPenanganan) ?></span>
                             </td>
-                            <td class="nowrap">
+                            <td class="nowrap col-tgl-kirim">
                                 <?php if ($row['kirim_status'] === 'belum'): ?>
                                     <button type="button" class="pill-btn pill-btn--navy" onclick="kirimBarang(<?= (int)$row['id'] ?>)">Kirim</button>
                                 <?php elseif ($row['kirim_status'] === 'dikirim'): ?>

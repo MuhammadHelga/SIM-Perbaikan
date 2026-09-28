@@ -37,7 +37,29 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     initMonthPicker();
+    initTableScrollSync();
 });
+
+function initTableScrollSync() {
+    const tableScroll = document.getElementById('tableScroll');
+    const tableHeadWrap = document.getElementById('tableHeadWrap');
+    if (!tableScroll || !tableHeadWrap) return;
+
+    function syncScrollbarPadding() {
+        const scrollbarWidth = tableScroll.offsetWidth - tableScroll.clientWidth;
+        tableHeadWrap.style.paddingRight = scrollbarWidth + 'px';
+    }
+
+    tableScroll.addEventListener('scroll', function () {
+        tableHeadWrap.scrollLeft = tableScroll.scrollLeft;
+    });
+
+    syncScrollbarPadding();
+    window.addEventListener('resize', syncScrollbarPadding);
+    if ('ResizeObserver' in window) {
+        new ResizeObserver(syncScrollbarPadding).observe(tableScroll);
+    }
+}
 
 function openModal(id) {
     const el = document.getElementById(id);

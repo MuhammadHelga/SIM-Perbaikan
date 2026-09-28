@@ -142,8 +142,8 @@ $peakLabel    = $peakMonths
             ?>
 
             <!-- Heatmap-style Matrix Table -->
-            <div class="table-responsive" id="tableScrollBody">
-                <table class="rekap-table">
+            <div class="rekap-head-wrap" id="rekapHeadWrap">
+                <table class="rekap-table rekap-table--head">
                     <colgroup>
                         <?php foreach ($colWidths as $w): ?>
                             <col style="width: <?= $w ?>%;">
@@ -157,6 +157,16 @@ $peakLabel    = $peakMonths
                             <?php endfor; ?>
                         </tr>
                     </thead>
+                </table>
+            </div>
+
+            <div class="table-responsive" id="tableScrollBody">
+                <table class="rekap-table rekap-table--body">
+                    <colgroup>
+                        <?php foreach ($colWidths as $w): ?>
+                            <col style="width: <?= $w ?>%;">
+                        <?php endforeach; ?>
+                    </colgroup>
                     <tbody>
                         <?php if (!$rows): ?>
                             <tr><td colspan="13" class="text-left">Belum ada data.</td></tr>

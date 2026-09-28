@@ -13,7 +13,27 @@ document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
         }
     });
+
+    initUnitTableSync('ruanganScroll', 'ruanganHeadWrap');
+    initUnitTableSync('barangScroll',  'barangHeadWrap');
 });
+
+function initUnitTableSync(scrollId, headId) {
+    const scroll  = document.getElementById(scrollId);
+    const headWrap = document.getElementById(headId);
+    if (!scroll || !headWrap) return;
+
+    function syncPadding() {
+        const gutter = scroll.offsetWidth - scroll.clientWidth;
+        headWrap.style.paddingRight = gutter > 0 ? gutter + 'px' : '';
+    }
+    syncPadding();
+    window.addEventListener('resize', syncPadding);
+    if (window.ResizeObserver) {
+        new ResizeObserver(syncPadding).observe(scroll);
+    }
+}
+
 
 function openModal(id) {
     const el = document.getElementById(id);
