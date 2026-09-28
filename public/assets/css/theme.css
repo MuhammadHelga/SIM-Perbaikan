@@ -853,3 +853,84 @@ html.theme-transition .alokasi-card {
     border-color: #999999 !important;
   }
 }
+
+/* ============================================================
+   Tabel: header menempel (sticky) + scrollbar auto-hide
+   Header tetap di atas saat body di-scroll (tidak tembus ke
+   atas) dan diberi pemisah jelas dari body. Scrollbar hanya
+   tampil saat area di-hover, tapi ruangnya tetap disediakan
+   agar lebar kolom tidak bergeser.
+   ============================================================ */
+.jr-table thead th,
+.data-table thead th,
+.rekap-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  box-shadow: 0 2px 5px -3px rgba(15, 23, 42, 0.35);
+}
+
+[data-theme='dark'] .jr-table thead th,
+[data-theme='dark'] .data-table thead th,
+[data-theme='dark'] .rekap-table thead th {
+  box-shadow: 0 2px 5px -3px rgba(0, 0, 0, 0.7);
+}
+
+/* Wadah scroll tabel: scrollbar tersembunyi, muncul saat hover */
+.jr-table-scroll,
+.table-scroll,
+.table-responsive {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.jr-table-scroll:hover,
+.table-scroll:hover,
+.table-responsive:hover {
+  scrollbar-color: rgba(148, 163, 184, 0.65) transparent;
+}
+
+[data-theme='dark'] .jr-table-scroll:hover,
+[data-theme='dark'] .table-scroll:hover,
+[data-theme='dark'] .table-responsive:hover {
+  scrollbar-color: rgba(100, 116, 139, 0.8) transparent;
+}
+
+.jr-table-scroll::-webkit-scrollbar,
+.table-scroll::-webkit-scrollbar,
+.table-responsive::-webkit-scrollbar {
+  display: block; /* menimpa aturan display:none lama di jaringan.css/ruang.css */
+  width: 10px;
+  height: 10px;
+}
+
+.jr-table-scroll::-webkit-scrollbar-track,
+.table-scroll::-webkit-scrollbar-track,
+.table-responsive::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.jr-table-scroll::-webkit-scrollbar-thumb,
+.table-scroll::-webkit-scrollbar-thumb,
+.table-responsive::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+
+.jr-table-scroll:hover::-webkit-scrollbar-thumb,
+.table-scroll:hover::-webkit-scrollbar-thumb,
+.table-responsive:hover::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.65);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+[data-theme='dark'] .jr-table-scroll:hover::-webkit-scrollbar-thumb,
+[data-theme='dark'] .table-scroll:hover::-webkit-scrollbar-thumb,
+[data-theme='dark'] .table-responsive:hover::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.8);
+  background-clip: padding-box;
+}

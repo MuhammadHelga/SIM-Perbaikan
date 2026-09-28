@@ -142,7 +142,9 @@ body {
 
 /* Data Table Styling */
 .table-responsive {
-    overflow-x: auto;
+    overflow: auto;
+    /* Batasi tinggi agar header tetap terlihat & body scroll di dalam kartu */
+    max-height: min(560px, 62vh);
 }
 
 .data-table {
@@ -169,7 +171,7 @@ body {
 
 .action-buttons {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     gap: 12px;
 }
 

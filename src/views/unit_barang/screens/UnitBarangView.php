@@ -73,7 +73,7 @@ $totalBarang  = count($barangList);
                                 <th width="10%">No</th>
                                 <th width="25%">Kode</th>
                                 <th width="45%">Nama Ruang</th>
-                                <th width="20%" class="text-right">Aksi</th>
+                                <th width="20%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -124,7 +124,7 @@ $totalBarang  = count($barangList);
                                 <th width="10%">No</th>
                                 <th width="25%">Kode</th>
                                 <th width="45%">Nama Barang</th>
-                                <th width="20%" class="text-right">Aksi</th>
+                                <th width="20%">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
