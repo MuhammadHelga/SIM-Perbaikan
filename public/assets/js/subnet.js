@@ -61,7 +61,7 @@ function confirmSubnetDelete(id, cidr) {
         confirmLabel: 'Ya, Hapus',
         variant: 'red',
         onConfirm: function () {
-            window.location.href = (window.BASE_URL || '') + '/subnet/hapus/' + id;
+            postAction((window.BASE_URL || '') + '/subnet/hapus/' + id);
         }
     });
 }

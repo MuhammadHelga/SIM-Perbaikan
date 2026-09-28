@@ -93,6 +93,11 @@ class AuthService
 
     private function establishSession(array $user): void
     {
+        // Cegah session fixation: ID sesi baru setiap kali login/auto-login.
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_regenerate_id(true);
+        }
+
         $_SESSION['is_logged_in'] = true;
         $_SESSION['user_id']      = (int) $user['id'];
         $_SESSION['public_id']    = $user['public_id'];

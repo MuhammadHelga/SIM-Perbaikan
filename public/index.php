@@ -1,5 +1,20 @@
 <?php
-session_start();
+
+// ===== Sesi: hardening cookie (harus sebelum session_start) =====
+if (session_status() !== PHP_SESSION_ACTIVE) {
+    $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['SERVER_PORT'] ?? '') === '443');
+
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path'     => '/',
+        'httponly' => true,
+        'secure'   => $isHttps,
+        'samesite' => 'Lax',
+    ]);
+
+    session_start();
+}
 
 // ===== Header keamanan (via PHP, tanpa perlu mod_headers) =====
 header('X-Content-Type-Options: nosniff');
@@ -30,6 +45,99 @@ function csrfValid(): bool
     return isset($_POST['csrf'])
         && is_string($_POST['csrf'])
         && hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf']);
+}
+
+// ===== Validasi input (server-side, jangan percaya dropdown/HTML) =====
+
+function validDateYmd($value): bool
+{
+    if (!is_string($value) || $value === '') {
+        return false;
+    }
+
+    $date = DateTime::createFromFormat('!Y-m-d', $value);
+
+    return $date !== false && $date->format('Y-m-d') === $value;
+}
+
+/** Cek keberadaan baris berdasarkan id. Nama tabel dibatasi whitelist. */
+function idExists(mysqli $conn, string $table, int $id): bool
+{
+    $allowed = ['barang', 'ruangan'];
+    if (!in_array($table, $allowed, true) || $id <= 0) {
+        return false;
+    }
+
+    $stmt = $conn->prepare("SELECT 1 FROM {$table} WHERE id = ? LIMIT 1");
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+
+    return (bool) $stmt->get_result()->fetch_row();
+}
+
+/**
+ * Validasi + normalisasi input form laporan (tambah/edit).
+ *
+ * @return array{0: array<string,mixed>, 1: string[]} [data bersih, daftar error]
+ */
+function validateLaporanInput(mysqli $conn, array $input): array
+{
+    $statusList    = ['Pending', 'Proses', 'Selesai'];
+    $prioritasList = ['Rendah', 'Sedang', 'Tinggi'];
+    $errors        = [];
+
+    $barangId     = (int) ($input['barang_id'] ?? 0);
+    $unitId       = (int) ($input['unit_id'] ?? 0);
+    $tanggal      = trim((string) ($input['tanggal'] ?? ''));
+    $noSeri       = trim((string) ($input['no_seri'] ?? ''));
+    $rincian      = trim((string) ($input['rincian_kerusakan'] ?? ''));
+    $uraian       = trim((string) ($input['uraian_kegiatan'] ?? ''));
+    $status       = (string) ($input['status'] ?? '');
+    $prioritas    = (string) ($input['prioritas'] ?? '');
+
+    if (!idExists($conn, 'barang', $barangId)) {
+        $errors[] = 'Jenis barang tidak valid.';
+    }
+    if (!idExists($conn, 'ruangan', $unitId)) {
+        $errors[] = 'Unit/ruangan tidak valid.';
+    }
+
+    if ($tanggal === '') {
+        $tanggal = date('Y-m-d');
+    } elseif (!validDateYmd($tanggal)) {
+        $errors[] = 'Format tanggal tidak valid.';
+    }
+
+    if ($rincian === '') {
+        $errors[] = 'Rincian kerusakan wajib diisi.';
+    } elseif (mb_strlen($rincian) > 300) {
+        $errors[] = 'Rincian kerusakan maksimal 300 karakter.';
+    }
+
+    if (mb_strlen($uraian) > 500) {
+        $errors[] = 'Uraian kegiatan maksimal 500 karakter.';
+    }
+    if (mb_strlen($noSeri) > 50) {
+        $errors[] = 'No seri maksimal 50 karakter.';
+    }
+
+    if (!in_array($status, $statusList, true)) {
+        $errors[] = 'Status penanganan tidak valid.';
+    }
+    if (!in_array($prioritas, $prioritasList, true)) {
+        $errors[] = 'Prioritas tidak valid.';
+    }
+
+    return [[
+        'barang_id' => $barangId,
+        'unit_id'   => $unitId,
+        'tanggal'   => $tanggal,
+        'no_seri'   => $noSeri,
+        'rincian'   => $rincian,
+        'uraian'    => $uraian,
+        'status'    => $status,
+        'prioritas' => $prioritas,
+    ], $errors];
 }
 
 $conn = db();
@@ -73,6 +181,12 @@ if (preg_match('#^/laporan/(kirim|terima|hapus)/(\d+)$#', $path, $routeMatch)) {
         requireRole($basePath, ['admin']);
     }
 
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+        $_SESSION['flash'] = ['type' => 'error', 'text' => 'Permintaan tidak valid. Silakan coba lagi.'];
+        header('Location: ' . $basePath . '/laporan');
+        exit;
+    }
+
     require_once __DIR__ . '/../src/controllers/laporankerusakanController.php';
     $laporanController = new laporankerusakanController($conn);
 
@@ -99,6 +213,12 @@ if (preg_match('#^/laporan/(kirim|terima|hapus)/(\d+)$#', $path, $routeMatch)) {
 // ===== Route dinamis: /unit/ruangan/hapus/{id}, /unit/barang/hapus/{id} =====
 if (preg_match('#^/unit/(ruangan|barang)/hapus/(\d+)$#', $path, $unitMatch)) {
     requireRole($basePath, ['admin']);
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+        $_SESSION['flash'] = ['type' => 'error', 'text' => 'Permintaan tidak valid. Silakan coba lagi.'];
+        header('Location: ' . $basePath . '/unit');
+        exit;
+    }
 
     $jenis = $unitMatch[1];
     $id    = (int) $unitMatch[2];
@@ -132,6 +252,12 @@ if (preg_match('#^/unit/(ruangan|barang)/hapus/(\d+)$#', $path, $unitMatch)) {
 // ===== Route dinamis: /subnet/hapus/{id} =====
 if (preg_match('#^/subnet/hapus/(\d+)$#', $path, $subnetMatch)) {
     requireRole($basePath, ['admin']);
+
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+        $_SESSION['flash'] = ['type' => 'error', 'text' => 'Permintaan tidak valid. Silakan coba lagi.'];
+        header('Location: ' . $basePath . '/subnet');
+        exit;
+    }
 
     $id = (int) $subnetMatch[1];
 
@@ -234,24 +360,38 @@ switch ($path) {
         require_once __DIR__ . '/../src/controllers/laporankerusakanController.php';
         $laporanController = new laporankerusakanController($conn);
 
-        $laporanList = $laporanController->index()->fetch_all(MYSQLI_ASSOC);
+        $allLaporan  = $laporanController->index()->fetch_all(MYSQLI_ASSOC);
         $ruanganList = $laporanController->getRuangan()->fetch_all(MYSQLI_ASSOC);
         $barangList  = $laporanController->getBarang()->fetch_all(MYSQLI_ASSOC);
 
+        // Dasar kartu statistik: hanya dibatasi periode (bukan status/cari),
+        // supaya angka ringkasan tidak berubah saat tabel difilter.
+        $periodLaporan = $allLaporan;
         if ($periode !== '') {
-            $laporanList = array_values(array_filter(
-                $laporanList,
+            $periodLaporan = array_values(array_filter(
+                $periodLaporan,
                 fn($r) => substr((string)$r['tanggal'], 0, 7) === $periode
             ));
         }
 
+        $stats = ['total' => count($periodLaporan), 'pending' => 0, 'selesai' => 0];
+        foreach ($periodLaporan as $r) {
+            if (($r['status_penanganan'] ?? '') === 'Selesai') {
+                $stats['selesai']++;
+            } else {
+                $stats['pending']++;
+            }
+        }
+
+        // Tabel: filter status + pencarian diterapkan di atas periode terpilih.
+        $filtered = $periodLaporan;
         if ($statusFilter !== '') {
-            $laporanList = array_values(array_filter($laporanList, fn($r) => $r['status_penanganan'] === $statusFilter));
+            $filtered = array_values(array_filter($filtered, fn($r) => $r['status_penanganan'] === $statusFilter));
         }
 
         if ($search !== '') {
             $keyword = mb_strtolower($search);
-            $laporanList = array_values(array_filter($laporanList, function ($r) use ($keyword) {
+            $filtered = array_values(array_filter($filtered, function ($r) use ($keyword) {
                 return str_contains(mb_strtolower($r['urusan']), $keyword)
                     || str_contains(mb_strtolower($r['barang']), $keyword)
                     || str_contains(mb_strtolower($r['kerusakan']), $keyword)
@@ -264,14 +404,16 @@ switch ($path) {
             $perPage = 25;
         }
 
-        $stats = [
-            'total'   => count($laporanList),
-            'pending' => count(array_filter($laporanList, fn($r) => $r['hasil'] === 'pending')),
-            'selesai' => count(array_filter($laporanList, fn($r) => $r['hasil'] === 'selesai')),
-        ];
+        $totalRows  = count($filtered);
+        $totalPages = max(1, (int) ceil($totalRows / $perPage));
+        $page       = (int)($_GET['page'] ?? 1);
+        if ($page < 1) {
+            $page = 1;
+        } elseif ($page > $totalPages) {
+            $page = $totalPages;
+        }
 
-        // Batasi jumlah baris yang ditampilkan sesuai pilihan "Menampilkan ... Laporan"
-        $laporanList = array_slice($laporanList, 0, $perPage);
+        $laporanList = array_slice($filtered, ($page - 1) * $perPage, $perPage);
 
         require __DIR__ . '/../src/views/laporan/screens/LaporanView.php';
         break;
@@ -286,22 +428,34 @@ switch ($path) {
                 exit;
             }
 
+            [$data, $errors] = validateLaporanInput($conn, $_POST);
+
+            if ($errors) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => implode(' ', $errors)];
+                header('Location: ' . $basePath . '/laporan');
+                exit;
+            }
+
             require_once __DIR__ . '/../src/controllers/laporankerusakanController.php';
             $laporanController = new laporankerusakanController($conn);
 
-            $laporanController->store(
-                (int)($_POST['barang_id'] ?? 0),
-                (int)($_POST['unit_id'] ?? 0),
-                $_POST['tanggal'] ?? date('Y-m-d'),
-                trim($_POST['no_seri'] ?? ''),
-                trim($_POST['rincian_kerusakan'] ?? ''),
-                trim($_POST['uraian_kegiatan'] ?? ''),
-                $_POST['status'] ?? 'Pending',
-                $_POST['prioritas'] ?? 'Sedang',
-                $_SESSION['user_id'] ?? null
-            );
+            try {
+                $laporanController->store(
+                    $data['barang_id'],
+                    $data['unit_id'],
+                    $data['tanggal'],
+                    $data['no_seri'],
+                    $data['rincian'],
+                    $data['uraian'],
+                    $data['status'],
+                    $data['prioritas'],
+                    $_SESSION['user_id'] ?? null
+                );
 
-            $_SESSION['flash'] = ['type' => 'success', 'text' => 'Laporan berhasil disimpan.'];
+                $_SESSION['flash'] = ['type' => 'success', 'text' => 'Laporan berhasil disimpan.'];
+            } catch (mysqli_sql_exception $e) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Gagal menyimpan laporan. Periksa kembali data yang diisi.'];
+            }
         }
 
         header('Location: ' . $basePath . '/laporan');
@@ -321,24 +475,47 @@ switch ($path) {
             $laporanController = new laporankerusakanController($conn);
 
             $id = (int)($_POST['id'] ?? 0);
-            $existing = $laporanController->show($id);
+            $existing = $id > 0 ? $laporanController->show($id) : null;
 
-            if ($existing) {
+            if (!$existing) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Laporan tidak ditemukan.'];
+                header('Location: ' . $basePath . '/laporan');
+                exit;
+            }
+
+            // Lengkapi field yang tidak dikirim dengan nilai lama (perilaku edit lama).
+            $input = $_POST;
+            if (!isset($input['prioritas']) || $input['prioritas'] === '') {
+                $input['prioritas'] = $existing['prioritas'];
+            }
+            if (!isset($input['status']) || $input['status'] === '') {
+                $input['status'] = $existing['status_penanganan'];
+            }
+
+            [$data, $errors] = validateLaporanInput($conn, $input);
+
+            if ($errors) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => implode(' ', $errors)];
+                header('Location: ' . $basePath . '/laporan');
+                exit;
+            }
+
+            try {
                 $laporanController->update(
                     $id,
-                    (int)($_POST['barang_id'] ?? 0),
-                    (int)($_POST['unit_id'] ?? 0),
-                    $_POST['tanggal'] ?? date('Y-m-d'),
-                    trim($_POST['no_seri'] ?? ''),
-                    trim($_POST['rincian_kerusakan'] ?? ''),
-                    trim($_POST['uraian_kegiatan'] ?? ''),
-                    $_POST['status'] ?? 'Pending',
-                    $_POST['prioritas'] ?? $existing['prioritas'] ?? 'Sedang'
+                    $data['barang_id'],
+                    $data['unit_id'],
+                    $data['tanggal'],
+                    $data['no_seri'],
+                    $data['rincian'],
+                    $data['uraian'],
+                    $data['status'],
+                    $data['prioritas']
                 );
 
                 $_SESSION['flash'] = ['type' => 'success', 'text' => 'Laporan berhasil diperbarui.'];
-            } else {
-                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Laporan tidak ditemukan.'];
+            } catch (mysqli_sql_exception $e) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Gagal memperbarui laporan. Periksa kembali data yang diisi.'];
             }
         }
 

@@ -298,6 +298,26 @@ function closeModal(id) {
     if (el) el.classList.remove('open');
 }
 
+/* Kirim aksi yang mengubah data lewat POST (bukan link GET) beserta token CSRF. */
+function postAction(url) {
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = url;
+    form.style.display = 'none';
+
+    const token = window.CSRF_TOKEN || '';
+    if (token) {
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'csrf';
+        input.value = token;
+        form.appendChild(input);
+    }
+
+    document.body.appendChild(form);
+    form.submit();
+}
+
 function openConfirmModal(options) {
     options = options || {};
     const icon = options.icon || 'help';

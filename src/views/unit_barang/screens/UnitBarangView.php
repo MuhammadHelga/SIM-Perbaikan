@@ -253,7 +253,7 @@ $totalBarang  = count($barangList);
         </div>
     </div>
 
-    <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
+    <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
     <script src="<?= BASE_URL ?>/assets/js/unit.js"></script>
 </body>
 </html>

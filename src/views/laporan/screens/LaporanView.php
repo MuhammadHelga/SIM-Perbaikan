@@ -5,6 +5,9 @@ $periode      = $periode ?? '';
 $statusFilter = $statusFilter ?? '';
 $search       = $search ?? '';
 $perPage      = $perPage ?? 25;
+$page         = $page ?? 1;
+$totalPages   = $totalPages ?? 1;
+$totalRows    = $totalRows ?? count($laporanList);
 
 $namaBulan = [
     1=>'Januari',
@@ -22,8 +25,8 @@ $namaBulan = [
 ];
 $periodeTahun = $periode !== '' ? (int)substr($periode, 0, 4) : (int)date('Y');
 $periodeBulan = $periode !== '' ? (int)substr($periode, 5, 2) : (int)date('n');
-$periodeLabel = $namaBulan[$periodeBulan] . ' ' . $periodeTahun;
-$periodeValue = sprintf('%04d-%02d', $periodeTahun, $periodeBulan);
+$periodeLabel = $periode !== '' ? ($namaBulan[$periodeBulan] . ' ' . $periodeTahun) : 'Semua Periode';
+$periodeValue = $periode !== '' ? sprintf('%04d-%02d', $periodeTahun, $periodeBulan) : '';
 
 // Tanggal dari DB berformat Y-m-d -> tampilkan d M Y
 $fmtTanggal = function ($tgl) {
@@ -45,6 +48,21 @@ $chipUrl = function (array $overrides) use ($periode, $statusFilter, $search, $p
     foreach ($overrides as $k => $v) {
         $params[$k] = $v;
     }
+
+    $query = http_build_query(array_filter($params, fn($v) => $v !== '' && $v !== null));
+
+    return BASE_URL . '/laporan' . ($query !== '' ? '?' . $query : '');
+};
+
+// URL navigasi halaman (mempertahankan filter aktif).
+$pageUrl = function (int $target) use ($periode, $statusFilter, $search, $perPage) {
+    $params = [
+        'periode'  => $periode,
+        'status'   => $statusFilter,
+        'search'   => $search,
+        'per_page' => $perPage,
+        'page'     => $target,
+    ];
 
     $query = http_build_query(array_filter($params, fn($v) => $v !== '' && $v !== null));
 
@@ -97,7 +115,7 @@ if ($search !== '') {
                 <div class="stat-box stat-box--purple">
                     <span class="stat-box__icon material-symbols-outlined">functions</span>
                     <div>
-                        <p class="stat-box__label">Total Laporan Bulan Ini</p>
+                        <p class="stat-box__label">Total Laporan</p>
                         <p class="stat-box__value"><span class="value-blue"><?= (int)$stats['total'] ?></span> Unit</p>
                     </div>
                 </div>
@@ -298,14 +316,39 @@ if ($search !== '') {
             </div>
 
             <div class="table-footer">
-                <span>Menampilkan</span>
-                <select id="perPage">
-                    <option value="25" <?= $perPage === 25 ? 'selected' : '' ?>>25</option>
-                    <option value="50" <?= $perPage === 50 ? 'selected' : '' ?>>50</option>
-                    <option value="100" <?= $perPage === 100 ? 'selected' : '' ?>>100</option>
-                    <option value="200" <?= $perPage === 200 ? 'selected' : '' ?>>200</option>
-                </select>
-                <span>Laporan</span>
+                <div class="table-footer__info">
+                    <span>Menampilkan</span>
+                    <select id="perPage">
+                        <option value="25" <?= $perPage === 25 ? 'selected' : '' ?>>25</option>
+                        <option value="50" <?= $perPage === 50 ? 'selected' : '' ?>>50</option>
+                        <option value="100" <?= $perPage === 100 ? 'selected' : '' ?>>100</option>
+                        <option value="200" <?= $perPage === 200 ? 'selected' : '' ?>>200</option>
+                    </select>
+                    <span>Laporan</span>
+                    <?php if ($totalRows > 0): ?>
+                        <span class="table-footer__range">
+                            (<?= (($page - 1) * $perPage) + 1 ?>&ndash;<?= min($page * $perPage, $totalRows) ?> dari <?= (int)$totalRows ?>)
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <?php if ($totalPages > 1): ?>
+                    <nav class="pager" aria-label="Navigasi halaman">
+                        <a class="pager__btn<?= $page <= 1 ? ' is-disabled' : '' ?>"
+                           href="<?= $page <= 1 ? '#' : htmlspecialchars($pageUrl($page - 1), ENT_QUOTES, 'UTF-8') ?>"
+                           <?= $page <= 1 ? 'aria-disabled="true" tabindex="-1"' : '' ?>
+                           aria-label="Halaman sebelumnya">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </a>
+                        <span class="pager__status">Halaman <?= (int)$page ?> dari <?= (int)$totalPages ?></span>
+                        <a class="pager__btn<?= $page >= $totalPages ? ' is-disabled' : '' ?>"
+                           href="<?= $page >= $totalPages ? '#' : htmlspecialchars($pageUrl($page + 1), ENT_QUOTES, 'UTF-8') ?>"
+                           <?= $page >= $totalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>
+                           aria-label="Halaman berikutnya">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </a>
+                    </nav>
+                <?php endif; ?>
             </div>
         </div>
     </main>
@@ -326,6 +369,6 @@ if ($search !== '') {
 </body>
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
-<script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
+<script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js"></script>
 </html>

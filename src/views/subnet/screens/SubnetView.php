@@ -195,7 +195,7 @@ $total        = count($subnetList);
         </div>
     </div>
 
-    <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>;</script>
+    <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
     <script src="<?= BASE_URL ?>/assets/js/subnet.js"></script>
 </body>
 </html>

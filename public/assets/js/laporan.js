@@ -185,7 +185,7 @@ function confirmDelete(id) {
         confirmLabel: 'Ya, Hapus',
         variant: 'red',
         onConfirm: function () {
-            window.location.href = (window.BASE_URL || '') + '/laporan/hapus/' + id;
+            postAction((window.BASE_URL || '') + '/laporan/hapus/' + id);
         }
     });
 }
@@ -198,7 +198,7 @@ function terimaBarang(id) {
         confirmLabel: 'Ya, Terima',
         variant: 'green',
         onConfirm: function () {
-            window.location.href = (window.BASE_URL || '') + '/laporan/terima/' + id;
+            postAction((window.BASE_URL || '') + '/laporan/terima/' + id);
         }
     });
 }
@@ -210,7 +210,7 @@ function kirimBarang(id) {
         text: 'Tandai laporan #' + id + ' sebagai sudah dikirim ke vendor/service?',
         confirmLabel: 'Ya, Kirim',
         onConfirm: function () {
-            window.location.href = (window.BASE_URL || '') + '/laporan/kirim/' + id;
+            postAction((window.BASE_URL || '') + '/laporan/kirim/' + id);
         }
     });
 }

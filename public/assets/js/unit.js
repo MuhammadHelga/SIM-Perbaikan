@@ -82,7 +82,7 @@ function confirmUnitDelete(jenis, id, nama) {
         confirmLabel: 'Ya, Hapus',
         variant: 'red',
         onConfirm: function () {
-            window.location.href = (window.BASE_URL || '') + '/unit/' + jenis + '/hapus/' + id;
+            postAction((window.BASE_URL || '') + '/unit/' + jenis + '/hapus/' + id);
         }
     });
 }
