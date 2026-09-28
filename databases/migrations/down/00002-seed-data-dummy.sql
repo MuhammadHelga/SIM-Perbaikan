@@ -1,7 +1,7 @@
 -- @description: Hapus 24 data dummy laporan kerusakan (kebalikan dari up/00002)
 -- Hanya menghapus baris yang rincian_kerusakannya persis sama dengan seed dummy.
 
-DELETE FROM laporankerusakan WHERE rincian_kerusakan IN (
+DELETE FROM laporan_kerusakan WHERE rincian_kerusakan IN (
   'PC hang saat login SIMRS',
   'Printer macet / tidak mau cetak label',
   'Monitor redup dan berkedip',

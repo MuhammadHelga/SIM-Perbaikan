@@ -3,7 +3,7 @@
 -- JARINGAN, KOMPUTER, LAPTOP, LAIN-LAIN, MESIN PARKIR, MONITOR, PRINTER, SCANNER, SIMRS
 
 -- Laporan dummy yang memakai AC & Server dihapus dulu (FK RESTRICT)
-DELETE FROM laporankerusakan WHERE id_barang IN (
+DELETE FROM laporan_kerusakan WHERE id_barang IN (
   SELECT id FROM barang WHERE kode_barang IN ('BRG-06','BRG-07')
 );
 

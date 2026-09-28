@@ -1,7 +1,7 @@
 -- @description: Seed 24 data dummy laporan kerusakan (Jan–Sep 2026)
 -- Menggunakan ruangan & barang dari seed 00001. Referensi FK memakai subquery.
 
-INSERT INTO laporankerusakan
+INSERT INTO laporan_kerusakan
   (tanggal, id_ruangan, id_barang, serial_number, rincian_kerusakan,
    uraian_kegiatan, status_penanganan, prioritas, kirim_status,
    tgl_kirim, tgl_terima, id_user)
