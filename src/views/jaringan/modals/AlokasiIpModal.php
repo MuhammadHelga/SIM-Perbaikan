@@ -20,7 +20,17 @@
         </div>
 
         <form action="<?= BASE_URL ?>/jaringan/simpan" method="POST" class="alokasi-card__body" id="form-alokasi-ip">
+            <?= csrfField() ?>
             <input type="hidden" name="id" id="alokasiId" value="">
+
+            <div class="alokasi-field">
+                <label for="alokasiSubnet">Subnet <span class="req">*</span></label>
+                <select name="subnet" id="alokasiSubnet" required>
+                    <?php foreach (($subnets ?? []) as $s): ?>
+                        <option value="<?= htmlspecialchars($s['cidr']) ?>" data-prefix="<?= htmlspecialchars($s['prefix']) ?>"><?= htmlspecialchars($s['cidr']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
             <div class="alokasi-field">
                 <label for="alokasiUnit">Nama Unit / Ruangan <span class="req">*</span></label>

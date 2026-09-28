@@ -1,6 +1,15 @@
 <?php
 
-$subnet        = $subnet ?? ['gateway' => '192.100.99.1', 'mask' => '255.255.255.0', 'prefix' => '192.100.99'];
+$subnets        = $subnets ?? [];
+$selectedSubnet = $selectedSubnet ?? '';
+$subnet         = $subnet ?? [];
+$subnet         = is_array($subnet) ? $subnet : [];
+$subnetCount    = $subnetCount ?? count($subnets);
+$isAllSubnets   = empty($subnet);
+$subnetGateway  = $subnet['gateway'] ?? '—';
+$subnetMask     = $subnet['mask'] ?? '—';
+$subnetPrefix   = $subnet['prefix'] ?? '—';
+$subnetLabel    = $isAllSubnets ? 'Semua Subnet' : ($subnetPrefix . '.0/24');
 $stats         = $stats ?? ['total_unit' => 0, 'ip_terpakai' => 0, 'host_kosong' => 0, 'uptime_percent' => 0, 'online' => 0, 'offline' => 0];
 $occupancy     = $occupancy ?? ['core' => 9, 'terisi' => 0, 'kosong' => 245, 'tersedia_persen' => 100, 'map' => []];
 $komputerList  = $komputerList ?? [];
@@ -39,8 +48,8 @@ $utilisasi = $stats['total_unit'] > 0
             <div class="jr-head__text">
                 <h1>Manajemen Jaringan &amp; Alokasi IP Komputer</h1>
                 <p>
-                    Pemetaan alamat IP jaringan lokal rumah sakit subnet
-                    <strong><?= htmlspecialchars($subnet['prefix']) ?>.0/24</strong>
+                    Pemetaan alamat IP jaringan rumah sakit pada
+                    <strong><?= htmlspecialchars($subnetLabel) ?></strong>
                     untuk setiap komputer unit kerja dan instalasi operasional.
                 </p>
             </div>
@@ -49,15 +58,15 @@ $utilisasi = $stats['total_unit'] > 0
                 <div class="jr-subnet-badge__grid">
                     <div>
                         <span class="jr-subnet-badge__label">Subnet Gateway</span>
-                        <span class="jr-subnet-badge__value"><?= htmlspecialchars($subnet['gateway']) ?></span>
+                        <span class="jr-subnet-badge__value"><?= htmlspecialchars($isAllSubnets ? '—' : $subnetGateway) ?></span>
                     </div>
                     <div>
                         <span class="jr-subnet-badge__label">Subnet Mask &amp; Scope</span>
-                        <span class="jr-subnet-badge__value"><?= htmlspecialchars($subnet['mask']) ?> (/24)</span>
+                        <span class="jr-subnet-badge__value"><?= htmlspecialchars($isAllSubnets ? '—' : $subnetMask . ' (/24)') ?></span>
                     </div>
                     <div>
                         <span class="jr-subnet-badge__label">Fixed Octet Prefix</span>
-                        <span class="jr-subnet-badge__value jr-subnet-badge__value--highlight"><?= htmlspecialchars($subnet['prefix']) ?>.xx</span>
+                        <span class="jr-subnet-badge__value jr-subnet-badge__value--highlight"><?= htmlspecialchars($isAllSubnets ? ($subnetCount . ' subnet') : $subnetPrefix . '.xx') ?></span>
                     </div>
                 </div>
             </div>
@@ -108,6 +117,15 @@ $utilisasi = $stats['total_unit'] > 0
                        value="<?= htmlspecialchars($search, ENT_QUOTES, 'UTF-8') ?>">
             </div>
 
+            <div class="jr-filter-field">
+                <select name="subnet" id="filterSubnet" onchange="this.form.submit()">
+                    <option value="">Semua Subnet</option>
+                    <?php foreach ($subnets as $s): ?>
+                        <option value="<?= htmlspecialchars($s['cidr']) ?>" <?= $selectedSubnet === $s['cidr'] ? 'selected' : '' ?>><?= htmlspecialchars($s['cidr']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
             <div class="jr-filter-actions">
                 <button type="button" class="jr-btn jr-btn--outline" id="btnExportCsv">
                     <span class="material-symbols-outlined">download</span> Export CSV
@@ -122,7 +140,7 @@ $utilisasi = $stats['total_unit'] > 0
             <div class="jr-table-card__head">
                 <span class="material-symbols-outlined">table_rows</span>
                 <h3>Tabel Pemetaan Komputer Unit &amp; Alokasi Host IP</h3>
-                <span class="jr-table-card__subnet">Subnet: <?= htmlspecialchars($subnet['prefix']) ?>.[host]</span>
+                <span class="jr-table-card__subnet">Subnet: <?= htmlspecialchars($isAllSubnets ? 'Semua' : $subnetPrefix) ?>.[host]</span>
             </div>
 
             <div class="jr-table-scroll">
@@ -150,10 +168,7 @@ $utilisasi = $stats['total_unit'] > 0
                                 <td><span class="jr-hostname"><?= htmlspecialchars($row['hostname']) ?></span></td>
                                 <td>
                                     <span class="jr-ip">
-                                        <span class="jr-ip__prefix"><?= htmlspecialchars($subnet['prefix']) ?>.</span>
-                                        <span class="jr-ip__octet">
-                                            <?= (int)$row['host_octet'] ?>
-                                        </span>
+                                        <span class="jr-ip__prefix"><?= htmlspecialchars($row['ip'] ?? '') ?></span>
                                     </span>
                                 </td>
                                 <td class="jr-col-aksi">
@@ -192,7 +207,11 @@ $utilisasi = $stats['total_unit'] > 0
     </div>
 
     <script id="komputerDataJson" type="application/json"><?= json_encode($komputerList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
-    <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.JR_PREFIX = <?= json_encode($subnet['prefix']) ?>;</script>
+    <script>
+        window.BASE_URL = <?= json_encode(BASE_URL) ?>;
+        window.JR_SUBNETS = <?= json_encode(array_column($subnets, 'prefix', 'cidr'), JSON_UNESCAPED_UNICODE) ?>;
+        window.JR_DEFAULT_SUBNET = <?= json_encode($selectedSubnet !== '' ? $selectedSubnet : ($subnets[0]['cidr'] ?? '')) ?>;
+    </script>
     <script src="<?= BASE_URL ?>/assets/js/jaringan.js"></script>
 </body>
 </html>

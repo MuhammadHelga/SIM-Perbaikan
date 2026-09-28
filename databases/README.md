@@ -101,7 +101,7 @@ Contoh isi `up/00002-add-prioritas.sql`:
 
 ```sql
 -- @description: Tambah kolom prioritas pada laporan
-ALTER TABLE laporankerusakan
+ALTER TABLE laporan_kerusakan
   ADD COLUMN prioritas ENUM('Rendah','Sedang','Tinggi') NOT NULL DEFAULT 'Sedang'
   AFTER status_penanganan;
 ```
@@ -109,7 +109,7 @@ ALTER TABLE laporankerusakan
 Contoh `down/00002-add-prioritas.sql`:
 
 ```sql
-ALTER TABLE laporankerusakan DROP COLUMN prioritas;
+ALTER TABLE laporan_kerusakan DROP COLUMN prioritas;
 ```
 
 ### Kalau kerja berbarengan (multi-developer)
@@ -143,10 +143,10 @@ nomornya jadi `00044-dev.sql`. Detail: `vendor/byjg/migration/docs/migration-scr
 | `users` | Akun login (`username`, `password_hash`, `role`) |
 | `ruangan` | Master unit/ruangan (mis. POLI, UGD, Radiologi) |
 | `barang` | Master jenis barang/perangkat (mis. Komputer, Printer) |
-| `laporankerusakan` | Data laporan kerusakan/perbaikan |
+| `laporan_kerusakan` | Data laporan kerusakan/perbaikan |
 | `migration_version` | Versi migrasi (dikelola tool, jangan diubah manual) |
 
-Kolom penting di `laporankerusakan`:
+Kolom penting di `laporan_kerusakan`:
 `tanggal`, `id_ruangan`, `id_barang`, `serial_number`, `rincian_kerusakan`,
 `uraian_kegiatan`, `status_penanganan` (`Pending`/`Proses`/`Selesai`),
 `prioritas` (`Rendah`/`Sedang`/`Tinggi`), `kirim_status` (`belum`/`dikirim`/`diterima`),

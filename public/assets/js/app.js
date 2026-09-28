@@ -193,10 +193,7 @@ function initTheme() {
 }
 
 /* Toast pesan flash: auto-hilang, pause saat hover, tombol close */
-function initFlash() {
-    const el = document.querySelector('.flash');
-    if (!el) return;
-
+function wireFlash(el) {
     let timer;
     const hide = function () {
         el.classList.add('flash--hide');
@@ -215,6 +212,32 @@ function initFlash() {
             hide();
         });
     }
+}
+
+function initFlash() {
+    document.querySelectorAll('.flash').forEach(wireFlash);
+}
+
+/* Tampilkan toast dari sisi klien (tanpa reload) */
+function showToast(text, type) {
+    const el = document.createElement('div');
+    el.className = 'flash flash--' + (type || 'success');
+
+    const span = document.createElement('span');
+    span.className = 'flash__text';
+    span.textContent = text;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'flash__close';
+    btn.setAttribute('aria-label', 'Tutup');
+    btn.innerHTML = '&times;';
+
+    el.appendChild(span);
+    el.appendChild(btn);
+    document.body.appendChild(el);
+
+    wireFlash(el);
 }
 
 /* Kembalikan fokus ke kolom cari (#search) setelah reload, kursor di akhir */

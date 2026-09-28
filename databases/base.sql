@@ -32,7 +32,7 @@ CREATE TABLE barang (
   updated_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE TABLE laporankerusakan (
+CREATE TABLE laporan_kerusakan (
   id                 INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   tanggal            DATE         NOT NULL,
   id_ruangan         INT UNSIGNED NOT NULL,
@@ -58,4 +58,31 @@ CREATE TABLE laporankerusakan (
   INDEX idx_lap_status  (status_penanganan),
   INDEX idx_lap_ruangan (id_ruangan),
   INDEX idx_lap_barang  (id_barang)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE subnet (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  cidr        VARCHAR(18)  NOT NULL UNIQUE,        -- mis. '192.100.99.0/24'
+  prefix      VARCHAR(15)  NOT NULL,               -- mis. '192.100.99'
+  gateway     VARCHAR(15)  NULL,
+  mask        VARCHAR(15)  NULL,
+  keterangan  VARCHAR(120) NULL,
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE alokasi_ip (
+  id          INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  subnet      VARCHAR(18)  NOT NULL,               -- CIDR, mis. '192.100.99.0/24'
+  unit        VARCHAR(120) NOT NULL,               -- Nama Unit / Ruangan (teks bebas)
+  lokasi      VARCHAR(120) NULL,                   -- Gedung/Lantai
+  hostname    VARCHAR(80)  NOT NULL,               -- Hostname komputer
+  host_octet  TINYINT UNSIGNED NOT NULL,           -- oktet ke-4 (10..254)
+  status      ENUM('online','offline') NOT NULL DEFAULT 'online',
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_alokasi_subnet FOREIGN KEY (subnet) REFERENCES subnet(cidr)
+      ON UPDATE CASCADE ON DELETE RESTRICT,
+  UNIQUE KEY uk_alokasi_ip (subnet, host_octet),
+  UNIQUE KEY uk_alokasi_hostname (hostname)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

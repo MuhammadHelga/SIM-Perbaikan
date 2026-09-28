@@ -17,6 +17,7 @@ body {
   color: var(--text);
   padding-left: 240px;
   box-sizing: border-box;
+  transition: padding-left 0.2s ease;
 }
 
 .material-symbols-outlined {
@@ -47,6 +48,7 @@ body {
   box-shadow: 0 0.5px 8px rgba(77, 77, 77, 0.12);
   overflow: hidden;
   box-sizing: border-box;
+  transition: width 0.2s ease, transform 0.22s ease;
 }
 
 .app-navbar__accent {

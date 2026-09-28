@@ -9,6 +9,11 @@ document.addEventListener('DOMContentLoaded', function () {
         octetInput.addEventListener('input', updateAlokasiPreview);
     }
 
+    const subnetSelect = document.getElementById('alokasiSubnet');
+    if (subnetSelect) {
+        subnetSelect.addEventListener('change', updateAlokasiPreview);
+    }
+
     const btnExport = document.getElementById('btnExportCsv');
     if (btnExport) btnExport.addEventListener('click', exportCsv);
 
@@ -20,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 title: 'Ping Semua Host',
                 text: 'Jalankan ping ke seluruh host IP yang terdaftar? Proses ini mungkin memakan waktu beberapa saat.',
                 confirmLabel: 'Ya, Jalankan',
-                onConfirm: function () { alert('Menjalankan ping ke semua host... (fitur backend belum terhubung)'); }
+                onConfirm: function () { showToast('Fitur ping belum terhubung ke backend.', 'error'); }
             });
         });
     }
@@ -50,12 +55,28 @@ function findKomputerById(id) {
     return getKomputerData().find(r => Number(r.id) === Number(id));
 }
 
+function currentSubnetPrefix() {
+    const sel = document.getElementById('alokasiSubnet');
+    if (sel && sel.selectedOptions && sel.selectedOptions[0]) {
+        const p = sel.selectedOptions[0].getAttribute('data-prefix');
+        if (p) return p;
+    }
+    const map = window.JR_SUBNETS || {};
+    const cidr = window.JR_DEFAULT_SUBNET || '';
+    if (map[cidr]) return map[cidr];
+    const any = Object.values(map)[0];
+    return any || '192.100.99';
+}
+
 function openAlokasiModal() {
     const form = document.getElementById('form-alokasi-ip');
     if (form) form.reset();
 
     const idEl = document.getElementById('alokasiId');
     if (idEl) idEl.value = '';
+
+    const sel = document.getElementById('alokasiSubnet');
+    if (sel && window.JR_DEFAULT_SUBNET) sel.value = window.JR_DEFAULT_SUBNET;
 
     const titleEl = document.getElementById('alokasiTitle');
     if (titleEl) titleEl.textContent = 'Alokasi Host IP Komputer Unit';
@@ -66,13 +87,17 @@ function openAlokasiModal() {
 
 function openEditAlokasiModal(id) {
     const row = findKomputerById(id);
-    if (!row) { alert('Data tidak ditemukan.'); return; }
+    if (!row) { showToast('Data tidak ditemukan.', 'error'); return; }
 
     document.getElementById('alokasiId').value = row.id;
     document.getElementById('alokasiUnit').value = row.unit || '';
     document.getElementById('alokasiLokasi').value = row.lokasi || '';
     document.getElementById('alokasiHostname').value = row.hostname || '';
     document.getElementById('alokasiOctet').value = row.host_octet;
+
+    const subnetSel = document.getElementById('alokasiSubnet');
+    if (subnetSel && row.subnet) subnetSel.value = row.subnet;
+
     document.getElementById('alokasiTitle').textContent = 'Edit Alokasi Host IP Komputer Unit';
 
     updateAlokasiPreview();
@@ -80,7 +105,7 @@ function openEditAlokasiModal(id) {
 }
 
 function updateAlokasiPreview() {
-    const prefix = window.JR_PREFIX || '192.100.99';
+    const prefix = currentSubnetPrefix();
     const octetInput = document.getElementById('alokasiOctet');
     if (!octetInput) return;
     const val = parseInt(octetInput.value, 10);
@@ -131,15 +156,14 @@ function pingHost(id, ip) {
         title: 'Ping Host',
         text: 'Jalankan ping ke ' + ip + '?',
         confirmLabel: 'Ya, Ping',
-        onConfirm: function () { alert('Ping ke ' + ip + '... (fitur backend belum terhubung)'); }
+        onConfirm: function () { showToast('Ping ke ' + ip + ' belum terhubung ke backend.', 'error'); }
     });
 }
 
 function exportCsv() {
     const rows = getKomputerData();
-    if (!rows.length) { alert('Tidak ada data untuk diekspor.'); return; }
+    if (!rows.length) { showToast('Tidak ada data untuk diekspor.', 'error'); return; }
 
-    const prefix = window.JR_PREFIX || '192.100.99';
     const header = ['Nama Unit', 'Lokasi', 'Hostname', 'Alamat IP', 'Status'];
     const lines = [header.join(',')];
 
@@ -148,7 +172,7 @@ function exportCsv() {
             '"' + (r.unit || '') + '"',
             '"' + (r.lokasi || '') + '"',
             r.hostname || '',
-            prefix + '.' + r.host_octet,
+            r.ip || '',
             r.status || '',
         ];
         lines.push(line.join(','));

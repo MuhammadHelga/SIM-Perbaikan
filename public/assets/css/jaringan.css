@@ -203,19 +203,21 @@ body {
     display: flex; 
     align-items: center; 
     gap: 8px; 
-    background: #fff; 
+    background: var(--surface, #fff); 
     border: 1px solid var(--jr-border); 
     border-radius: 8px; 
     padding: 0 12px; 
 }
 .jr-search .material-symbols-outlined { 
-    color: #94a3b8; 
+    color: var(--muted, #94a3b8); 
     font-size: 18px; 
 }
 .jr-search input { 
     flex: 1; 
     border: none; 
     outline: none; 
+    background: transparent; 
+    color: var(--text, #334155); 
     padding: 9px 4px; 
     font-family: inherit; 
     font-size: 13.5px; 
@@ -504,13 +506,50 @@ body {
 .alokasi-field .req { 
     color: #BA1A1A; 
 }
-.alokasi-field input {
+.alokasi-field input,
+.alokasi-field select {
+    width: 100%;
     border: 1px solid var(--jr-border); border-radius: 8px; padding: 9px 12px;
     font-family: inherit; font-size: 13px; outline: none;
 }
-.alokasi-field input:focus { 
+
+/* Panah dropdown select (modal alokasi) — kustom & theme-aware */
+.alokasi-field select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    border-color: var(--border, #e2e5ec);
+    padding-right: 34px;
+    background-color: var(--surface, #fff);
+    color: var(--text, #334155);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+html[data-theme='dark'] .alokasi-field select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+.alokasi-field input:focus,
+.alokasi-field select:focus { 
     border-color: var(--jr-navy); 
     box-shadow: 0 0 0 3px rgba(0,40,142,0.1); 
+}
+
+.jr-filter-bar select {
+    border: 1px solid var(--border, #e2e5ec); border-radius: 8px; padding: 9px 34px 9px 12px;
+    font-family: inherit; font-size: 13px; outline: none;
+    background-color: var(--surface, #fff); color: var(--text, #334155);
+    appearance: none; -webkit-appearance: none; -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 16px;
+}
+
+html[data-theme='dark'] .jr-filter-bar select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
 }
 
 .alokasi-octet-input { 

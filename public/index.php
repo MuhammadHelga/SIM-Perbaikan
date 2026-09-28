@@ -104,7 +104,7 @@ if (preg_match('#^/unit/(ruangan|barang)/hapus/(\d+)$#', $path, $unitMatch)) {
     $id    = (int) $unitMatch[2];
     $kolom = $jenis === 'ruangan' ? 'id_ruangan' : 'id_barang';
 
-    $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM laporankerusakan WHERE $kolom = ?");
+    $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE $kolom = ?");
     $stmt->bind_param('i', $id);
     $stmt->execute();
     $dipakai = (int) $stmt->get_result()->fetch_assoc()['j'];
@@ -126,6 +126,32 @@ if (preg_match('#^/unit/(ruangan|barang)/hapus/(\d+)$#', $path, $unitMatch)) {
     }
 
     header('Location: ' . $basePath . '/unit');
+    exit;
+}
+
+// ===== Route dinamis: /subnet/hapus/{id} =====
+if (preg_match('#^/subnet/hapus/(\d+)$#', $path, $subnetMatch)) {
+    requireRole($basePath, ['admin']);
+
+    $id = (int) $subnetMatch[1];
+
+    $stmt = $conn->prepare(
+        "SELECT COUNT(*) AS j FROM alokasi_ip
+         WHERE subnet = (SELECT cidr FROM subnet WHERE id = ?)"
+    );
+    $stmt->bind_param('i', $id);
+    $stmt->execute();
+    $dipakai = (int) $stmt->get_result()->fetch_assoc()['j'];
+
+    if ($dipakai > 0) {
+        $_SESSION['flash'] = ['type' => 'error', 'text' => "Tidak bisa dihapus: masih dipakai {$dipakai} alokasi IP."];
+    } else {
+        require_once __DIR__ . '/../src/controllers/subnetController.php';
+        (new subnetController($conn))->destroy($id);
+        $_SESSION['flash'] = ['type' => 'success', 'text' => 'Subnet berhasil dihapus.'];
+    }
+
+    header('Location: ' . $basePath . '/subnet');
     exit;
 }
 
@@ -441,21 +467,32 @@ switch ($path) {
     case '/jaringan':
         requireLogin($basePath);
 
-        $subnet = ['gateway' => '192.100.99.1', 'mask' => '255.255.255.0', 'prefix' => '192.100.99'];
+        require_once __DIR__ . '/../src/controllers/alokasiIpController.php';
+        require_once __DIR__ . '/../src/controllers/subnetController.php';
 
-        // TODO: ganti dengan query asli ke database (tabel komputer/alokasi_ip)
-        $komputerListAll = [
-            ['id'=>1,'unit_id'=>1,'unit'=>'Loket Admisi 1 (Rawat Inap)','lokasi'=>'Gedung A - Lantai 1','hostname'=>'PC-ADMISI-01','host_octet'=>18,'mac'=>'D4:5D:64:A2:18:01','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Admisi - Port G0/03','catatan'=>'Meja Admisi 01'],
-            ['id'=>2,'unit_id'=>2,'unit'=>'BPJS Center Loket 2 (SEP)','lokasi'=>'Gedung A - Lantai 1','hostname'=>'PC-BPJS-02','host_octet'=>15,'mac'=>'D4:5D:64:A2:18:02','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Admisi - Port G0/05','catatan'=>'Loket BPJS 2'],
-            ['id'=>3,'unit_id'=>3,'unit'=>'Laboratorium Patologi Klinik','lokasi'=>'Gedung B - Ruang Lab 02','hostname'=>'PC-LAB-PAT-01','host_octet'=>22,'mac'=>'D4:5D:64:A2:18:03','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Lab - Port G0/02','catatan'=>''],
-            ['id'=>4,'unit_id'=>4,'unit'=>'Poli Jantung & Pembuluh Darah','lokasi'=>'Klinik Spesialis - Poli 11','hostname'=>'PC-POLI-JTG','host_octet'=>34,'mac'=>'D4:5D:64:A2:18:04','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Poli Lt.2 - Port G0/11','catatan'=>''],
-            ['id'=>5,'unit_id'=>5,'unit'=>'Farmasi Rawat Jalan (Depo 1)','lokasi'=>'Instalasi Farmasi Sentral','hostname'=>'PC-FARM-R2-03','host_octet'=>45,'mac'=>'D4:5D:64:A2:18:05','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Farmasi - Port G0/03','catatan'=>''],
-            ['id'=>6,'unit_id'=>6,'unit'=>'Kasir Pembayaran Utama','lokasi'=>'Gedung A - Loket Finansial','hostname'=>'PC-KASIR-01','host_octet'=>50,'mac'=>'D4:5D:64:A2:18:06','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Kasir - Port G0/01','catatan'=>''],
-            ['id'=>7,'unit_id'=>7,'unit'=>'Radiologi - Ruang USG 2','lokasi'=>'Instalasi Radiologi PACS','hostname'=>'PC-RAD-02','host_octet'=>65,'mac'=>'D4:5D:64:A2:18:07','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Radiologi - Port G0/02','catatan'=>'Kabel putus, menunggu perbaikan'],
-            ['id'=>8,'unit_id'=>8,'unit'=>'Rekam Medis (Filing & Scan)','lokasi'=>'Gedung Penunjang - RM 01','hostname'=>'PC-RM-04','host_octet'=>72,'mac'=>'D4:5D:64:A2:18:08','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch RM - Port G0/04','catatan'=>''],
-            ['id'=>9,'unit_id'=>9,'unit'=>'IGD Triase & Resusitasi','lokasi'=>'Instalasi Gawat Darurat','hostname'=>'PC-IGD-01','host_octet'=>88,'mac'=>'D4:5D:64:A2:18:09','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch IGD - Port G0/01','catatan'=>''],
-            ['id'=>10,'unit_id'=>10,'unit'=>'Poli Anak & Tumbuh Kembang','lokasi'=>'Gedung B Lt. 2','hostname'=>'PC-POLI-ANAK','host_octet'=>95,'mac'=>'D4:5D:64:A2:18:95','interface'=>'LAN Port RJ-45 (Gigabit)','port_switch'=>'Switch Poli Lt.2 - Port G0/19','catatan'=>'Meja Pendaftaran Poli Anak 01'],
-        ];
+        $alokasiController = new alokasiIpController($conn);
+        $subnetController  = new subnetController($conn);
+
+        $subnets        = $subnetController->index();
+        $selectedSubnet = trim($_GET['subnet'] ?? '');
+
+        // peta prefix per CIDR
+        $prefixByCidr = [];
+        foreach ($subnets as $s) {
+            $prefixByCidr[$s['cidr']] = $s['prefix'];
+        }
+
+        // ambil semua alokasi + hitung IP penuh per baris
+        $komputerListAll = $alokasiController->index();
+        foreach ($komputerListAll as $i => $r) {
+            $prefix = $prefixByCidr[$r['subnet']]
+                ?? implode('.', array_slice(explode('.', $r['subnet']), 0, 3));
+            $komputerListAll[$i]['ip'] = $prefix . '.' . (int) $r['host_octet'];
+        }
+
+        // subnet terpilih untuk header (null = "Semua Subnet")
+        $subnet      = $selectedSubnet !== '' ? $subnetController->byCidr($selectedSubnet) : null;
+        $subnetCount = count($subnets);
 
         $unitOptions = array_values(array_unique(array_column($komputerListAll, 'unit')));
 
@@ -465,12 +502,13 @@ switch ($path) {
         $page         = max(1, (int)($_GET['page'] ?? 1));
         $perPage      = 9;
 
-        $filtered = array_values(array_filter($komputerListAll, function ($r) use ($search, $filterUnit, $filterStatus) {
+        $filtered = array_values(array_filter($komputerListAll, function ($r) use ($search, $selectedSubnet, $filterUnit, $filterStatus) {
+            if ($selectedSubnet !== '' && $r['subnet'] !== $selectedSubnet) return false;
             if ($filterUnit !== '' && $r['unit'] !== $filterUnit) return false;
             if ($filterStatus !== '' && $r['status'] !== $filterStatus) return false;
             if ($search !== '') {
-                $keyword = mb_strtolower($search);
-                $haystack = mb_strtolower($r['unit'] . ' ' . $r['hostname'] . ' ' . $r['host_octet']);
+                $keyword  = mb_strtolower($search);
+                $haystack = mb_strtolower($r['unit'] . ' ' . $r['hostname'] . ' ' . $r['host_octet'] . ' ' . $r['ip']);
                 if (!str_contains($haystack, $keyword)) return false;
             }
             return true;
@@ -479,21 +517,26 @@ switch ($path) {
         $totalRows    = count($filtered);
         $komputerList = array_slice($filtered, ($page - 1) * $perPage, $perPage);
 
-        // Statistik & peta okupansi dihitung dari SELURUH data (bukan cuma yang terfilter/halaman aktif)
+        // Statistik & okupansi dari seluruh data subnet terpilih (bukan hasil search)
+        $scoped = $selectedSubnet !== ''
+            ? array_values(array_filter($komputerListAll, fn($r) => $r['subnet'] === $selectedSubnet))
+            : $komputerListAll;
+
         $occupancyMap = [];
-        foreach ($komputerListAll as $r) {
+        foreach ($scoped as $r) {
             $occupancyMap[(int)$r['host_octet']] = $r['status'];
         }
-        $terisi   = count($komputerListAll);
-        $offline  = count(array_filter($komputerListAll, fn($r) => $r['status'] === 'offline'));
-        $online   = $terisi - $offline;
-        $kosong   = 245 - $terisi; // range host valid 10-254 = 245 alamat
+        $terisi    = count($scoped);
+        $offline   = count(array_filter($scoped, fn($r) => $r['status'] === 'offline'));
+        $online    = $terisi - $offline;
+        $kapasitas = 245; // /24, range host valid 10-254
+        $kosong    = max(0, $kapasitas - $terisi);
 
         $occupancy = [
             'core'            => 9,
             'terisi'          => $terisi,
             'kosong'          => $kosong,
-            'tersedia_persen' => round(($kosong / 245) * 100, 1),
+            'tersedia_persen' => round(($kosong / $kapasitas) * 100, 1),
             'map'             => $occupancyMap,
         ];
 
@@ -507,6 +550,103 @@ switch ($path) {
         ];
 
         require __DIR__ . '/../src/views/jaringan/screens/JaringanView.php';
+        break;
+
+    case '/jaringan/simpan':
+        requireLogin($basePath);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!csrfValid()) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Sesi tidak valid. Silakan coba lagi.'];
+                header('Location: ' . $basePath . '/jaringan');
+                exit;
+            }
+
+            require_once __DIR__ . '/../src/controllers/alokasiIpController.php';
+            require_once __DIR__ . '/../src/controllers/subnetController.php';
+            $alokasiController = new alokasiIpController($conn);
+
+            $id       = (int) ($_POST['id'] ?? 0);
+            $unit     = trim($_POST['unit'] ?? '');
+            $lokasi   = trim($_POST['lokasi'] ?? '');
+            $hostname = trim($_POST['hostname'] ?? '');
+            $octet    = (int) ($_POST['host_octet'] ?? 0);
+
+            $subnetRow = (new subnetController($conn))->byCidr(trim($_POST['subnet'] ?? ''));
+            $subnet    = $subnetRow['cidr'] ?? '';
+
+            $existing = $id > 0 ? $alokasiController->show($id) : null;
+            $status   = $existing['status'] ?? 'online';
+
+            if ($subnet === '' || $unit === '' || $hostname === '' || $octet < 10 || $octet > 254) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Data tidak lengkap / subnet tidak dikenal / oktet IP di luar range (10-254).'];
+            } else {
+                try {
+                    if ($id > 0) {
+                        $alokasiController->update($id, $subnet, $unit, $lokasi, $hostname, $octet, $status);
+                        $_SESSION['flash'] = ['type' => 'success', 'text' => 'Alokasi IP berhasil diperbarui.'];
+                    } else {
+                        $alokasiController->store($subnet, $unit, $lokasi, $hostname, $octet, $status);
+                        $_SESSION['flash'] = ['type' => 'success', 'text' => 'Alokasi IP berhasil ditambahkan.'];
+                    }
+                } catch (mysqli_sql_exception $e) {
+                    $_SESSION['flash'] = ['type' => 'error', 'text' => 'Gagal menyimpan: IP atau hostname mungkin sudah dipakai.'];
+                }
+            }
+        }
+
+        header('Location: ' . $basePath . '/jaringan');
+        exit;
+
+    case '/subnet/simpan':
+        requireRole($basePath, ['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!csrfValid()) {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'Sesi tidak valid. Silakan coba lagi.'];
+                header('Location: ' . $basePath . '/subnet');
+                exit;
+            }
+
+            require_once __DIR__ . '/../src/controllers/subnetController.php';
+            $subnetController = new subnetController($conn);
+
+            $id         = (int) ($_POST['id'] ?? 0);
+            $cidr       = trim($_POST['cidr'] ?? '');
+            $prefix     = trim($_POST['prefix'] ?? '');
+            $gateway    = trim($_POST['gateway'] ?? '');
+            $mask       = trim($_POST['mask'] ?? '');
+            $keterangan = trim($_POST['keterangan'] ?? '');
+
+            if ($cidr === '' || $prefix === '') {
+                $_SESSION['flash'] = ['type' => 'error', 'text' => 'CIDR dan Prefix wajib diisi.'];
+            } else {
+                try {
+                    if ($id > 0) {
+                        $subnetController->update($id, $cidr, $prefix, $gateway, $mask, $keterangan);
+                        $_SESSION['flash'] = ['type' => 'success', 'text' => 'Subnet berhasil diperbarui.'];
+                    } else {
+                        $subnetController->store($cidr, $prefix, $gateway, $mask, $keterangan);
+                        $_SESSION['flash'] = ['type' => 'success', 'text' => 'Subnet berhasil ditambahkan.'];
+                    }
+                } catch (mysqli_sql_exception $e) {
+                    $_SESSION['flash'] = ['type' => 'error', 'text' => 'Gagal menyimpan: CIDR mungkin sudah dipakai.'];
+                }
+            }
+        }
+
+        header('Location: ' . $basePath . '/subnet');
+        exit;
+
+    case '/subnet':
+        requireRole($basePath, ['admin']);
+
+        require_once __DIR__ . '/../src/controllers/subnetController.php';
+        require_once __DIR__ . '/../src/controllers/alokasiIpController.php';
+        $subnetList   = (new subnetController($conn))->index();
+        $alokasiCount = count((new alokasiIpController($conn))->index());
+
+        require __DIR__ . '/../src/views/subnet/screens/SubnetView.php';
         break;
 
     default:

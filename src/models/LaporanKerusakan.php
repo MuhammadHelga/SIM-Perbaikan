@@ -27,7 +27,7 @@ class LaporanKerusakan
                 lk.tgl_kirim,
                 lk.tgl_terima,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
-            FROM laporankerusakan lk
+            FROM laporan_kerusakan lk
             INNER JOIN barang  b ON lk.id_barang  = b.id
             INNER JOIN ruangan r ON lk.id_ruangan = r.id
             ORDER BY lk.tanggal DESC, lk.id DESC"
@@ -47,7 +47,7 @@ class LaporanKerusakan
                 b.nama_barang        AS barang,
                 r.nama_ruangan       AS urusan,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
-             FROM laporankerusakan lk
+             FROM laporan_kerusakan lk
              INNER JOIN barang  b ON lk.id_barang  = b.id
              INNER JOIN ruangan r ON lk.id_ruangan = r.id
              WHERE lk.id = ?"
@@ -72,7 +72,7 @@ class LaporanKerusakan
         $id_user = null
     ) {
         $stmt = $this->conn->prepare(
-            "INSERT INTO laporankerusakan
+            "INSERT INTO laporan_kerusakan
             (
                 id_barang,
                 id_ruangan,
@@ -116,7 +116,7 @@ class LaporanKerusakan
         $prioritas = 'Sedang'
     ) {
         $stmt = $this->conn->prepare(
-            "UPDATE laporankerusakan
+            "UPDATE laporan_kerusakan
              SET
                 id_barang = ?,
                 id_ruangan = ?,
@@ -149,7 +149,7 @@ class LaporanKerusakan
     public function delete($id)
     {
         $stmt = $this->conn->prepare(
-            "DELETE FROM laporankerusakan
+            "DELETE FROM laporan_kerusakan
              WHERE id = ?"
         );
 
@@ -167,7 +167,7 @@ class LaporanKerusakan
     public function kirim($id, $tgl)
     {
         $stmt = $this->conn->prepare(
-            "UPDATE laporankerusakan
+            "UPDATE laporan_kerusakan
              SET
                 kirim_status = 'dikirim',
                 tgl_kirim = ?,
@@ -187,7 +187,7 @@ class LaporanKerusakan
     public function terima($id, $tgl)
     {
         $stmt = $this->conn->prepare(
-            "UPDATE laporankerusakan
+            "UPDATE laporan_kerusakan
              SET
                 kirim_status = 'diterima',
                 tgl_terima = ?
@@ -214,7 +214,7 @@ class LaporanKerusakan
         if ($status === 'Selesai') {
             // urutan evaluasi penting: isi tgl_terima dulu sebelum kirim_status diubah
             $stmt = $this->conn->prepare(
-                "UPDATE laporankerusakan
+                "UPDATE laporan_kerusakan
                  SET
                     status_penanganan = 'Selesai',
                     tgl_terima = IF(kirim_status = 'dikirim' AND tgl_terima IS NULL, CURDATE(), tgl_terima),
@@ -225,7 +225,7 @@ class LaporanKerusakan
             $stmt->bind_param("i", $id);
         } else {
             $stmt = $this->conn->prepare(
-                "UPDATE laporankerusakan
+                "UPDATE laporan_kerusakan
                  SET status_penanganan = ?
                  WHERE id = ?"
             );
@@ -290,7 +290,7 @@ class LaporanKerusakan
     {
         $types  = [];
         $params = [];
-        $sql = "SELECT COUNT(*) AS j FROM laporankerusakan WHERE 1=1 " . $where
+        $sql = "SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE 1=1 " . $where
              . $this->periodeClause($tahun, $bulan, $types, $params);
 
         $stmt = $this->conn->prepare($sql);
@@ -323,7 +323,7 @@ class LaporanKerusakan
 
     public function countPeriode(int $tahun, ?int $bulan = null): int
     {
-        $sql = "SELECT COUNT(*) AS j FROM laporankerusakan WHERE YEAR(tanggal) = ?";
+        $sql = "SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE YEAR(tanggal) = ?";
         $stmt = $this->conn->prepare($sql . ($bulan !== null ? " AND MONTH(tanggal) = ?" : ""));
 
         if ($bulan !== null) {
@@ -347,7 +347,7 @@ class LaporanKerusakan
 
         $stmt = $this->conn->prepare(
             "SELECT MONTH(tanggal) AS bulan, COUNT(*) AS j
-             FROM laporankerusakan
+             FROM laporan_kerusakan
              WHERE YEAR(tanggal) = ?
              GROUP BY MONTH(tanggal)"
         );
@@ -360,7 +360,7 @@ class LaporanKerusakan
 
         $stmt = $this->conn->prepare(
             "SELECT MONTH(tanggal) AS bulan, COUNT(*) AS j
-             FROM laporankerusakan
+             FROM laporan_kerusakan
              WHERE YEAR(tanggal) = ? AND status_penanganan = 'Selesai'
              GROUP BY MONTH(tanggal)"
         );
@@ -383,7 +383,7 @@ class LaporanKerusakan
         $out = [];
         $res = $this->conn->query(
             "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
-             FROM laporankerusakan lk
+             FROM laporan_kerusakan lk
              INNER JOIN barang b ON lk.id_barang = b.id
              GROUP BY lk.id_barang, b.nama_barang
              ORDER BY jumlah DESC"
@@ -409,7 +409,7 @@ class LaporanKerusakan
     ): array {
         $types  = [];
         $params = [];
-        $sql = "SELECT $select FROM laporankerusakan lk $join WHERE 1=1 "
+        $sql = "SELECT $select FROM laporan_kerusakan lk $join WHERE 1=1 "
              . $this->periodeClause($tahun, $bulan, $types, $params)
              . " GROUP BY $group ORDER BY $order";
         if ($limit > 0) {
@@ -521,7 +521,7 @@ class LaporanKerusakan
     {
         $years = [];
         $res = $this->conn->query(
-            "SELECT DISTINCT YEAR(tanggal) AS th FROM laporankerusakan ORDER BY th DESC"
+            "SELECT DISTINCT YEAR(tanggal) AS th FROM laporan_kerusakan ORDER BY th DESC"
         );
         while ($row = $res->fetch_assoc()) {
             $years[] = (int) $row['th'];
@@ -551,7 +551,7 @@ class LaporanKerusakan
                     MONTH(lk.tanggal) AS bulan,
                     COUNT(lk.id) AS j
              FROM ruangan r
-             LEFT JOIN laporankerusakan lk
+             LEFT JOIN laporan_kerusakan lk
                     ON lk.id_ruangan = r.id
                    AND lk.status_penanganan = 'Selesai'
                    AND YEAR(lk.tanggal) = ?
