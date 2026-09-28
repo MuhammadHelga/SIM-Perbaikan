@@ -2,22 +2,23 @@
 
 /**
  * Rute beranda & dashboard.
- * Variabel dari bootstrap: $router, $conn, $basePath.
  */
 
-$router->any('/', function () use ($basePath) {
-    if (empty($_SESSION['is_logged_in'])) {
-        redirect($basePath . '/login');
-    }
+return function (Router $router, mysqli $conn, string $basePath, AuthService $authService): void {
+    $router->any('/', function () use ($basePath) {
+        if (empty($_SESSION['is_logged_in'])) {
+            redirect($basePath . '/login');
+        }
 
-    redirect($basePath . '/dashboard');
-});
+        redirect($basePath . '/dashboard');
+    });
 
-$router->any('/dashboard', function () use ($conn, $basePath) {
-    requireLogin($basePath);
+    $router->any('/dashboard', function () use ($conn, $basePath) {
+        requireLogin($basePath);
 
-    require_once __DIR__ . '/../services/DashboardService.php';
-    $dashboard = (new DashboardService($conn))->getData((int) date('Y'));
+        require_once __DIR__ . '/../services/DashboardService.php';
+        $dashboard = (new DashboardService($conn))->getData((int) date('Y'));
 
-    require __DIR__ . '/../views/dashboard/screens/DashboardView.php';
-});
+        require __DIR__ . '/../views/dashboard/screens/DashboardView.php';
+    });
+};

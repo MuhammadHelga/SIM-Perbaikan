@@ -22,8 +22,6 @@ class LaporanService
     public function getListing(array $filters): array
     {
         $periode = (string) ($filters['periode'] ?? '');
-        $status  = (string) ($filters['status'] ?? '');
-        $search  = (string) ($filters['search'] ?? '');
         $perPage = (int) ($filters['per_page'] ?? 25);
         $page    = (int) ($filters['page'] ?? 1);
 
@@ -31,47 +29,12 @@ class LaporanService
             $perPage = 25;
         }
 
-        $all = $this->laporan->getAll()->fetch_all(MYSQLI_ASSOC);
-
         // Kartu statistik hanya dibatasi periode (bukan status/cari),
         // supaya angkanya tidak berubah saat tabel difilter.
-        $period = $all;
-        if ($periode !== '') {
-            $period = array_values(array_filter(
-                $period,
-                fn($r) => substr((string) $r['tanggal'], 0, 7) === $periode
-            ));
-        }
+        $stats = $this->laporan->statsByPeriode($periode);
 
-        $stats = ['total' => count($period), 'pending' => 0, 'selesai' => 0];
-        foreach ($period as $r) {
-            if (($r['status_penanganan'] ?? '') === 'Selesai') {
-                $stats['selesai']++;
-            } else {
-                $stats['pending']++;
-            }
-        }
-
-        // Tabel: filter status + pencarian diterapkan di atas periode terpilih.
-        $filtered = $period;
-        if ($status !== '') {
-            $filtered = array_values(array_filter(
-                $filtered,
-                fn($r) => $r['status_penanganan'] === $status
-            ));
-        }
-
-        if ($search !== '') {
-            $keyword = mb_strtolower($search);
-            $filtered = array_values(array_filter($filtered, function ($r) use ($keyword) {
-                return str_contains(mb_strtolower($r['urusan']), $keyword)
-                    || str_contains(mb_strtolower($r['barang']), $keyword)
-                    || str_contains(mb_strtolower($r['kerusakan']), $keyword)
-                    || str_contains(mb_strtolower((string) ($r['serial_number'] ?? '')), $keyword);
-            }));
-        }
-
-        $totalRows  = count($filtered);
+        // Filter status/cari + paginasi dikerjakan di database.
+        $totalRows  = $this->laporan->countFiltered($filters);
         $totalPages = max(1, (int) ceil($totalRows / $perPage));
         if ($page < 1) {
             $page = 1;
@@ -79,8 +42,10 @@ class LaporanService
             $page = $totalPages;
         }
 
+        $rows = $this->laporan->getListing($filters, $perPage, ($page - 1) * $perPage);
+
         return [
-            'rows'       => array_slice($filtered, ($page - 1) * $perPage, $perPage),
+            'rows'       => $rows,
             'stats'      => $stats,
             'page'       => $page,
             'perPage'    => $perPage,

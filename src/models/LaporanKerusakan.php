@@ -38,6 +38,153 @@ class LaporanKerusakan
         return $stmt->get_result();
     }
 
+    /**
+     * Bangun klausa WHERE + tipe/param untuk filter listing laporan.
+     * Dipakai oleh getListing(), countFiltered(), dan statsByPeriode().
+     *
+     * @param array{periode?:string, status?:string, search?:string} $filters
+     * @return array{0:string, 1:string, 2:array<int,mixed>} [whereSql, types, params]
+     */
+    private function buildFilters(array $filters): array
+    {
+        $where  = ' WHERE 1=1';
+        $types  = '';
+        $params = [];
+
+        // Periode 'YYYY-MM' -> rentang tanggal (ramah index idx_lap_tanggal).
+        $periode = (string) ($filters['periode'] ?? '');
+        if ($periode !== '' && preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $periode) === 1) {
+            $start = $periode . '-01';
+            $end   = date('Y-m-d', strtotime($start . ' +1 month'));
+
+            $where   .= ' AND lk.tanggal >= ? AND lk.tanggal < ?';
+            $types   .= 'ss';
+            $params[] = $start;
+            $params[] = $end;
+        }
+
+        $status = (string) ($filters['status'] ?? '');
+        if ($status !== '') {
+            $where   .= ' AND lk.status_penanganan = ?';
+            $types   .= 's';
+            $params[] = $status;
+        }
+
+        $search = (string) ($filters['search'] ?? '');
+        if ($search !== '') {
+            // Netralkan wildcard LIKE agar dicari sebagai teks biasa.
+            $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search) . '%';
+
+            $where .= ' AND (r.nama_ruangan LIKE ? OR b.nama_barang LIKE ?'
+                    . ' OR lk.rincian_kerusakan LIKE ? OR lk.serial_number LIKE ?)';
+            $types .= 'ssss';
+            for ($i = 0; $i < 4; $i++) {
+                $params[] = $like;
+            }
+        }
+
+        return [$where, $types, $params];
+    }
+
+    /**
+     * Ambil satu halaman laporan sesuai filter (LIMIT/OFFSET).
+     *
+     * @param array{periode?:string, status?:string, search?:string} $filters
+     * @return array<int, array<string,mixed>>
+     */
+    public function getListing(array $filters, int $limit, int $offset): array
+    {
+        [$where, $types, $params] = $this->buildFilters($filters);
+
+        $sql = "SELECT
+                    lk.id,
+                    lk.tanggal,
+                    r.nama_ruangan       AS urusan,
+                    b.nama_barang        AS barang,
+                    lk.serial_number,
+                    lk.rincian_kerusakan AS kerusakan,
+                    lk.uraian_kegiatan   AS uraian,
+                    lk.status_penanganan,
+                    lk.prioritas,
+                    lk.kirim_status,
+                    lk.tgl_kirim,
+                    lk.tgl_terima,
+                    CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
+                FROM laporan_kerusakan lk
+                INNER JOIN barang  b ON lk.id_barang  = b.id
+                INNER JOIN ruangan r ON lk.id_ruangan = r.id"
+                . $where
+                . " ORDER BY lk.tanggal DESC, lk.id DESC LIMIT ? OFFSET ?";
+
+        $types   .= 'ii';
+        $params[] = $limit;
+        $params[] = $offset;
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types !== '') {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Hitung jumlah baris sesuai filter (untuk paginasi).
+     *
+     * @param array{periode?:string, status?:string, search?:string} $filters
+     */
+    public function countFiltered(array $filters): int
+    {
+        [$where, $types, $params] = $this->buildFilters($filters);
+
+        $sql = "SELECT COUNT(*) AS j
+                FROM laporan_kerusakan lk
+                INNER JOIN barang  b ON lk.id_barang  = b.id
+                INNER JOIN ruangan r ON lk.id_ruangan = r.id"
+                . $where;
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types !== '') {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+
+        return (int) $stmt->get_result()->fetch_assoc()['j'];
+    }
+
+    /**
+     * Statistik kartu, hanya dibatasi periode (bukan status/cari).
+     *
+     * @return array{total:int, pending:int, selesai:int}
+     */
+    public function statsByPeriode(string $periode): array
+    {
+        [$where, $types, $params] = $this->buildFilters(['periode' => $periode]);
+
+        $sql = "SELECT
+                    COUNT(*) AS total,
+                    SUM(CASE WHEN status_penanganan = 'Selesai' THEN 1 ELSE 0 END) AS selesai
+                FROM laporan_kerusakan lk"
+                . $where;
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types !== '') {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+
+        $row     = $stmt->get_result()->fetch_assoc();
+        $total   = (int) $row['total'];
+        $selesai = (int) $row['selesai'];
+
+        return [
+            'total'   => $total,
+            'pending' => $total - $selesai,
+            'selesai' => $selesai,
+        ];
+    }
+
     // READ BY ID
     public function getById($id)
     {

@@ -45,7 +45,10 @@ $path       = str_replace($basePath, '', $requestUri);
 // ===== Routing =====
 require_once __DIR__ . '/../src/Router.php';
 $router = new Router();
-require __DIR__ . '/../src/routes.php';
+
+/** @var callable $registerRoutes */
+$registerRoutes = require __DIR__ . '/../src/routes.php';
+$registerRoutes($router, $conn, $basePath, $authService);
 
 if (!$router->dispatch($_SERVER['REQUEST_METHOD'], $path)) {
     http_response_code(404);
