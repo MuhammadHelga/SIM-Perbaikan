@@ -396,15 +396,15 @@ main.page-wrap {
   flex: 1;
   min-height: 0;
   flex-direction: column;
-  overflow: hidden;
   display: flex;
+  overflow-x: hidden;
 }
 
 .table-scroll {
   flex: 1;
   min-height: 0;
   overflow: auto;
-  scrollbar-width: none;
+  scrollbar-width: thin;
 }
 
 .data-table thead th {

@@ -17,7 +17,7 @@ body {
   color: var(--text);
   padding-left: 240px;
   box-sizing: border-box;
-  transition: padding-left 0.2s ease;
+  transition: padding-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .material-symbols-outlined {
@@ -48,7 +48,7 @@ body {
   box-shadow: 0 0.5px 8px rgba(77, 77, 77, 0.12);
   overflow: hidden;
   box-sizing: border-box;
-  transition: width 0.2s ease, transform 0.22s ease;
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-navbar__accent {
@@ -129,6 +129,17 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* Teks yang menyusut + memudar halus saat sidebar dilipat */
+.app-navbar__brand-text,
+.app-navbar__link-text,
+.app-navbar__user-text,
+.btn-logout__text {
+  max-width: 220px;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.18s ease;
 }
 
 .app-navbar__menu {
@@ -239,7 +250,8 @@ body.nav-collapsed .app-navbar__brand-text,
 body.nav-collapsed .app-navbar__link-text,
 body.nav-collapsed .app-navbar__user-text,
 body.nav-collapsed .btn-logout__text {
-  display: none;
+  max-width: 0;
+  opacity: 0;
 }
 
 body.nav-collapsed .app-navbar__top {
@@ -255,6 +267,7 @@ body.nav-collapsed .app-navbar__user {
 
 body.nav-collapsed .app-navbar__link {
   padding: 10px;
+  gap: 0;
 }
 
 body.nav-collapsed .app-navbar__user {
@@ -342,7 +355,8 @@ body.nav-open .nav-backdrop {
   body.nav-collapsed .app-navbar__link-text,
   body.nav-collapsed .app-navbar__user-text,
   body.nav-collapsed .btn-logout__text {
-    display: inline;
+    max-width: 220px;
+    opacity: 1;
   }
   body.nav-collapsed .app-navbar__top {
     flex-direction: row;
