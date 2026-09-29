@@ -142,7 +142,7 @@ function renderCharts() {
 
     const pieMonthLabels = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGS', 'SEP', 'OKT', 'NOV', 'DES'];
     const monthlyRepairCounts = pieMonthLabels.map(function (_, monthIndex) {
-        return Number((data.monthly.masuk || {})[monthIndex + 1] || 0);
+        return Number((data.monthly.selesai || {})[monthIndex + 1] || 0);
     });
     const pieColors = ['#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#5b9bd5', '#70ad47', '#264478', '#9e480e', '#997300', '#255e91', '#43682b', '#8064a2'];
     const pieSideColors = ['#31548f', '#b85b24', '#777777', '#c18f00', '#3c729f', '#4e7a32', '#1a3053', '#6e320a', '#735600', '#194267', '#304a1e', '#594674'];
