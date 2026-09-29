@@ -1,6 +1,6 @@
 <?php
 $dashboard = $dashboard ?? [
-    'total' => 0, 'dalam' => 0, 'selesai' => 0, 'kritis' => 0,
+    'total' => 0, 'bulanIni' => 0, 'bulanLalu' => 0, 'dalam' => 0, 'selesai' => 0, 'kritis' => 0,
     'solveRate' => 0, 'delta' => null, 'tahun' => (int) date('Y'), 'bulan' => (int) date('n'),
     'monthly' => ['masuk' => array_fill(1, 12, 0), 'selesai' => array_fill(1, 12, 0)],
     'byBarang' => [],
@@ -43,8 +43,8 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
         <div class="cards-grid">
             <div class="card">
                 <div class="card-body">
-                    <span class="card-title">TOTAL LAPORAN</span>
-                    <div class="card-value text-purple"><?= (int)$dashboard['total'] ?> <small>KASUS</small></div>
+                    <span class="card-title">TOTAL LAPORAN BULAN INI</span>
+                    <div class="card-value text-purple"><?= (int)$dashboard['bulanIni'] ?> <small>KASUS</small></div>
                     <span class="card-badge <?= $deltaClass ?>"><?= htmlspecialchars($deltaText) ?></span>
                 </div>
                 <div class="card-icon bg-light-purple">
@@ -100,7 +100,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
             <div class="chart-card">
                 <div class="chart-header">
                     <div class="flex-between">
-                        <h3>Distribusi Kategori Perbaikan</h3>
+                        <h3>Distribusi Perangkat</h3>
                         <span class="text-muted"><?= htmlspecialchars($periodeLabel) ?></span>
                     </div>
                     <p>Perangkat paling sering membutuhkan tindakan</p>
