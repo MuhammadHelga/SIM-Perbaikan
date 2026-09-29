@@ -503,10 +503,37 @@ main.page-wrap {
   pointer-events: none;
 }
 
-.pager__status {
-  font-weight: 500;
+.pager__page {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #c7ceff;
   color: #00288e;
-  white-space: nowrap;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pager__page:hover {
+  background: #00288e;
+  color: #ffffff;
+}
+
+.pager__page.is-active {
+  background: #00288e;
+  border-color: #00288e;
+  color: #ffffff;
+  cursor: default;
+}
+
+.pager__ellipsis {
+  color: #4a4a4a;
+  padding: 0 2px;
 }
 
 .table-footer select {

@@ -69,6 +69,30 @@ $pageUrl = function (int $target) use ($periode, $statusFilter, $search, $perPag
     return BASE_URL . '/laporan' . ($query !== '' ? '?' . $query : '');
 };
 
+// Deret nomor halaman dengan elipsis: 1 … 4 5 6 … 20
+$pagerItems = function (int $current, int $total): array {
+    if ($total <= 7) {
+        return range(1, $total);
+    }
+
+    $items = [1];
+    $start = max(2, $current - 1);
+    $end   = min($total - 1, $current + 1);
+
+    if ($start > 2) {
+        $items[] = '...';
+    }
+    for ($i = $start; $i <= $end; $i++) {
+        $items[] = $i;
+    }
+    if ($end < $total - 1) {
+        $items[] = '...';
+    }
+    $items[] = $total;
+
+    return $items;
+};
+
 $activeChips = [];
 if ($periode !== '') {
     $activeChips[] = ['label' => 'Periode: ' . $periodeLabel, 'url' => $chipUrl(['periode' => ''])];
@@ -319,6 +343,7 @@ if ($search !== '') {
                 <div class="table-footer__info">
                     <span>Menampilkan</span>
                     <select id="perPage">
+                        <option value="10" <?= $perPage === 10 ? 'selected' : '' ?>>10</option>
                         <option value="25" <?= $perPage === 25 ? 'selected' : '' ?>>25</option>
                         <option value="50" <?= $perPage === 50 ? 'selected' : '' ?>>50</option>
                         <option value="100" <?= $perPage === 100 ? 'selected' : '' ?>>100</option>
@@ -340,7 +365,17 @@ if ($search !== '') {
                            aria-label="Halaman sebelumnya">
                             <span class="material-symbols-outlined">chevron_left</span>
                         </a>
-                        <span class="pager__status">Halaman <?= (int)$page ?> dari <?= (int)$totalPages ?></span>
+
+                        <?php foreach ($pagerItems($page, $totalPages) as $item): ?>
+                            <?php if ($item === '...'): ?>
+                                <span class="pager__ellipsis" aria-hidden="true">&hellip;</span>
+                            <?php elseif ($item === $page): ?>
+                                <span class="pager__page is-active" aria-current="page"><?= (int)$item ?></span>
+                            <?php else: ?>
+                                <a class="pager__page" href="<?= htmlspecialchars($pageUrl($item), ENT_QUOTES, 'UTF-8') ?>"><?= (int)$item ?></a>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+
                         <a class="pager__btn<?= $page >= $totalPages ? ' is-disabled' : '' ?>"
                            href="<?= $page >= $totalPages ? '#' : htmlspecialchars($pageUrl($page + 1), ENT_QUOTES, 'UTF-8') ?>"
                            <?= $page >= $totalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>

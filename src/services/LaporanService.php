@@ -25,7 +25,7 @@ class LaporanService
         $perPage = (int) ($filters['per_page'] ?? 25);
         $page    = (int) ($filters['page'] ?? 1);
 
-        if (!in_array($perPage, [25, 50, 100, 200], true)) {
+        if (!in_array($perPage, [10, 25, 50, 100, 200], true)) {
             $perPage = 25;
         }
 
