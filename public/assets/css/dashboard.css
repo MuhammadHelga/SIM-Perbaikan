@@ -10,6 +10,12 @@ body {
     color: #1e293b;
 }
 
+/* Selalu sediakan ruang scrollbar agar lebar grid tidak berubah saat
+   scrollbar muncul (mencegah auto-resize Chart.js memotong animasi awal). */
+html {
+    overflow-y: scroll;
+}
+
 /* Container & Header */
 .container {
     max-width: 100%;

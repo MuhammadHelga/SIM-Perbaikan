@@ -383,4 +383,20 @@ function renderCharts() {
 /* Render ulang chart saat tema diganti (event dari app.js) */
 document.addEventListener('themechange', renderCharts);
 
-document.addEventListener('DOMContentLoaded', renderCharts);
+/*
+ * Inisialisasi setelah layout stabil.
+ * Chart.js (responsive) memakai ResizeObserver; bila container berubah ukuran
+ * tepat setelah chart dibuat (grid fr belum final, font/scrollbar), auto-resize
+ * itu memotong animasi pertama. Jadi tunggu window 'load' + satu frame rAF.
+ */
+function whenLayoutReady(fn) {
+    if (document.readyState === 'complete') {
+        requestAnimationFrame(fn);
+    } else {
+        window.addEventListener('load', function () {
+            requestAnimationFrame(fn);
+        }, { once: true });
+    }
+}
+
+whenLayoutReady(renderCharts);
