@@ -17,7 +17,16 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         requireLogin($basePath);
 
         require_once __DIR__ . '/../services/DashboardService.php';
-        $dashboard = (new DashboardService($conn))->getData((int) date('Y'));
+        $service = new DashboardService($conn);
+
+        $tahunList = $service->getTahunTersedia();
+        $tahun     = (int) ($_GET['tahun'] ?? date('Y'));
+
+        if (!in_array($tahun, $tahunList, true)) {
+            $tahun = $tahunList[0] ?? (int) date('Y');
+        }
+
+        $dashboard = $service->getData($tahun);
 
         require __DIR__ . '/../views/dashboard/screens/DashboardView.php';
     });

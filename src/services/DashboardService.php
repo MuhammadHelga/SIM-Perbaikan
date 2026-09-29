@@ -12,41 +12,41 @@ class DashboardService
     }
 
     /**
-     * Kumpulkan semua angka & data grafik untuk halaman Dashboard.
+     * Daftar tahun yang tersedia (dari data + tahun berjalan).
      *
-     * @param int $tahun Tahun untuk grafik tren bulanan
+     * @return int[]
+     */
+    public function getTahunTersedia(): array
+    {
+        return $this->laporan->tahunTersedia();
+    }
+
+    /**
+     * Kumpulkan semua angka & data grafik untuk halaman Dashboard pada tahun tertentu.
+     *
+     * @param int $tahun Tahun yang dipilih (default tahun berjalan)
      */
     public function getData(int $tahun): array
     {
-        $today = new DateTimeImmutable('today');
-        $prev  = $today->modify('first day of last month');
+        $total     = $this->laporan->countAll($tahun);
+        $selesai   = $this->laporan->countSelesai($tahun);
+        $totalLalu = $this->laporan->countAll($tahun - 1);
 
-        $bulanIni  = $this->laporan->countPeriode((int) $today->format('Y'), (int) $today->format('n'));
-        $bulanLalu = $this->laporan->countPeriode((int) $prev->format('Y'), (int) $prev->format('n'));
-
-        $delta = $bulanLalu > 0
-            ? (int) round(($bulanIni - $bulanLalu) / $bulanLalu * 100)
+        $delta = $totalLalu > 0
+            ? (int) round(($total - $totalLalu) / $totalLalu * 100)
             : null;
 
-        $total   = $this->laporan->countAll();
-        $selesai = $this->laporan->countSelesai();
-
         return [
-            'total'     => $total,
-            'bulanIni'  => $bulanIni,
-            'bulanLalu' => $bulanLalu,
-            'dalam'     => $this->laporan->countDalamPenanganan(),
-            'selesai'   => $selesai,
-            'kritis'    => $this->laporan->countKritis(),
-            'solveRate' => $total > 0 ? (int) round($selesai / $total * 100) : 0,
-            'delta'     => $delta,
-            'tahun'     => $tahun,
-            'bulan'     => (int) $today->format('n'),
-            'monthly'   => $this->laporan->monthlyRecap($tahun),
-            'byBarang'  => $this->laporan->countByBarang(
-                (int) $today->format('Y'),
-                (int) $today->format('n')
-            ),
+            'total'           => $total,
+            'dalam'           => $this->laporan->countDalamPenanganan($tahun),
+            'selesai'         => $selesai,
+            'kritis'          => $this->laporan->countKritis($tahun),
+            'solveRate'       => $total > 0 ? (int) round($selesai / $total * 100) : 0,
+            'delta'           => $delta,
+            'tahun'           => $tahun,
+            'tahunLalu'       => $tahun - 1,
+            'monthly'         => $this->laporan->monthlyRecap($tahun),
+            'byBarang'        => $this->laporan->countByBarang($tahun, null),
             'monthlyByBarang' => $this->laporan->monthlyByBarang($tahun),
         ];
     }
