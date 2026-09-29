@@ -5,8 +5,30 @@ document.addEventListener('DOMContentLoaded', function () {
     initYearStepper();
     initSidebar();
     initNavIndicator();
+    initSidebarPet();
     initSubmitGuard();
 });
+
+function initSidebarPet() {
+    const scene = document.querySelector('.sidebar-pet-scene');
+    const pets = scene ? scene.querySelectorAll('.sidebar-pet') : [];
+    if (!scene || !pets.length) return;
+
+    pets.forEach(function (pet) {
+        pet.addEventListener('pointerenter', function () {
+            pet.classList.add('is-speaking', 'is-happy');
+        });
+        pet.addEventListener('pointerleave', function () {
+            pet.classList.remove('is-speaking', 'is-happy');
+        });
+        pet.addEventListener('focus', function () {
+            pet.classList.add('is-speaking', 'is-happy');
+        });
+        pet.addEventListener('blur', function () {
+            pet.classList.remove('is-speaking', 'is-happy');
+        });
+    });
+}
 
 /* Garis indikator di kanan: diposisikan statis pada item menu yang aktif */
 function initNavIndicator() {

@@ -34,7 +34,7 @@ $utilisasi = $stats['total_unit'] > 0
     <link rel="icon" href="<?= BASE_URL ?>/favicon.svg" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/navbar.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/jaringan.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/modal.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">

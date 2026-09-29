@@ -71,6 +71,36 @@ try {
             <?php endforeach; ?>
         </nav>
 
+        <div class="sidebar-pet-area">
+            <div class="sidebar-pet-scene">
+                <span class="sidebar-pet__sparkle sidebar-pet__sparkle--one" aria-hidden="true">✦</span>
+                <span class="sidebar-pet__sparkle sidebar-pet__sparkle--two" aria-hidden="true">✦</span>
+                <button type="button" class="sidebar-pet sidebar-pet--leader" data-animal="Pak Kiki" data-greeting="Hai, saya mentor IT!" aria-label="Sapa Pak Kiki si pemimpin">
+                    <span class="sidebar-pet__bubble" aria-live="polite">Hai, saya mentor IT!</span>
+                    <span class="sidebar-pet__leader-crown" aria-hidden="true">👑</span>
+                    <span class="sidebar-pet__character sidebar-pet__character--leader" aria-hidden="true">🦁</span>
+                </button>
+                <div class="sidebar-pet__friends">
+                    <button type="button" class="sidebar-pet" data-animal="Rico" aria-label="Sapa Rico">
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Rico!</span><span class="sidebar-pet__character" aria-hidden="true">🐱</span>
+                    </button>
+                    <button type="button" class="sidebar-pet" data-animal="Helga" aria-label="Sapa Helga">
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Helga!</span><span class="sidebar-pet__character" aria-hidden="true">🐶</span>
+                    </button>
+                    <button type="button" class="sidebar-pet" data-animal="Reza" aria-label="Sapa Reza">
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Reza!</span><span class="sidebar-pet__character" aria-hidden="true">🐰</span>
+                    </button>
+                    <button type="button" class="sidebar-pet" data-animal="Maria" aria-label="Sapa Maria">
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Maria!</span><span class="sidebar-pet__character" aria-hidden="true">🦊</span>
+                    </button>
+                    <button type="button" class="sidebar-pet" data-animal="Dewi" aria-label="Sapa Dewi">
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Dewi!</span><span class="sidebar-pet__character" aria-hidden="true">🐸</span>
+                    </button>
+                </div>
+                <span class="sidebar-pet__ground" aria-hidden="true"></span>
+            </div>
+        </div>
+
         <div class="app-navbar__foot">
             <button type="button" class="theme-toggle" aria-label="Ganti tema">
                 <span class="material-symbols-outlined">dark_mode</span>
@@ -94,4 +124,4 @@ try {
     </div>
 <?php endif; ?>
 
-<script src="<?= BASE_URL ?>/assets/js/app.js" defer></script>
+<script src="<?= BASE_URL ?>/assets/js/app.js?v=<?= filemtime(dirname(__DIR__, 2) . '/public/assets/js/app.js') ?>" defer></script>

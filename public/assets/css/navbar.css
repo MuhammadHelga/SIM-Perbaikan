@@ -146,7 +146,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  flex: 1;
+  flex: 0 1 auto;
+  max-height: 45vh;
   min-height: 0;
   overflow-y: auto;
   position: relative;
@@ -194,6 +195,233 @@ body {
   background: #eef2ff;
   color: #00288e;
   font-weight: 600;
+}
+
+.sidebar-pet-area {
+  position: relative;
+  display: grid;
+  flex: 1;
+  place-items: end center;
+  min-height: 148px;
+}
+
+.sidebar-pet-scene {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 136px;
+  overflow: visible;
+  border: 1px solid rgba(126, 184, 255, 0.18);
+  border-radius: 15px;
+  background:
+    linear-gradient(180deg, rgba(126, 184, 255, 0.1), rgba(126, 184, 255, 0.025));
+}
+
+.sidebar-pet__friends {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 1px;
+  width: 100%;
+  padding-bottom: 11px;
+  perspective: 300px;
+}
+
+.sidebar-pet.sidebar-pet--leader {
+  position: absolute;
+  z-index: 1;
+  bottom: 52px;
+  left: calc(50% - 31px);
+  width: 62px;
+  height: 68px;
+  font-size: 48px;
+}
+
+.sidebar-pet__leader-crown {
+  position: absolute;
+  top: -2px;
+  left: 50%;
+  z-index: 1;
+  font-size: 19px;
+  transform: translateX(-50%) rotate(-9deg);
+  transform-origin: center bottom;
+  animation: sidebar-pet-crown 2.8s ease-in-out infinite;
+}
+
+.sidebar-pet__character {
+  display: inline-block;
+  transform-origin: center bottom;
+  animation: sidebar-pet-idle 1.9s ease-in-out infinite;
+  filter: drop-shadow(0 3px 2px rgba(15, 23, 42, 0.2));
+}
+
+.sidebar-pet__friends > .sidebar-pet:nth-child(2) .sidebar-pet__character {
+  animation-delay: -0.45s;
+}
+
+.sidebar-pet__friends > .sidebar-pet:nth-child(3) .sidebar-pet__character {
+  animation-delay: -0.9s;
+}
+
+.sidebar-pet__friends > .sidebar-pet:nth-child(4) .sidebar-pet__character {
+  animation-delay: -1.35s;
+}
+
+.sidebar-pet__friends > .sidebar-pet:nth-child(5) .sidebar-pet__character {
+  animation-delay: -0.7s;
+}
+
+.sidebar-pet__character--leader {
+  animation-name: sidebar-pet-leader-idle;
+  animation-duration: 2.4s;
+  transition: transform 0.18s ease;
+  filter: drop-shadow(0 5px 2px rgba(15, 23, 42, 0.24))
+          drop-shadow(0 9px 5px rgba(15, 23, 42, 0.16));
+}
+
+.sidebar-pet.sidebar-pet--leader:hover,
+.sidebar-pet.sidebar-pet--leader:focus-visible,
+.sidebar-pet.sidebar-pet--leader.is-speaking {
+  z-index: 5;
+}
+
+.sidebar-pet {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 42px;
+  padding: 0 1px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+  font-size: 27px;
+  line-height: 1;
+  transition: transform 0.18s ease;
+}
+
+.sidebar-pet:hover,
+.sidebar-pet:focus-visible,
+.sidebar-pet.is-happy {
+  z-index: 4;
+  outline: none;
+}
+
+.sidebar-pet:hover .sidebar-pet__character,
+.sidebar-pet:focus-visible .sidebar-pet__character,
+.sidebar-pet.is-happy .sidebar-pet__character {
+  animation: sidebar-pet-hop 0.42s ease-in-out 2 alternate;
+}
+
+.sidebar-pet.sidebar-pet--leader:hover,
+.sidebar-pet.sidebar-pet--leader:focus-visible,
+.sidebar-pet.sidebar-pet--leader.is-happy {
+  z-index: 5;
+}
+
+.sidebar-pet.sidebar-pet--leader:hover .sidebar-pet__character,
+.sidebar-pet.sidebar-pet--leader:focus-visible .sidebar-pet__character,
+.sidebar-pet.sidebar-pet--leader.is-happy .sidebar-pet__character {
+  transform: translateY(-4px) scale(1.12);
+}
+
+.sidebar-pet__ground {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(126, 184, 255, 0.26);
+}
+
+.sidebar-pet__sparkle {
+  position: absolute;
+  color: #f6c85f;
+  font-size: 13px;
+  animation: sidebar-pet-twinkle 1.8s ease-in-out infinite alternate;
+}
+
+.sidebar-pet__sparkle--one {
+  top: 17px;
+  left: 24px;
+}
+
+.sidebar-pet__sparkle--two {
+  top: 27px;
+  right: 25px;
+  font-size: 10px;
+  animation-delay: -0.8s;
+}
+
+.sidebar-pet__bubble {
+  position: absolute;
+  z-index: 8;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  width: max-content;
+  max-width: 155px;
+  padding: 6px 9px;
+  border: 1px solid rgba(126, 184, 255, 0.34);
+  border-radius: 11px 11px 11px 3px;
+  background: var(--surface, #fff);
+  color: var(--text, #1e293b);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 5px) scale(0.92);
+  transform-origin: bottom center;
+  transition: opacity 0.16s ease, transform 0.16s ease, visibility 0.16s ease;
+  visibility: hidden;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.16);
+}
+
+.sidebar-pet.is-speaking .sidebar-pet__bubble,
+.sidebar-pet:hover .sidebar-pet__bubble,
+.sidebar-pet:focus-visible .sidebar-pet__bubble {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  visibility: visible;
+}
+
+.sidebar-pet__friends > .sidebar-pet:first-child .sidebar-pet__bubble {
+  left: 0;
+  transform: translate(0, 5px) scale(0.92);
+  transform-origin: bottom left;
+}
+
+.sidebar-pet__friends > .sidebar-pet:first-child:hover .sidebar-pet__bubble,
+.sidebar-pet__friends > .sidebar-pet:first-child:focus-visible .sidebar-pet__bubble,
+.sidebar-pet__friends > .sidebar-pet:first-child.is-speaking .sidebar-pet__bubble {
+  transform: translate(0, 0) scale(1);
+}
+
+.sidebar-pet__friends > .sidebar-pet:last-child .sidebar-pet__bubble {
+  right: 0;
+  left: auto;
+  border-radius: 11px 11px 3px 11px;
+  transform: translate(0, 5px) scale(0.92);
+  transform-origin: bottom right;
+}
+
+.sidebar-pet__friends > .sidebar-pet:last-child:hover .sidebar-pet__bubble,
+.sidebar-pet__friends > .sidebar-pet:last-child:focus-visible .sidebar-pet__bubble,
+.sidebar-pet__friends > .sidebar-pet:last-child.is-speaking .sidebar-pet__bubble {
+  transform: translate(0, 0) scale(1);
+}
+
+.sidebar-pet:focus-visible {
+  outline: 2px solid var(--primary, #4f8ef7);
+  outline-offset: 2px;
+  border-radius: 8px;
 }
 
 .app-navbar__link-text {
@@ -291,6 +519,125 @@ body.nav-collapsed .app-navbar__foot {
 body.nav-collapsed .app-navbar__logout-form {
   flex: none;
   width: 100%;
+}
+
+body.nav-collapsed .sidebar-pet-area {
+  min-height: 84px;
+}
+
+body.nav-collapsed .sidebar-pet-scene {
+  width: 46px;
+  height: 76px;
+  overflow: visible;
+}
+
+body.nav-collapsed .sidebar-pet__friends {
+  display: none;
+}
+
+body.nav-collapsed .sidebar-pet--leader {
+  bottom: 4px;
+  left: calc(50% - 21px);
+  width: 42px;
+  height: 52px;
+  font-size: 34px;
+  animation: none;
+}
+
+body.nav-collapsed .sidebar-pet--leader:hover,
+body.nav-collapsed .sidebar-pet--leader:focus-visible,
+body.nav-collapsed .sidebar-pet--leader.is-speaking {
+  z-index: 5;
+}
+
+body.nav-collapsed .sidebar-pet--leader .sidebar-pet__character {
+  animation: none;
+}
+
+body.nav-collapsed .sidebar-pet {
+  width: 40px;
+  height: 50px;
+  font-size: 26px;
+}
+
+body.nav-collapsed .sidebar-pet__sparkle {
+  display: none;
+}
+
+body.nav-collapsed .sidebar-pet--leader .sidebar-pet__bubble {
+  max-width: 142px;
+}
+
+body.nav-collapsed .sidebar-pet--leader:hover .sidebar-pet__bubble,
+body.nav-collapsed .sidebar-pet--leader:focus-visible .sidebar-pet__bubble,
+body.nav-collapsed .sidebar-pet--leader.is-speaking .sidebar-pet__bubble {
+  transform: translate(-50%, 0) scale(1);
+}
+
+body.nav-collapsed .sidebar-pet--leader .sidebar-pet__bubble {
+  left: 50%;
+  transform: translate(-50%, 5px) scale(0.92);
+}
+body.nav-collapsed .sidebar-pet__leader-crown {
+  top: 0;
+  font-size: 14px;
+}
+
+@keyframes sidebar-pet-idle {
+  0%, 100% { transform: translateY(0) rotate(-5deg) scale(1); }
+  28% { transform: translateY(-3px) rotate(0) scale(1.03); }
+  55% { transform: translateY(0) rotate(5deg) scale(1); }
+  78% { transform: translateY(-1px) rotate(0) scale(1.01); }
+}
+
+@keyframes sidebar-pet-leader-idle {
+  0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+  35% { transform: translateY(-4px) rotate(1deg) scale(1.04); }
+  65% { transform: translateY(0) rotate(2deg) scale(1); }
+}
+
+@keyframes sidebar-pet-crown {
+  0%, 100% { transform: translateX(-50%) rotate(-9deg) translateY(0); }
+  50% { transform: translateX(-50%) rotate(7deg) translateY(-2px); }
+}
+
+@keyframes sidebar-pet-twinkle {
+  from { opacity: 0.4; transform: scale(0.8) rotate(-12deg); }
+  to { opacity: 1; transform: scale(1.15) rotate(12deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-pet__character,
+  .sidebar-pet__leader-crown,
+  .sidebar-pet__sparkle {
+    animation: none;
+  }
+
+  .sidebar-pet:hover,
+  .sidebar-pet:focus-visible,
+  .sidebar-pet.is-happy {
+    animation: none;
+  }
+
+  .sidebar-pet.sidebar-pet--leader:hover,
+  .sidebar-pet.sidebar-pet--leader:focus-visible,
+  .sidebar-pet.sidebar-pet--leader.is-happy {
+    z-index: 5;
+  }
+
+  .sidebar-pet:hover .sidebar-pet__character,
+  .sidebar-pet:focus-visible .sidebar-pet__character,
+  .sidebar-pet.is-happy .sidebar-pet__character {
+    animation: none;
+  }
+
+  .sidebar-pet__bubble {
+    transition: none;
+  }
+
+  .sidebar-pet {
+    transition: none;
+  }
 }
 
 /* ===================== Toggle (mobile) + backdrop ===================== */

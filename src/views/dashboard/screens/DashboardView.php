@@ -29,7 +29,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/dashboard.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/dashboard.css') ?>">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/navbar.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
 </head>
 <body>
