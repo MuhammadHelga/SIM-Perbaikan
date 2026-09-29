@@ -21,6 +21,14 @@ $topUnitTotal = (int) ($topUnit['total'] ?? 0);
 $peakLabel    = $peakMonths
     ? implode(' & ', array_map(fn($m) => mb_substr($m, 0, 3), $peakMonths))
     : '—';
+
+// URL halaman cetak (tab baru): semua baris sesuai filter tahun/pencarian/urutan.
+$cetakQuery = http_build_query(array_filter([
+    'tahun' => $tahun,
+    'q'     => $q,
+    'sort'  => $sort,
+], fn($v) => $v !== '' && $v !== null));
+$cetakUrl = BASE_URL . '/ruang/cetak' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
 ?>
 <!DOCTYPE html>
 <html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
@@ -53,7 +61,7 @@ $peakLabel    = $peakMonths
                 <h1>Total Barang Diperbaiki per Ruang/Urusan</h1>
                 <p>Dihitung dari laporan dengan status Selesai di semua bulan periode tahun berjalan (Rekap Tahunan)</p>
             </div>
-            <button class="btn btn-success" onclick="window.print()"><span class="material-symbols-outlined">print</span> Cetak Rekap Ruang</button>
+            <a class="btn btn-success" id="btnCetakRuang" href="<?= htmlspecialchars($cetakUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><span class="material-symbols-outlined">print</span> Cetak Rekap Ruang</a>
         </div>
 
         <!-- Metric Cards Grid -->
