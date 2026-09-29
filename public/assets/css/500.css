@@ -80,3 +80,48 @@ Not part of the actual experiment.
     --_color-bg: var(--_color-bg-end);
     --_color-logo: var(--_color-logo-end);
 }
+
+/*
+SIM-Perbaikan: aksi pada halaman error 500.
+Ditampilkan di atas kanvas animasi.
+*/
+.err-actions {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 32px;
+    z-index: 10;
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 0 16px;
+}
+
+.err-btn {
+    font: 600 14px 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 10px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.92);
+    color: #0f172a;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.err-btn:hover {
+    background: #ffffff;
+    transform: translateY(-1px);
+}
+
+.err-btn--ghost {
+    background: transparent;
+    color: #ffffff;
+}
+
+.err-btn--ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
