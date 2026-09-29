@@ -595,8 +595,6 @@ class LaporanKerusakan
     }
 
     /**
-=======
->>>>>>> d8444f130086032752c4fe42e549a9747672abc3
      * Daftar tahun yang punya data laporan (+ tahun berjalan), urut menurun.
      * @return int[]
      */
