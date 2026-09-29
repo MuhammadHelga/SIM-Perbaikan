@@ -85,7 +85,7 @@ try {
                         <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Rico!</span><span class="sidebar-pet__character" aria-hidden="true">🐱</span>
                     </button>
                     <button type="button" class="sidebar-pet" data-animal="Helga" aria-label="Sapa Helga">
-                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Helga!</span><span class="sidebar-pet__character" aria-hidden="true">🐶</span>
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Helga!</span><span class="sidebar-pet__character" aria-hidden="true">🦝</span>
                     </button>
                     <button type="button" class="sidebar-pet" data-animal="Reza" aria-label="Sapa Reza">
                         <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Reza!</span><span class="sidebar-pet__character" aria-hidden="true">🐰</span>

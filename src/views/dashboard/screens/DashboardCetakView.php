@@ -1,6 +1,7 @@
 <?php
 /**
- * Cetak Dashboard: ringkasan KPI, tabel rekap bulanan, grafik, dan tabel distribusi.
+ * Cetak Dashboard: ringkasan KPI, keempat grafik dashboard, dan tabel rekap.
+ * Keempat grafik dirender dengan konfigurasi yang sama persis dengan dashboard.
  * Dibuka dari tombol "Cetak Dashboard" (tab baru) dan otomatis memicu print.
  *
  * @var array $dashboard
@@ -39,6 +40,7 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Perbaikan <?= $esc($dashboard['tahun']) ?></title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
         body {
@@ -114,13 +116,29 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             padding-bottom: 4px;
             border-bottom: 1px solid #dbe2f0;
         }
-        .charts {
+        .charts-grid {
             display: grid;
             grid-template-columns: 1.8fr 1.2fr;
             gap: 14px;
+            margin-bottom: 18px;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
-        .chart-box { border: 1px solid #e2e8f0; border-radius: 6px; padding: 8px; }
-        .chart-box canvas { display: block; width: 100% !important; height: 240px !important; }
+        .chart-box {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            min-width: 0;
+        }
+        .chart-box__head { margin-bottom: 10px; }
+        .chart-box__head h3 { margin: 0; font-size: 12px; font-weight: 600; color: #0f172a; }
+        .chart-box__head p { margin: 2px 0 0; font-size: 10px; color: #64748b; }
+        .chart-box__head-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+        .chart-box__year { font-size: 10px; color: #94a3b8; white-space: nowrap; }
+        .chart-box__canvas { position: relative; height: 260px; min-width: 0; }
+        .chart-box__canvas--tall { height: 320px; }
+        .chart-box__canvas canvas { max-width: 100%; }
 
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid #b9c2d6; padding: 4px 6px; text-align: center; }
@@ -142,6 +160,11 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             .page-break { break-before: page; page-break-before: always; }
             @page { size: A4 landscape; margin: 10mm; }
             html, body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+
+        @media (max-width: 1024px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .kpi-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
 </head>
@@ -186,11 +209,42 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             </div>
         </div>
 
-        <div class="block">
-            <h3 class="block__title">Tren Laporan dan Penyelesaian per Bulan</h3>
-            <div class="charts">
-                <div class="chart-box"><canvas id="barChart"></canvas></div>
-                <div class="chart-box"><canvas id="doughnutChart"></canvas></div>
+        <div class="charts-grid">
+            <div class="chart-box">
+                <div class="chart-box__head">
+                    <h3>Tren Laporan dan Penyelesaian (<?= (int) $dashboard['tahun'] ?>)</h3>
+                    <p>Perbandingan jumlah laporan masuk, pending, proses, dan selesai per bulan</p>
+                </div>
+                <div class="chart-box__canvas"><canvas id="barChart"></canvas></div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-box__head">
+                    <div class="chart-box__head-row">
+                        <h3>Distribusi Perangkat</h3>
+                        <span class="chart-box__year">Tahun <?= (int) $dashboard['tahun'] ?></span>
+                    </div>
+                    <p>Perangkat paling sering membutuhkan tindakan</p>
+                </div>
+                <div class="chart-box__canvas"><canvas id="doughnutChart"></canvas></div>
+            </div>
+        </div>
+
+        <div class="charts-grid page-break">
+            <div class="chart-box">
+                <div class="chart-box__head">
+                    <h3>Perbandingan Kerusakan per Bulan Tahun <?= (int) $dashboard['tahun'] ?></h3>
+                    <p>Jumlah laporan kerusakan setiap barang per bulan</p>
+                </div>
+                <div class="chart-box__canvas chart-box__canvas--tall"><canvas id="monthlyItemsChart"></canvas></div>
+            </div>
+
+            <div class="chart-box">
+                <div class="chart-box__head">
+                    <h3>Persentase Perbaikan per Bulan Tahun <?= (int) $dashboard['tahun'] ?></h3>
+                    <p>Persentase laporan per bulan dari total laporan tahunan</p>
+                </div>
+                <div class="chart-box__canvas chart-box__canvas--tall"><canvas id="monthlyPieChart"></canvas></div>
             </div>
         </div>
 
@@ -239,8 +293,8 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             </table>
         </div>
 
-        <div class="block page-break">
-            <h3 class="block__title">Distribusi Perangkat(termasuk Kerusakan Terbanyak)</h3>
+        <div class="block">
+            <h3 class="block__title">Distribusi Perangkat (termasuk Kerusakan Terbanyak)</h3>
             <table>
                 <thead>
                     <tr>
@@ -271,51 +325,6 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
                             <td class="row-label">TOTAL</td>
                             <td><?= $totalByBarang ?></td>
                             <td>100,0%</td>
-                        </tr>
-                    </tfoot>
-                <?php endif; ?>
-            </table>
-        </div>
-
-        <div class="block">
-            <h3 class="block__title">Kerusakan per Barang per Bulan</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 40px;">No</th>
-                        <th class="row-label">Nama Barang</th>
-                        <?php foreach ($bulanSingkat as $bln): ?>
-                            <th><?= $esc($bln) ?></th>
-                        <?php endforeach; ?>
-                        <th>TOTAL</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (!$monthlyItem): ?>
-                        <tr><td class="empty" colspan="15">Belum ada data untuk tahun ini.</td></tr>
-                    <?php endif; ?>
-                    <?php foreach ($monthlyItem as $i => $item): ?>
-                        <?php $rowTotal = 0; ?>
-                        <tr>
-                            <td class="center"><?= $i + 1 ?></td>
-                            <td class="row-label"><?= $esc($item['nama'] ?? '-') ?></td>
-                            <?php for ($b = 1; $b <= 12; $b++): ?>
-                                <?php $v = (int) (($item['bulanan'] ?? [])[$b] ?? 0); $rowTotal += $v; ?>
-                                <td><?= $v ?></td>
-                            <?php endfor; ?>
-                            <td><?= $rowTotal ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-                <?php if ($monthlyItem): ?>
-                    <tfoot>
-                        <tr>
-                            <td class="center"><?= count($monthlyItem) ?></td>
-                            <td class="row-label">TOTAL</td>
-                            <?php for ($b = 1; $b <= 12; $b++): ?>
-                                <td><?= (int) ($monthly['masuk'][$b] ?? 0) ?></td>
-                            <?php endfor; ?>
-                            <td><?= (int) $dashboard['total'] ?></td>
                         </tr>
                     </tfoot>
                 <?php endif; ?>
