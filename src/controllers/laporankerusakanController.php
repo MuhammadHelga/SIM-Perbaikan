@@ -11,11 +11,6 @@ class laporankerusakanController
         $this->laporankerusakan = new LaporanKerusakan($conn);
     }
 
-    public function index()
-    {
-        return $this->laporankerusakan->getAll();
-    }
-
     public function show($id)
     {
         return $this->laporankerusakan->getById($id);
@@ -84,20 +79,5 @@ class laporankerusakanController
     public function terima($id, $tgl)
     {
         return $this->laporankerusakan->terima($id, $tgl);
-    }
-
-    public function ubahStatus($id, $status)
-    {
-        return $this->laporankerusakan->updateStatus($id, $status);
-    }
-
-    public function getBarang()
-    {
-        return $this->laporankerusakan->getBarang();
-    }
-
-    public function getRuangan()
-    {
-        return $this->laporankerusakan->getRuangan();
     }
 }

@@ -9,35 +9,6 @@ class LaporanKerusakan
         $this->conn = $conn;
     }
 
-    // READ
-    public function getAll()
-    {
-        $stmt = $this->conn->prepare(
-            "SELECT
-                lk.id,
-                lk.tanggal,
-                r.nama_ruangan       AS urusan,
-                b.nama_barang        AS barang,
-                lk.serial_number,
-                lk.rincian_kerusakan AS kerusakan,
-                lk.uraian_kegiatan   AS uraian,
-                lk.status_penanganan,
-                lk.prioritas,
-                lk.kirim_status,
-                lk.tgl_kirim,
-                lk.tgl_terima,
-                CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
-            FROM laporan_kerusakan lk
-            INNER JOIN barang  b ON lk.id_barang  = b.id
-            INNER JOIN ruangan r ON lk.id_ruangan = r.id
-            ORDER BY lk.tanggal DESC, lk.id DESC"
-        );
-
-        $stmt->execute();
-
-        return $stmt->get_result();
-    }
-
     /**
      * Bangun klausa WHERE + tipe/param untuk filter listing laporan.
      * Dipakai oleh getListing(), countFiltered(), dan statsByPeriode().
@@ -346,43 +317,6 @@ class LaporanKerusakan
         return $stmt->execute();
     }
 
-    /**
-     * Ubah status penanganan secara manual.
-     * Bila diubah ke 'Selesai' sementara barang masih 'dikirim',
-     * otomatis ditandai diterima + tgl_terima diisi.
-     */
-    public function updateStatus($id, $status)
-    {
-        $allowed = ['Pending', 'Proses', 'Selesai'];
-        if (!in_array($status, $allowed, true)) {
-            return false;
-        }
-
-        if ($status === 'Selesai') {
-            // urutan evaluasi penting: isi tgl_terima dulu sebelum kirim_status diubah
-            $stmt = $this->conn->prepare(
-                "UPDATE laporan_kerusakan
-                 SET
-                    status_penanganan = 'Selesai',
-                    tgl_terima = IF(kirim_status = 'dikirim' AND tgl_terima IS NULL, CURDATE(), tgl_terima),
-                    kirim_status = IF(kirim_status = 'dikirim', 'diterima', kirim_status)
-                 WHERE id = ?"
-            );
-
-            $stmt->bind_param("i", $id);
-        } else {
-            $stmt = $this->conn->prepare(
-                "UPDATE laporan_kerusakan
-                 SET status_penanganan = ?
-                 WHERE id = ?"
-            );
-
-            $stmt->bind_param("si", $status, $id);
-        }
-
-        return $stmt->execute();
-    }
-
     // DATA BARANG UNTUK DROPDOWN
     public function getBarang()
     {
@@ -522,11 +456,18 @@ class LaporanKerusakan
     }
 
     /**
+<<<<<<< HEAD
      * Jumlah laporan per barang dalam periode tertentu, urut terbanyak.
+=======
+     * Jumlah laporan per barang, urut terbanyak.
+     * Dapat dibatasi periode (tahun/bulan) agar cocok dengan label grafik.
+     *
+>>>>>>> b926e95ba3899451e06b434f458eba907cad229d
      * @return array<int, array{nama:string, jumlah:int}>
      */
     public function countByBarang(?int $tahun = null, ?int $bulan = null): array
     {
+<<<<<<< HEAD
         $out = [];
         $types  = [];
         $params = [];
@@ -614,99 +555,31 @@ class LaporanKerusakan
         }
 
         $stmt = $this->conn->prepare($sql);
+=======
+        $types  = [];
+        $params = [];
+        $where  = $this->periodeClause($tahun, $bulan, $types, $params);
+
+        $stmt = $this->conn->prepare(
+            "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
+             FROM laporan_kerusakan lk
+             INNER JOIN barang b ON lk.id_barang = b.id
+             WHERE 1=1" . $where . "
+             GROUP BY lk.id_barang, b.nama_barang
+             ORDER BY jumlah DESC"
+        );
+
+>>>>>>> b926e95ba3899451e06b434f458eba907cad229d
         if ($types) {
             $stmt->bind_param(implode('', $types), ...$params);
         }
         $stmt->execute();
-        $res = $stmt->get_result();
 
         $out = [];
+        $res = $stmt->get_result();
         while ($row = $res->fetch_assoc()) {
-            $label = $row['label'];
-            if ($label === null || $label === '') {
-                $label = 'Lainnya';
-            }
-            $out[] = ['label' => (string) $label, 'jumlah' => (int) $row['jumlah']];
+            $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
         }
-        return $out;
-    }
-
-    public function countByKategori(?int $tahun = null, ?int $bulan = null): array
-    {
-        return $this->groupCount(
-            "b.kategori AS label, COUNT(*) AS jumlah",
-            "INNER JOIN barang b ON lk.id_barang = b.id",
-            "b.kategori",
-            "jumlah DESC",
-            $tahun,
-            $bulan
-        );
-    }
-
-    public function countByRuangan(?int $tahun = null, ?int $bulan = null, int $limit = 10): array
-    {
-        return $this->groupCount(
-            "r.nama_ruangan AS label, COUNT(*) AS jumlah",
-            "INNER JOIN ruangan r ON lk.id_ruangan = r.id",
-            "r.id, r.nama_ruangan",
-            "jumlah DESC",
-            $tahun,
-            $bulan,
-            $limit
-        );
-    }
-
-    public function countByStatus(?int $tahun = null, ?int $bulan = null): array
-    {
-        return $this->groupCount(
-            "lk.status_penanganan AS label, COUNT(*) AS jumlah",
-            "",
-            "lk.status_penanganan",
-            "FIELD(lk.status_penanganan, 'Pending','Proses','Selesai')",
-            $tahun,
-            $bulan
-        );
-    }
-
-    public function countByPrioritas(?int $tahun = null, ?int $bulan = null): array
-    {
-        return $this->groupCount(
-            "lk.prioritas AS label, COUNT(*) AS jumlah",
-            "",
-            "lk.prioritas",
-            "FIELD(lk.prioritas, 'Rendah','Sedang','Tinggi')",
-            $tahun,
-            $bulan
-        );
-    }
-
-    public function countByKirimStatus(?int $tahun = null, ?int $bulan = null): array
-    {
-        return $this->groupCount(
-            "lk.kirim_status AS label, COUNT(*) AS jumlah",
-            "",
-            "lk.kirim_status",
-            "FIELD(lk.kirim_status, 'belum','dikirim','diterima')",
-            $tahun,
-            $bulan
-        );
-    }
-
-    /**
-     * Persentase laporan selesai per bulan dalam satu tahun.
-     * @return int[] indeks 1..12
-     */
-    public function solveRatePerBulan(int $tahun): array
-    {
-        $recap = $this->monthlyRecap($tahun);
-        $out   = array_fill(1, 12, 0);
-
-        for ($b = 1; $b <= 12; $b++) {
-            $masuk   = $recap['masuk'][$b] ?? 0;
-            $selesai = $recap['selesai'][$b] ?? 0;
-            $out[$b] = $masuk > 0 ? (int) round($selesai / $masuk * 100) : 0;
-        }
-
         return $out;
     }
 

@@ -33,6 +33,8 @@ class DashboardService
 
         return [
             'total'     => $total,
+            'bulanIni'  => $bulanIni,
+            'bulanLalu' => $bulanLalu,
             'dalam'     => $this->laporan->countDalamPenanganan(),
             'selesai'   => $selesai,
             'kritis'    => $this->laporan->countKritis(),
@@ -41,11 +43,15 @@ class DashboardService
             'tahun'     => $tahun,
             'bulan'     => (int) $today->format('n'),
             'monthly'   => $this->laporan->monthlyRecap($tahun),
+<<<<<<< HEAD
             'byBarang'  => $this->laporan->countByBarang(
                 (int) $today->format('Y'),
                 (int) $today->format('n')
             ),
             'monthlyByBarang' => $this->laporan->monthlyByBarang($tahun),
+=======
+            'byBarang'  => $this->laporan->countByBarang((int) $today->format('Y'), (int) $today->format('n')),
+>>>>>>> b926e95ba3899451e06b434f458eba907cad229d
         ];
     }
 }
