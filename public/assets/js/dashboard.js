@@ -3,12 +3,16 @@ let doughnutChart = null;
 let monthlyItemsChart = null;
 let monthlyPieChart = null;
 
+// Token render: membatalkan "forced animation" dari render sebelumnya.
+let chartsRenderToken = 0;
+
 function themeColor(name, fallback) {
     const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     return value || fallback;
 }
 
-function renderCharts() {
+function renderCharts(animateFirst) {
+    chartsRenderToken++;
     const data = (function () {
         const el = document.getElementById('dashboardDataJson');
         if (!el) return null;
@@ -378,10 +382,50 @@ function renderCharts() {
             requestAnimationFrame(function () { pieLiftTick(monthlyPieChart); });
         }
     });
+
+    // Chart.js (responsive) bisa memotong animasi pertama karena auto-resize.
+    // Paksa animasi tumbuh dari nol hanya pada render pertama (bukan saat ganti tema),
+    // dan hanya bila tab terlihat — agar data tidak "terjebak nol" di tab latar.
+    if (animateFirst) {
+        animateChartsFromZero([barChart, doughnutChart, monthlyItemsChart, monthlyPieChart]);
+    }
 }
 
-/* Render ulang chart saat tema diganti (event dari app.js) */
-document.addEventListener('themechange', renderCharts);
+/*
+ * Paksa animasi tumbuh dari nol untuk sekumpulan chart.
+ * Dilewati bila tab tidak terlihat atau pengguna minta minim animasi.
+ */
+function animateChartsFromZero(charts) {
+    if (document.visibilityState !== 'visible') return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const token = chartsRenderToken;
+    const reals = charts.map(function (ch) {
+        return ch.data.datasets.map(function (d) { return d.data.slice(); });
+    });
+
+    // 1) Gambar di posisi nol, instan (tanpa animasi).
+    charts.forEach(function (ch) {
+        ch.data.datasets.forEach(function (d) { d.data = d.data.map(function () { return 0; }); });
+        ch.update('none');
+    });
+
+    // 2) Kembalikan data asli dan biarkan Chart.js menganimasikan.
+    setTimeout(function () {
+        if (token !== chartsRenderToken) return; // sudah di-render ulang
+
+        charts.forEach(function (ch, i) {
+            if (!ch.canvas || !ch.canvas.isConnected) return;
+            ch.data.datasets.forEach(function (d, j) { d.data = reals[i][j]; });
+            ch.update();
+        });
+    }, 0);
+}
+
+/* Render ulang chart saat tema diganti (event dari app.js) — tanpa animasi paksa. */
+document.addEventListener('themechange', function () {
+    renderCharts(false);
+});
 
 /*
  * Inisialisasi setelah layout stabil.
@@ -399,4 +443,6 @@ function whenLayoutReady(fn) {
     }
 }
 
-whenLayoutReady(renderCharts);
+whenLayoutReady(function () {
+    renderCharts(true);
+});
