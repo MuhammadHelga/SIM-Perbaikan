@@ -23,6 +23,16 @@ header('Referrer-Policy: strict-origin-when-cross-origin');
 
 require __DIR__ . '/../vendor/autoload.php';
 require __DIR__ . '/../config/conf.php';
+
+// ===== Penanganan error: detail ke log, pengguna melihat halaman 500 =====
+error_reporting(E_ALL);
+ini_set('display_errors', '0');
+ini_set('log_errors', '1');
+
+require __DIR__ . '/../src/errors.php';
+set_exception_handler('app_handle_exception');
+register_shutdown_function('app_handle_fatal');
+
 require __DIR__ . '/../config/database.php';
 require __DIR__ . '/../src/helpers.php';
 
