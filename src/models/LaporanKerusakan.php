@@ -58,16 +58,11 @@ class LaporanKerusakan
     }
 
     /**
-     * Ambil satu halaman laporan sesuai filter (LIMIT/OFFSET).
-     *
-     * @param array{periode?:string, status?:string, search?:string} $filters
-     * @return array<int, array<string,mixed>>
+     * SELECT dasar untuk listing laporan (tanpa WHERE/ORDER).
      */
-    public function getListing(array $filters, int $limit, int $offset): array
+    private function listingSelect(): string
     {
-        [$where, $types, $params] = $this->buildFilters($filters);
-
-        $sql = "SELECT
+        return "SELECT
                     lk.id,
                     lk.tanggal,
                     r.nama_ruangan       AS urusan,
@@ -83,13 +78,49 @@ class LaporanKerusakan
                     CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
                 FROM laporan_kerusakan lk
                 INNER JOIN barang  b ON lk.id_barang  = b.id
-                INNER JOIN ruangan r ON lk.id_ruangan = r.id"
-                . $where
-                . " ORDER BY lk.tanggal DESC, lk.id DESC LIMIT ? OFFSET ?";
+                INNER JOIN ruangan r ON lk.id_ruangan = r.id";
+    }
+
+    /**
+     * Ambil satu halaman laporan sesuai filter (LIMIT/OFFSET).
+     *
+     * @param array{periode?:string, status?:string, search?:string} $filters
+     * @return array<int, array<string,mixed>>
+     */
+    public function getListing(array $filters, int $limit, int $offset): array
+    {
+        [$where, $types, $params] = $this->buildFilters($filters);
+
+        $sql = $this->listingSelect()
+             . $where
+             . " ORDER BY lk.tanggal DESC, lk.id DESC LIMIT ? OFFSET ?";
 
         $types   .= 'ii';
         $params[] = $limit;
         $params[] = $offset;
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types !== '') {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Semua baris sesuai filter, tanpa LIMIT — dipakai untuk cetak rekap.
+     *
+     * @param array{periode?:string, status?:string, search?:string} $filters
+     * @return array<int, array<string,mixed>>
+     */
+    public function getAllFiltered(array $filters): array
+    {
+        [$where, $types, $params] = $this->buildFilters($filters);
+
+        $sql = $this->listingSelect()
+             . $where
+             . " ORDER BY lk.tanggal DESC, lk.id DESC";
 
         $stmt = $this->conn->prepare($sql);
         if ($types !== '') {

@@ -55,6 +55,18 @@ class LaporanService
     }
 
     /** @return array<int, array<string,mixed>> */
+    public function getAllFiltered(array $filters): array
+    {
+        return $this->laporan->getAllFiltered($filters);
+    }
+
+    /** @return array{total:int, pending:int, selesai:int} */
+    public function getStats(string $periode): array
+    {
+        return $this->laporan->statsByPeriode($periode);
+    }
+
+    /** @return array<int, array<string,mixed>> */
     public function getRuangan(): array
     {
         return $this->laporan->getRuangan()->fetch_all(MYSQLI_ASSOC);

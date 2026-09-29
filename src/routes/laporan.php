@@ -76,6 +76,29 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         require __DIR__ . '/../views/laporan/screens/LaporanView.php';
     });
 
+    // Cetak rekap: semua baris sesuai filter (tanpa paginasi).
+    $router->any('/laporan/cetak', function () use ($conn, $basePath) {
+        requireLogin($basePath);
+
+        $periode      = $_GET['periode'] ?? '';
+        $statusFilter = $_GET['status'] ?? '';
+        $search       = $_GET['search'] ?? '';
+
+        if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $periode) !== 1) {
+            $periode = '';
+        }
+
+        require_once __DIR__ . '/../services/LaporanService.php';
+        $service = new LaporanService($conn);
+
+        $filters = ['periode' => $periode, 'status' => $statusFilter, 'search' => $search];
+
+        $laporanList = $service->getAllFiltered($filters);
+        $stats       = $service->getStats($periode);
+
+        require __DIR__ . '/../views/laporan/screens/LaporanCetakView.php';
+    });
+
     $router->any('/laporan/simpan', function () use ($conn, $basePath) {
         requireLogin($basePath);
 

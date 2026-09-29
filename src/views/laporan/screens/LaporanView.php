@@ -69,6 +69,14 @@ $pageUrl = function (int $target) use ($periode, $statusFilter, $search, $perPag
     return BASE_URL . '/laporan' . ($query !== '' ? '?' . $query : '');
 };
 
+// URL halaman cetak rekap (semua baris sesuai filter).
+$cetakQuery = http_build_query(array_filter([
+    'periode' => $periode,
+    'status'  => $statusFilter,
+    'search'  => $search,
+], fn($v) => $v !== '' && $v !== null));
+$cetakUrl = BASE_URL . '/laporan/cetak' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
+
 // Deret nomor halaman dengan elipsis: 1 … 4 5 6 … 20
 $pagerItems = function (int $current, int $total): array {
     if ($total <= 7) {
@@ -210,10 +218,10 @@ if ($search !== '') {
                 </div>
 
                 <div class="filter-actions">
-                    <button type="button" class="btn btn-print" id="btnCetak">
+                    <a class="btn btn-print" id="btnCetak" href="<?= htmlspecialchars($cetakUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
                         <span class="material-symbols-outlined">print</span>
                         Cetak Rekap Laporan
-                    </button>
+                    </a>
                     <button type="button" class="btn btn-add" onclick="openTambahModal()">
                         <span class="material-symbols-outlined">add</span>
                         Tambah Laporan
