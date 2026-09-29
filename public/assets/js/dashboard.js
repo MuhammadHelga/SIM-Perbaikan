@@ -41,7 +41,19 @@ function renderCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'top', align: 'end', labels: { color: textColor } } },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    align: 'end',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        boxWidth: 8,
+                        boxHeight: 8
+                    }
+                }
+            },
             scales: {
                 y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor } },
                 x: { grid: { display: false }, ticks: { color: textColor } }
@@ -68,7 +80,12 @@ function renderCharts() {
         type: 'doughnut',
         data: {
             labels: doughnutLabels,
-            datasets: [{ data: doughnutData, backgroundColor: doughnutColors }]
+            datasets: [{
+                data: doughnutData,
+                backgroundColor: doughnutColors,
+                borderColor: doughnutColors,
+                borderWidth: 0
+            }]
         },
         plugins: [{
             id: 'doughnutCenterText',
@@ -94,7 +111,18 @@ function renderCharts() {
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { position: 'right', labels: { color: textColor } } },
+            plugins: {
+                legend: {
+                    position: 'right',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        pointStyle: 'circle',
+                        boxWidth: 8,
+                        boxHeight: 8
+                    }
+                }
+            },
             cutout: '70%'
         }
     });
