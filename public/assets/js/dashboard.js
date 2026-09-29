@@ -84,7 +84,8 @@ function renderCharts() {
                 data: doughnutData,
                 backgroundColor: doughnutColors,
                 borderColor: doughnutColors,
-                borderWidth: 0
+                borderWidth: 0,
+                hoverOffset: 12
             }]
         },
         plugins: [{
@@ -183,11 +184,77 @@ function renderCharts() {
     const pieData = totalRepairs > 0 ? monthlyRepairCounts : [1];
     const activePieColors = totalRepairs > 0 ? pieColors : ['#cbd5e1'];
 
+    // Animasi "angkat" slice pie saat hover (per-slice, ease-out).
+    const pieLift = { current: [], target: [], running: false };
+    const PIE_LIFT_PX = 14;
+
+    function pieLiftEnsure(n) {
+        while (pieLift.current.length < n) {
+            pieLift.current.push(0);
+            pieLift.target.push(0);
+        }
+    }
+
+    function pieSliceShift(arc, index) {
+        const off = pieLift.current[index] || 0;
+        if (!off) return { dx: 0, dy: 0 };
+        const mid = (arc.startAngle + arc.endAngle) / 2;
+        return { dx: Math.cos(mid) * off, dy: Math.sin(mid) * off };
+    }
+
+    function pieLiftTick(chart) {
+        if (chart !== monthlyPieChart) { pieLift.running = false; return; }
+
+        let moving = false;
+        for (let i = 0; i < pieLift.current.length; i++) {
+            const current = pieLift.current[i];
+            const target  = pieLift.target[i];
+            if (Math.abs(target - current) > 0.2) {
+                pieLift.current[i] = current + (target - current) * 0.22;
+                moving = true;
+            } else {
+                pieLift.current[i] = target;
+            }
+        }
+
+        chart.draw();
+        if (moving) {
+            requestAnimationFrame(function () { pieLiftTick(chart); });
+        } else {
+            pieLift.running = false;
+        }
+    }
+
+    // Selaraskan target angkat dengan slice yang sedang aktif (hover), lalu jalankan animasi.
+    function pieLiftSync(chart) {
+        const arcs = chart.getDatasetMeta(0).data;
+        pieLiftEnsure(arcs.length);
+
+        const active = (typeof chart.getActiveElements === 'function') ? chart.getActiveElements() : [];
+        const hovered = active.length ? active[0].index : -1;
+
+        let changed = false;
+        for (let i = 0; i < arcs.length; i++) {
+            const target = (i === hovered) ? PIE_LIFT_PX : 0;
+            if (pieLift.target[i] !== target) {
+                pieLift.target[i] = target;
+                changed = true;
+            }
+        }
+
+        if (changed && !pieLift.running) {
+            pieLift.running = true;
+            requestAnimationFrame(function () { pieLiftTick(chart); });
+        }
+    }
+
     const monthlyPiePlugin = {
         id: 'monthlyPie3d',
         beforeDatasetsDraw: function (chart) {
             const arcs = chart.getDatasetMeta(0).data;
             if (!arcs.length) return;
+
+            pieLiftSync(chart);
 
             const context = chart.ctx;
             const depth = 14;
@@ -198,9 +265,10 @@ function renderCharts() {
                     if (!arc.circumference) return;
 
                     const { x, y, startAngle, endAngle, outerRadius } = arc;
+                    const shift = pieSliceShift(arc, index);
                     context.beginPath();
-                    context.moveTo(x, y + offset);
-                    context.ellipse(x, y + offset, outerRadius, outerRadius * 0.72, 0, startAngle, endAngle);
+                    context.moveTo(x + shift.dx, y + offset + shift.dy);
+                    context.ellipse(x + shift.dx, y + offset + shift.dy, outerRadius, outerRadius * 0.72, 0, startAngle, endAngle);
                     context.closePath();
                     context.fillStyle = pieLabels.length > 1 ? pieSideColors[index] : '#94a3b8';
                     context.fill();
@@ -211,9 +279,10 @@ function renderCharts() {
                 if (!arc.circumference) return;
 
                 const { x, y, startAngle, endAngle, outerRadius } = arc;
+                const shift = pieSliceShift(arc, index);
                 context.beginPath();
-                context.moveTo(x, y);
-                context.ellipse(x, y, outerRadius, outerRadius * 0.72, 0, startAngle, endAngle);
+                context.moveTo(x + shift.dx, y + shift.dy);
+                context.ellipse(x + shift.dx, y + shift.dy, outerRadius, outerRadius * 0.72, 0, startAngle, endAngle);
                 context.closePath();
                 context.fillStyle = activePieColors[index];
                 context.fill();
@@ -237,8 +306,9 @@ function renderCharts() {
 
                 const angle = (arc.startAngle + arc.endAngle) / 2;
                 const radius = arc.outerRadius * 0.63;
-                const x = arc.x + Math.cos(angle) * radius;
-                const y = arc.y + Math.sin(angle) * radius * 0.72;
+                const shift = pieSliceShift(arc, index);
+                const x = arc.x + shift.dx + Math.cos(angle) * radius;
+                const y = arc.y + shift.dy + Math.sin(angle) * radius * 0.72;
                 context.fillText(percentage.toFixed(1) + '%', x, y);
             });
             context.restore();
@@ -295,6 +365,17 @@ function renderCharts() {
                     }
                 }
             }
+        }
+    });
+
+    // Kembalikan posisi slice saat kursor keluar dari area pie.
+    ctxMonthlyPie.canvas.addEventListener('mouseleave', function () {
+        for (let i = 0; i < pieLift.target.length; i++) {
+            pieLift.target[i] = 0;
+        }
+        if (!pieLift.running && pieLift.current.length) {
+            pieLift.running = true;
+            requestAnimationFrame(function () { pieLiftTick(monthlyPieChart); });
         }
     });
 }
