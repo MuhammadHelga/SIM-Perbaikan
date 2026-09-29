@@ -68,6 +68,14 @@ php vendor/bin/migrate version -c "$URI" -p databases
 php vendor/bin/migrate up -c "$URI" -p databases -vv
 ```
 
+Jalankan perintah ini pada setiap laptop setelah menarik perubahan terbaru. Migrasi
+berjalan pada database lokal sesuai koneksi `URI`, dicatat pada `migration_version`,
+dan tidak menghapus data atau mengubah database laptop lain. Jangan gunakan `reset`
+pada database yang sudah berisi data. Migrasi `00008-format-nama-barang.sql`
+merapikan kapitalisasi nama barang yang sudah ada tanpa mengubah kode barang, ID,
+atau relasi laporan. Nama barang baru dan yang diedit juga dinormalisasi oleh aplikasi:
+huruf pertama kapital, kecuali singkatan yang dikenal seperti `SIMRS`, `CCTV`, dan `CPU`.
+
 ### Rollback
 
 ```bash

@@ -456,18 +456,11 @@ class LaporanKerusakan
     }
 
     /**
-<<<<<<< HEAD
      * Jumlah laporan per barang dalam periode tertentu, urut terbanyak.
-=======
-     * Jumlah laporan per barang, urut terbanyak.
-     * Dapat dibatasi periode (tahun/bulan) agar cocok dengan label grafik.
-     *
->>>>>>> b926e95ba3899451e06b434f458eba907cad229d
      * @return array<int, array{nama:string, jumlah:int}>
      */
     public function countByBarang(?int $tahun = null, ?int $bulan = null): array
     {
-<<<<<<< HEAD
         $out = [];
         $types  = [];
         $params = [];
@@ -555,30 +548,18 @@ class LaporanKerusakan
         }
 
         $stmt = $this->conn->prepare($sql);
-=======
-        $types  = [];
-        $params = [];
-        $where  = $this->periodeClause($tahun, $bulan, $types, $params);
-
-        $stmt = $this->conn->prepare(
-            "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
-             FROM laporan_kerusakan lk
-             INNER JOIN barang b ON lk.id_barang = b.id
-             WHERE 1=1" . $where . "
-             GROUP BY lk.id_barang, b.nama_barang
-             ORDER BY jumlah DESC"
-        );
-
->>>>>>> b926e95ba3899451e06b434f458eba907cad229d
         if ($types) {
             $stmt->bind_param(implode('', $types), ...$params);
         }
         $stmt->execute();
-
-        $out = [];
         $res = $stmt->get_result();
+        $out = [];
         while ($row = $res->fetch_assoc()) {
-            $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
+            $label = $row['label'];
+            if ($label === null || $label === '') {
+                $label = 'Lainnya';
+            }
+            $out[] = ['label' => (string) $label, 'jumlah' => (int) $row['jumlah']];
         }
         return $out;
     }
