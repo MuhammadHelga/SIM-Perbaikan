@@ -553,45 +553,6 @@ class LaporanKerusakan
     }
 
     /**
-     * Hitung COUNT(*) dikelompokkan per kolom/label.
-     * @return array<int, array{label:string, jumlah:int}>
-     */
-    private function groupCount(
-        string $select,
-        string $join,
-        string $group,
-        string $order,
-        ?int $tahun,
-        ?int $bulan,
-        int $limit = 0
-    ): array {
-        $types  = [];
-        $params = [];
-        $sql = "SELECT $select FROM laporan_kerusakan lk $join WHERE 1=1 "
-             . $this->periodeClause($tahun, $bulan, $types, $params)
-             . " GROUP BY $group ORDER BY $order";
-        if ($limit > 0) {
-            $sql .= " LIMIT $limit";
-        }
-
-        $stmt = $this->conn->prepare($sql);
-        if ($types) {
-            $stmt->bind_param(implode('', $types), ...$params);
-        }
-        $stmt->execute();
-        $res = $stmt->get_result();
-        $out = [];
-        while ($row = $res->fetch_assoc()) {
-            $label = $row['label'];
-            if ($label === null || $label === '') {
-                $label = 'Lainnya';
-            }
-            $out[] = ['label' => (string) $label, 'jumlah' => (int) $row['jumlah']];
-        }
-        return $out;
-    }
-
-    /**
      * Daftar tahun yang punya data laporan (+ tahun berjalan), urut menurun.
      * @return int[]
      */
