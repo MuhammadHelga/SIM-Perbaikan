@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initSubmitGuard();
 });
 
-/* Garis indikator di kanan: meluncur ke item aktif / yang diklik */
+/* Garis indikator di kanan: diposisikan statis pada item menu yang aktif */
 function initNavIndicator() {
     const menu = document.querySelector('.app-navbar__menu');
     const indicator = document.getElementById('navIndicator');
@@ -32,15 +32,6 @@ function initNavIndicator() {
 
     window.requestAnimationFrame(function () {
         window.setTimeout(function () { indicator.classList.add('is-ready'); }, 60);
-    });
-
-    links.forEach(function (link) {
-        link.addEventListener('click', function (e) {
-            if (link.classList.contains('is-active')) return; // halaman sama, biarkan normal
-            e.preventDefault();
-            place(link, true);
-            window.setTimeout(function () { window.location.href = link.href; }, 280);
-        });
     });
 
     window.addEventListener('resize', function () {
