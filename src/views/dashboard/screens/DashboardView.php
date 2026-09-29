@@ -9,6 +9,8 @@ $dashboard = $dashboard ?? [
 
 $tahunList = $tahunList ?? [$dashboard['tahun']];
 
+$cetakUrl = BASE_URL . '/dashboard/cetak?tahun=' . (int) $dashboard['tahun'];
+
 $delta      = $dashboard['delta'];
 $deltaText  = $delta === null
     ? 'Belum ada pembanding'
@@ -40,18 +42,25 @@ $deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
                 <h1>Dashboard dan Monitoring Perbaikan</h1>
                 <p>Ringkasan performa pemeliharaan, tren kerusakan perangkat rumah sakit dan monitoring perbaikan real-time</p>
             </div>
-            <form method="get" action="<?= BASE_URL ?>/dashboard" class="year-filter">
-                <div class="year-stepper" data-years="<?= htmlspecialchars(implode(',', $tahunList), ENT_QUOTES, 'UTF-8') ?>">
-                    <button type="button" class="year-step-btn" id="tahunPrev" aria-label="Tahun sebelumnya">
-                        <span class="material-symbols-outlined">chevron_left</span>
-                    </button>
-                    <span class="year-step-label">Tahun <?= (int) $dashboard['tahun'] ?></span>
-                    <button type="button" class="year-step-btn" id="tahunNext" aria-label="Tahun berikutnya">
-                        <span class="material-symbols-outlined">chevron_right</span>
-                    </button>
-                    <input type="hidden" name="tahun" id="tahunValue" value="<?= (int) $dashboard['tahun'] ?>">
-                </div>
-            </form>
+            <div class="page-header__actions">
+                <form method="get" action="<?= BASE_URL ?>/dashboard" class="year-filter">
+                    <div class="year-stepper" data-years="<?= htmlspecialchars(implode(',', $tahunList), ENT_QUOTES, 'UTF-8') ?>">
+                        <button type="button" class="year-step-btn" id="tahunPrev" aria-label="Tahun sebelumnya">
+                            <span class="material-symbols-outlined">chevron_left</span>
+                        </button>
+                        <span class="year-step-label">Tahun <?= (int) $dashboard['tahun'] ?></span>
+                        <button type="button" class="year-step-btn" id="tahunNext" aria-label="Tahun berikutnya">
+                            <span class="material-symbols-outlined">chevron_right</span>
+                        </button>
+                        <input type="hidden" name="tahun" id="tahunValue" value="<?= (int) $dashboard['tahun'] ?>">
+                    </div>
+                </form>
+
+                <a class="btn btn-print" id="btnCetakDashboard" href="<?= htmlspecialchars($cetakUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener">
+                    <span class="material-symbols-outlined">print</span>
+                    Cetak Dashboard
+                </a>
+            </div>
         </div>
 
         <div class="cards-grid">

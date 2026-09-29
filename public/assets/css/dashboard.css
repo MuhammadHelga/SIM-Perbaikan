@@ -30,6 +30,38 @@ body {
     margin: 0;
 }
 
+/* Aksi kanan header: stepper tahun + tombol cetak */
+.page-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border: none;
+    border-radius: 8px;
+    font-family: inherit;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #fff;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.btn-print {
+    background: #059669;
+}
+
+.btn-print:hover {
+    filter: brightness(0.95);
+}
+
 .year-stepper {
     display: inline-flex;
     align-items: stretch;
@@ -238,5 +270,29 @@ body {
     }
     .card-value {
         font-size: 1.5rem;
+    }
+}
+
+/* ===== Cetak (Ctrl+P langsung dari dashboard) ===== */
+@media print {
+    @page {
+        size: A4 landscape;
+        margin: 12mm;
+    }
+
+    .app-navbar,
+    .page-header__actions {
+        display: none !important;
+    }
+
+    .container {
+        margin: 0;
+        padding: 0;
+    }
+
+    .card,
+    .chart-card {
+        break-inside: avoid;
+        page-break-inside: avoid;
     }
 }
