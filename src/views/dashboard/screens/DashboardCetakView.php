@@ -74,7 +74,7 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             padding: 24px 28px;
             box-shadow: 0 10px 30px rgba(0, 40, 142, 0.12);
         }
-        .head { text-align: center; border-bottom: 2px solid #00288e; padding-bottom: 12px; margin-bottom: 14px; }
+        .head { text-align: center; border-bottom: 2px solid #00288e; padding-bottom: 10px; margin-bottom: 8px; }
         .head h1 { margin: 0; font-size: 18px; color: #00288e; }
         .head h2 { margin: 4px 0 0; font-size: 14px; font-weight: 600; }
         .meta { margin-top: 6px; font-size: 12px; color: #444; }
@@ -85,7 +85,7 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 10px;
-            margin-bottom: 18px;
+            margin-bottom: 10px;
         }
         .kpi {
             border: 1px solid #cfd6e6;
@@ -118,26 +118,26 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
         }
         .charts-grid {
             display: grid;
-            grid-template-columns: 1.8fr 1.2fr;
-            gap: 14px;
-            margin-bottom: 18px;
-            break-inside: avoid;
-            page-break-inside: avoid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 12px;
         }
         .chart-box {
             background: #fff;
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 12px;
+            padding: 10px;
             min-width: 0;
+            break-inside: avoid;
+            page-break-inside: avoid;
         }
-        .chart-box__head { margin-bottom: 10px; }
+        .chart-box__head { margin-bottom: 6px; }
         .chart-box__head h3 { margin: 0; font-size: 12px; font-weight: 600; color: #0f172a; }
         .chart-box__head p { margin: 2px 0 0; font-size: 10px; color: #64748b; }
         .chart-box__head-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
         .chart-box__year { font-size: 10px; color: #94a3b8; white-space: nowrap; }
-        .chart-box__canvas { position: relative; height: 260px; min-width: 0; }
-        .chart-box__canvas--tall { height: 320px; }
+        .chart-box__canvas { position: relative; height: 155px; min-width: 0; }
+        .chart-box__canvas--tall { height: 155px; }
         .chart-box__canvas canvas { max-width: 100%; }
 
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
@@ -157,12 +157,16 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
             tfoot { display: table-footer-group; }
             tr { break-inside: avoid; page-break-inside: avoid; }
             .block { break-inside: avoid; page-break-inside: avoid; }
+            .block--new-page { break-before: page; page-break-before: always; }
             .page-break { break-before: page; page-break-before: always; }
+            /* Pastikan grid tetap 2 kolom saat cetak (jangan ikut breakpoint layar). */
+            .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+            .charts-grid { grid-template-columns: 1fr 1fr; }
             @page { size: A4 landscape; margin: 10mm; }
             html, body { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
         }
 
-        @media (max-width: 1024px) {
+        @media screen and (max-width: 1024px) {
             .charts-grid { grid-template-columns: 1fr; }
             .kpi-grid { grid-template-columns: repeat(2, 1fr); }
         }
@@ -228,15 +232,13 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
                 </div>
                 <div class="chart-box__canvas"><canvas id="doughnutChart"></canvas></div>
             </div>
-        </div>
 
-        <div class="charts-grid page-break">
             <div class="chart-box">
                 <div class="chart-box__head">
                     <h3>Perbandingan Kerusakan per Bulan Tahun <?= (int) $dashboard['tahun'] ?></h3>
                     <p>Jumlah laporan kerusakan setiap barang per bulan</p>
                 </div>
-                <div class="chart-box__canvas chart-box__canvas--tall"><canvas id="monthlyItemsChart"></canvas></div>
+                <div class="chart-box__canvas"><canvas id="monthlyItemsChart"></canvas></div>
             </div>
 
             <div class="chart-box">
@@ -244,11 +246,11 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
                     <h3>Persentase Perbaikan per Bulan Tahun <?= (int) $dashboard['tahun'] ?></h3>
                     <p>Persentase laporan per bulan dari total laporan tahunan</p>
                 </div>
-                <div class="chart-box__canvas chart-box__canvas--tall"><canvas id="monthlyPieChart"></canvas></div>
+                <div class="chart-box__canvas"><canvas id="monthlyPieChart"></canvas></div>
             </div>
         </div>
 
-        <div class="block">
+        <div class="block block--new-page">
             <h3 class="block__title">Rekap Bulanan Tahun <?= (int) $dashboard['tahun'] ?></h3>
             <table>
                 <thead>

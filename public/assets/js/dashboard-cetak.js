@@ -330,11 +330,19 @@
     function autoPrint() {
         render();
 
-        // Beri jeda singkat supaya canvas benar-benar selesai digambar
-        // sebelum dialog print dibuka.
-        window.requestAnimationFrame(function () {
-            window.setTimeout(function () { window.print(); }, 150);
-        });
+        // Tunggu font selesai dimuat, lalu satu frame + jeda singkat supaya
+        // canvas benar-benar selesai digambar sebelum dialog print dibuka.
+        const go = function () {
+            window.requestAnimationFrame(function () {
+                window.setTimeout(function () { window.print(); }, 150);
+            });
+        };
+
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(go);
+        } else {
+            go();
+        }
     }
 
     if (document.readyState === 'complete') {
