@@ -456,34 +456,31 @@ class LaporanKerusakan
     }
 
     /**
-<<<<<<< HEAD
-     * Jumlah laporan per barang dalam periode tertentu, urut terbanyak.
-=======
      * Jumlah laporan per barang, urut terbanyak.
      * Dapat dibatasi periode (tahun/bulan) agar cocok dengan label grafik.
-     *
->>>>>>> b926e95ba3899451e06b434f458eba907cad229d
      * @return array<int, array{nama:string, jumlah:int}>
      */
     public function countByBarang(?int $tahun = null, ?int $bulan = null): array
     {
-<<<<<<< HEAD
-        $out = [];
         $types  = [];
         $params = [];
-        $sql = "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
+        $where  = $this->periodeClause($tahun, $bulan, $types, $params);
+
+        $stmt = $this->conn->prepare(
+            "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
              FROM laporan_kerusakan lk
              INNER JOIN barang b ON lk.id_barang = b.id
-             WHERE 1=1"
-             . $this->periodeClause($tahun, $bulan, $types, $params)
-             . " GROUP BY lk.id_barang, b.nama_barang
-             ORDER BY jumlah DESC";
+             WHERE 1=1" . $where . "
+             GROUP BY lk.id_barang, b.nama_barang
+             ORDER BY jumlah DESC"
+        );
 
-        $stmt = $this->conn->prepare($sql);
         if ($types) {
             $stmt->bind_param(implode('', $types), ...$params);
         }
         $stmt->execute();
+
+        $out = [];
         $res = $stmt->get_result();
         while ($row = $res->fetch_assoc()) {
             $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
@@ -530,57 +527,6 @@ class LaporanKerusakan
         return array_map(static function (array $item): array {
             return ['nama' => $item['nama'], 'bulanan' => $item['bulanan']];
         }, $barang);
-    }
-
-    /**
-     * Hitung COUNT(*) dikelompokkan per kolom/label.
-     * @return array<int, array{label:string, jumlah:int}>
-     */
-    private function groupCount(
-        string $select,
-        string $join,
-        string $group,
-        string $order,
-        ?int $tahun,
-        ?int $bulan,
-        int $limit = 0
-    ): array {
-        $types  = [];
-        $params = [];
-        $sql = "SELECT $select FROM laporan_kerusakan lk $join WHERE 1=1 "
-             . $this->periodeClause($tahun, $bulan, $types, $params)
-             . " GROUP BY $group ORDER BY $order";
-        if ($limit > 0) {
-            $sql .= " LIMIT $limit";
-        }
-
-        $stmt = $this->conn->prepare($sql);
-=======
-        $types  = [];
-        $params = [];
-        $where  = $this->periodeClause($tahun, $bulan, $types, $params);
-
-        $stmt = $this->conn->prepare(
-            "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
-             FROM laporan_kerusakan lk
-             INNER JOIN barang b ON lk.id_barang = b.id
-             WHERE 1=1" . $where . "
-             GROUP BY lk.id_barang, b.nama_barang
-             ORDER BY jumlah DESC"
-        );
-
->>>>>>> b926e95ba3899451e06b434f458eba907cad229d
-        if ($types) {
-            $stmt->bind_param(implode('', $types), ...$params);
-        }
-        $stmt->execute();
-
-        $out = [];
-        $res = $stmt->get_result();
-        while ($row = $res->fetch_assoc()) {
-            $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
-        }
-        return $out;
     }
 
     /**
