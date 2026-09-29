@@ -544,7 +544,8 @@ html.theme-transition .alokasi-card {
 }
 
 [data-theme='dark'] .jr-head__text h1 {
-  color: #7fb0ff;
+  color: #fff;
+  font-size: x-large;
 }
 
 [data-theme='dark'] .jr-head__text p {
@@ -552,7 +553,7 @@ html.theme-transition .alokasi-card {
 }
 
 [data-theme='dark'] .jr-head__text strong {
-  color: #93c5fd;
+  color: #fff;
 }
 
 [data-theme='dark'] .jr-subnet-badge {
