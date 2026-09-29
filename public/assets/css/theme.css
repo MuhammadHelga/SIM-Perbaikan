@@ -291,7 +291,12 @@ html.theme-transition .alokasi-card {
 
 [data-theme='dark'] .table-footer span {
   color: var(--muted);
-  font-weight: bold;
+}
+
+[data-theme='dark'] .table-footer select {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
 }
 
 /* ==================== Filter / kontrol ==================== */
