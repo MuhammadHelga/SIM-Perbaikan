@@ -17,6 +17,59 @@ body {
     padding: 0 24px;
 }
 
+.page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Filter tahun (memakai komponen .year-stepper) */
+.year-filter {
+    margin: 0;
+}
+
+.year-stepper {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #fff;
+    overflow: hidden;
+}
+
+.year-step-btn {
+    border: none;
+    background: transparent;
+    color: #475569;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    padding: 0;
+}
+
+.year-step-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+}
+
+.year-step-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.year-step-label {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+}
+
 .page-header h1 {
     font-size: 1.5rem;
     font-weight: 700;

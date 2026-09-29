@@ -48,9 +48,9 @@ body {
 }
 .jr-head__text h1 { 
     margin: 0 0 6px; 
-    font-size: 20px; 
+    font-size: 26px; 
     font-weight: 700; 
-    color: var(--jr-navy); 
+    color: black; 
 }
 .jr-head__text p { 
     margin: 0; 

@@ -1,20 +1,19 @@
 <?php
 $dashboard = $dashboard ?? [
-    'total' => 0, 'bulanIni' => 0, 'bulanLalu' => 0, 'dalam' => 0, 'selesai' => 0, 'kritis' => 0,
-    'solveRate' => 0, 'delta' => null, 'tahun' => (int) date('Y'), 'bulan' => (int) date('n'),
+    'total' => 0, 'dalam' => 0, 'selesai' => 0, 'kritis' => 0,
+    'solveRate' => 0, 'delta' => null, 'tahun' => (int) date('Y'), 'tahunLalu' => (int) date('Y') - 1,
     'monthly' => ['masuk' => array_fill(1, 12, 0), 'selesai' => array_fill(1, 12, 0)],
     'byBarang' => [],
     'monthlyByBarang' => [],
 ];
 
+$tahunList = $tahunList ?? [$dashboard['tahun']];
+
 $delta      = $dashboard['delta'];
 $deltaText  = $delta === null
     ? 'Belum ada pembanding'
-    : ($delta >= 0 ? '+' . $delta . ' % vs bulan lalu' : $delta . ' % vs bulan lalu');
+    : ($delta >= 0 ? '+' . $delta . ' % vs tahun lalu' : $delta . ' % vs tahun lalu');
 $deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
-
-$namaBulanSingkat = [1=>'Jan',2=>'Feb',3=>'Mar',4=>'Apr',5=>'Mei',6=>'Jun',7=>'Jul',8=>'Ags',9=>'Sep',10=>'Okt',11=>'Nov',12=>'Des'];
-$periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun'];
 ?>
 <!DOCTYPE html>
 <html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
@@ -37,15 +36,29 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
 
     <main class="container">
         <div class="page-header">
-            <h1>Dashboard dan Monitoring Perbaikan</h1>
-            <p>Ringkasan performa pemeliharaan, tren kerusakan perangkat rumah sakit dan monitoring perbaikan real-time</p>
+            <div>
+                <h1>Dashboard dan Monitoring Perbaikan</h1>
+                <p>Ringkasan performa pemeliharaan, tren kerusakan perangkat rumah sakit dan monitoring perbaikan real-time</p>
+            </div>
+            <form method="get" action="<?= BASE_URL ?>/dashboard" class="year-filter">
+                <div class="year-stepper" data-years="<?= htmlspecialchars(implode(',', $tahunList), ENT_QUOTES, 'UTF-8') ?>">
+                    <button type="button" class="year-step-btn" id="tahunPrev" aria-label="Tahun sebelumnya">
+                        <span class="material-symbols-outlined">chevron_left</span>
+                    </button>
+                    <span class="year-step-label">Tahun <?= (int) $dashboard['tahun'] ?></span>
+                    <button type="button" class="year-step-btn" id="tahunNext" aria-label="Tahun berikutnya">
+                        <span class="material-symbols-outlined">chevron_right</span>
+                    </button>
+                    <input type="hidden" name="tahun" id="tahunValue" value="<?= (int) $dashboard['tahun'] ?>">
+                </div>
+            </form>
         </div>
 
         <div class="cards-grid">
             <div class="card">
                 <div class="card-body">
-                    <span class="card-title">TOTAL LAPORAN BULAN INI</span>
-                    <div class="card-value text-purple"><?= (int)$dashboard['bulanIni'] ?> <small>KASUS</small></div>
+                    <span class="card-title">TOTAL LAPORAN <?= (int)$dashboard['tahun'] ?></span>
+                    <div class="card-value text-purple"><?= (int)$dashboard['total'] ?> <small>KASUS</small></div>
                     <span class="card-badge <?= $deltaClass ?>"><?= htmlspecialchars($deltaText) ?></span>
                 </div>
                 <div class="card-icon bg-light-purple">
@@ -102,7 +115,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
                 <div class="chart-header">
                     <div class="flex-between">
                         <h3>Distribusi Perangkat</h3>
-                        <span class="text-muted"><?= htmlspecialchars($periodeLabel) ?></span>
+                        <span class="text-muted">Tahun <?= (int)$dashboard['tahun'] ?></span>
                     </div>
                     <p>Perangkat paling sering membutuhkan tindakan</p>
                 </div>
