@@ -82,46 +82,85 @@ Not part of the actual experiment.
 }
 
 /*
-SIM-Perbaikan: aksi pada halaman error 500.
-Ditampilkan di atas kanvas animasi.
+SIM-Perbaikan: aksi pada halaman error 500 (bergaya "bara api").
+Ditampilkan mengambang di bawah angka 500, di atas kanvas animasi.
 */
 .err-actions {
     position: fixed;
     left: 0;
     right: 0;
-    bottom: 32px;
+    bottom: 15vh;               /* didekatkan dengan angka 500 */
     z-index: 10;
     display: flex;
-    gap: 12px;
+    gap: 14px;
     justify-content: center;
     flex-wrap: wrap;
     padding: 0 16px;
 }
 
+@keyframes err-fire-glow {
+    0%, 100% { box-shadow: 0 0 12px rgba(255, 140, 0, 0.55), 0 0 26px rgba(255, 60, 0, 0.35); }
+    50%      { box-shadow: 0 0 20px rgba(255, 170, 0, 0.80), 0 0 44px rgba(255, 80, 0, 0.55); }
+}
+
+@keyframes err-fire-flicker {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-1px); }
+}
+
+@keyframes err-fire-plume {
+    0%, 100% { transform: translateY(0) scaleY(1);    opacity: 0.55; }
+    50%      { transform: translateY(-4px) scaleY(1.15); opacity: 0.9; }
+}
+
 .err-btn {
-    font: 600 14px 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    padding: 10px 20px;
-    border-radius: 10px;
+    position: relative;
+    font: 700 14px 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 11px 22px;
+    border-radius: 12px;
     text-decoration: none;
     cursor: pointer;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.92);
-    color: #0f172a;
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    transition: background-color 0.15s ease, transform 0.15s ease;
+    color: #ffffff;
+    background: linear-gradient(180deg, #ffc46b 0%, #ff7a18 45%, #cf3a02 100%);
+    border: 1px solid rgba(255, 180, 110, 0.75);
+    text-shadow: 0 1px 2px rgba(80, 20, 0, 0.45);
+    animation: err-fire-glow 1.7s ease-in-out infinite,
+               err-fire-flicker 0.9s ease-in-out infinite;
+    transition: filter 0.15s ease, transform 0.15s ease;
+}
+
+/* Lidah api kecil di atas tombol */
+.err-btn::before {
+    content: '';
+    position: absolute;
+    left: 12%;
+    right: 12%;
+    top: -10px;
+    height: 18px;
+    border-radius: 50%;
+    background: radial-gradient(50% 100% at 50% 100%,
+                rgba(255, 190, 90, 0.85), rgba(255, 90, 0, 0.30) 60%, transparent 78%);
+    filter: blur(6px);
+    opacity: 0.6;
+    pointer-events: none;
+    animation: err-fire-plume 1.3s ease-in-out infinite;
 }
 
 .err-btn:hover {
-    background: #ffffff;
-    transform: translateY(-1px);
+    filter: brightness(1.12) saturate(1.1);
+    transform: translateY(-2px);
 }
 
 .err-btn--ghost {
-    background: transparent;
-    color: #ffffff;
+    color: #ffd9b3;
+    background: linear-gradient(180deg, rgba(255, 150, 60, 0.20), rgba(180, 40, 0, 0.22));
+    border: 1px solid rgba(255, 150, 70, 0.60);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    animation: err-fire-glow 2.4s ease-in-out infinite;
 }
 
 .err-btn--ghost:hover {
-    background: rgba(255, 255, 255, 0.12);
+    filter: brightness(1.15);
+    background: linear-gradient(180deg, rgba(255, 170, 80, 0.30), rgba(200, 60, 10, 0.32));
 }
