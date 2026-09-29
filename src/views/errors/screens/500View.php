@@ -24,8 +24,8 @@ $base = defined('BASE_URL') ? BASE_URL : '';
 </script>
 
 <div class="err-actions">
-    <a class="err-btn" href="<?= htmlspecialchars($base) ?>/dashboard">Kembali ke Dashboard</a>
-    <button type="button" class="err-btn err-btn--ghost" onclick="history.back()">Halaman Sebelumnya</button>
+    <p class="err-message">Internal Server Error</p>
+    <button type="button" class="err-btn" onclick="location.reload()">Refresh</button>
 </div>
 
 <script src="<?= htmlspecialchars($base) ?>/assets/js/500.js"></script>

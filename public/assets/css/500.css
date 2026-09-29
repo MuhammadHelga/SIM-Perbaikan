@@ -92,10 +92,22 @@ Ditampilkan mengambang di bawah angka 500, di atas kanvas animasi.
     bottom: 15vh;               /* didekatkan dengan angka 500 */
     z-index: 10;
     display: flex;
-    gap: 14px;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
     justify-content: center;
     flex-wrap: wrap;
     padding: 0 16px;
+}
+
+.err-message {
+    margin: 0;
+    text-align: center;
+    font: 700 clamp(15px, 2.4vw, 20px) 'Poppins', system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #ffd9b3;
+    text-shadow: 0 0 14px rgba(255, 120, 0, 0.6), 0 1px 2px rgba(0, 0, 0, 0.55);
 }
 
 @keyframes err-fire-glow {
@@ -149,18 +161,4 @@ Ditampilkan mengambang di bawah angka 500, di atas kanvas animasi.
 .err-btn:hover {
     filter: brightness(1.12) saturate(1.1);
     transform: translateY(-2px);
-}
-
-.err-btn--ghost {
-    color: #ffd9b3;
-    background: linear-gradient(180deg, rgba(255, 150, 60, 0.20), rgba(180, 40, 0, 0.22));
-    border: 1px solid rgba(255, 150, 70, 0.60);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    animation: err-fire-glow 2.4s ease-in-out infinite;
-}
-
-.err-btn--ghost:hover {
-    filter: brightness(1.15);
-    background: linear-gradient(180deg, rgba(255, 170, 80, 0.30), rgba(200, 60, 10, 0.32));
 }
