@@ -41,7 +41,11 @@ class DashboardService
             'tahun'     => $tahun,
             'bulan'     => (int) $today->format('n'),
             'monthly'   => $this->laporan->monthlyRecap($tahun),
-            'byBarang'  => $this->laporan->countByBarang(),
+            'byBarang'  => $this->laporan->countByBarang(
+                (int) $today->format('Y'),
+                (int) $today->format('n')
+            ),
+            'monthlyByBarang' => $this->laporan->monthlyByBarang($tahun),
         ];
     }
 }

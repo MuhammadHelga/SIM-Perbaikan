@@ -1,5 +1,7 @@
 let barChart = null;
 let doughnutChart = null;
+let monthlyItemsChart = null;
+let monthlyPieChart = null;
 
 function themeColor(name, fallback) {
     const value = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -11,7 +13,7 @@ function renderCharts() {
         const el = document.getElementById('dashboardDataJson');
         if (!el) return null;
         try { return JSON.parse(el.textContent); } catch (e) { return null; }
-    })() || { monthly: { masuk: [], selesai: [] }, byBarang: [] };
+    })() || { monthly: { masuk: [], selesai: [] }, byBarang: [], monthlyByBarang: [] };
 
     const gridColor = themeColor('--chart-grid', '#f1f5f9');
     const textColor = themeColor('--chart-text', '#64748b');
@@ -52,6 +54,9 @@ function renderCharts() {
     const doughnutColors = byBarang.length
         ? doughnutLabels.map(function (_, i) { return palette[i % palette.length]; })
         : ['#e2e8f0'];
+    const totalKerusakan = byBarang.length
+        ? doughnutData.reduce(function (total, jumlah) { return total + jumlah; }, 0)
+        : 0;
 
     const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
     if (doughnutChart) doughnutChart.destroy();
@@ -61,11 +66,203 @@ function renderCharts() {
             labels: doughnutLabels,
             datasets: [{ data: doughnutData, backgroundColor: doughnutColors }]
         },
+        plugins: [{
+            id: 'doughnutCenterText',
+            afterDraw: function (chart) {
+                const chartArea = chart.chartArea;
+                if (!chartArea) return;
+
+                const centerX = (chartArea.left + chartArea.right) / 2;
+                const centerY = (chartArea.top + chartArea.bottom) / 2;
+                const context = chart.ctx;
+
+                context.save();
+                context.textAlign = 'center';
+                context.textBaseline = 'middle';
+                context.fillStyle = textColor;
+                context.font = '500 12px Poppins, sans-serif';
+                context.fillText('Total Kerusakan', centerX, centerY - 12);
+                context.font = '700 24px Poppins, sans-serif';
+                context.fillText(totalKerusakan.toLocaleString('id-ID'), centerX, centerY + 14);
+                context.restore();
+            }
+        }],
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { position: 'right', labels: { color: textColor } } },
             cutout: '70%'
+        }
+    });
+
+    const monthLabels = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGS', 'SEP', 'OKT', 'NOV', 'DES'];
+    const monthlyItems = Array.isArray(data.monthlyByBarang) ? data.monthlyByBarang : [];
+    const comparisonPalette = ['#2563eb', '#ea580c', '#64748b', '#ca8a04', '#0ea5e9', '#65a30d', '#1e3a8a', '#92400e', '#6b21a8', '#db2777'];
+    const monthlyItemDatasets = monthlyItems.map(function (item, index) {
+        return {
+            label: item.nama,
+            data: monthLabels.map(function (_, monthIndex) {
+                return Number((item.bulanan || {})[monthIndex + 1] || 0);
+            }),
+            backgroundColor: comparisonPalette[index % comparisonPalette.length],
+            borderRadius: 2
+        };
+    });
+
+    const ctxMonthlyItems = document.getElementById('monthlyItemsChart').getContext('2d');
+    if (monthlyItemsChart) monthlyItemsChart.destroy();
+    monthlyItemsChart = new Chart(ctxMonthlyItems, {
+        type: 'bar',
+        data: {
+            labels: monthLabels,
+            datasets: monthlyItemDatasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: textColor, usePointStyle: true, boxWidth: 10, padding: 16 }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { color: textColor, precision: 0 },
+                    grid: { color: gridColor }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: textColor }
+                }
+            }
+        }
+    });
+
+    const pieMonthLabels = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGS', 'SEP', 'OKT', 'NOV', 'DES'];
+    const monthlyRepairCounts = pieMonthLabels.map(function (_, monthIndex) {
+        return Number((data.monthly.masuk || {})[monthIndex + 1] || 0);
+    });
+    const pieColors = ['#4472c4', '#ed7d31', '#a5a5a5', '#ffc000', '#5b9bd5', '#70ad47', '#264478', '#9e480e', '#997300', '#255e91', '#43682b', '#8064a2'];
+    const pieSideColors = ['#31548f', '#b85b24', '#777777', '#c18f00', '#3c729f', '#4e7a32', '#1a3053', '#6e320a', '#735600', '#194267', '#304a1e', '#594674'];
+    const totalRepairs = monthlyRepairCounts.reduce(function (total, count) { return total + count; }, 0);
+    const pieLabels = totalRepairs > 0 ? pieMonthLabels : ['Belum ada data'];
+    const pieData = totalRepairs > 0 ? monthlyRepairCounts : [1];
+    const activePieColors = totalRepairs > 0 ? pieColors : ['#cbd5e1'];
+
+    const monthlyPiePlugin = {
+        id: 'monthlyPie3d',
+        beforeDatasetsDraw: function (chart) {
+            const arcs = chart.getDatasetMeta(0).data;
+            if (!arcs.length) return;
+
+            const context = chart.ctx;
+            const depth = 14;
+            context.save();
+
+            for (let offset = depth; offset > 0; offset--) {
+                arcs.forEach(function (arc, index) {
+                    if (!arc.circumference) return;
+
+                    const { x, y, startAngle, endAngle, outerRadius } = arc;
+                    context.beginPath();
+                    context.moveTo(x, y + offset);
+                    context.ellipse(x, y + offset, outerRadius, outerRadius * 0.72, 0, startAngle, endAngle);
+                    context.closePath();
+                    context.fillStyle = pieLabels.length > 1 ? pieSideColors[index] : '#94a3b8';
+                    context.fill();
+                });
+            }
+
+            arcs.forEach(function (arc, index) {
+                if (!arc.circumference) return;
+
+                const { x, y, startAngle, endAngle, outerRadius } = arc;
+                context.beginPath();
+                context.moveTo(x, y);
+                context.ellipse(x, y, outerRadius, outerRadius * 0.72, 0, startAngle, endAngle);
+                context.closePath();
+                context.fillStyle = activePieColors[index];
+                context.fill();
+            });
+            context.restore();
+        },
+        afterDatasetsDraw: function (chart) {
+            if (!totalRepairs) return;
+
+            const context = chart.ctx;
+            const arcs = chart.getDatasetMeta(0).data;
+            context.save();
+            context.fillStyle = '#ffffff';
+            context.font = '600 11px Poppins, sans-serif';
+            context.textAlign = 'center';
+            context.textBaseline = 'middle';
+
+            arcs.forEach(function (arc, index) {
+                const percentage = monthlyRepairCounts[index] / totalRepairs * 100;
+                if (!arc.circumference || percentage < 3) return;
+
+                const angle = (arc.startAngle + arc.endAngle) / 2;
+                const radius = arc.outerRadius * 0.63;
+                const x = arc.x + Math.cos(angle) * radius;
+                const y = arc.y + Math.sin(angle) * radius * 0.72;
+                context.fillText(percentage.toFixed(1) + '%', x, y);
+            });
+            context.restore();
+        }
+    };
+
+    const ctxMonthlyPie = document.getElementById('monthlyPieChart').getContext('2d');
+    if (monthlyPieChart) monthlyPieChart.destroy();
+    monthlyPieChart = new Chart(ctxMonthlyPie, {
+        type: 'pie',
+        data: {
+            labels: pieLabels,
+            datasets: [{
+                data: pieData,
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 0,
+                hoverOffset: 0
+            }]
+        },
+        plugins: [monthlyPiePlugin],
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: textColor,
+                        usePointStyle: true,
+                        boxWidth: 10,
+                        padding: 10,
+                        generateLabels: function (chart) {
+                            return chart.data.labels.map(function (label, index) {
+                                return {
+                                    text: label,
+                                    fontColor: textColor,
+                                    fillStyle: activePieColors[index],
+                                    strokeStyle: activePieColors[index],
+                                    lineWidth: 0,
+                                    index: index
+                                };
+                            });
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            if (!totalRepairs) return 'Belum ada data';
+                            const percentage = context.parsed / totalRepairs * 100;
+                            return context.label + ': ' + percentage.toFixed(1) + '% (' + context.parsed + ')';
+                        }
+                    }
+                }
+            }
         }
     });
 }

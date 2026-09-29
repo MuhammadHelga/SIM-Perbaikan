@@ -114,6 +114,14 @@ body {
     min-width: 0;
 }
 
+.comparison-charts-grid {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 1.8fr 1.2fr;
+    gap: 20px;
+    min-width: 0;
+}
+
 .chart-header h3 {
     font-size: 1.1rem;
     font-weight: 600;
@@ -137,6 +145,14 @@ body {
     max-width: 100%;
 }
 
+.monthly-items-wrapper {
+    height: 360px;
+}
+
+.monthly-pie-wrapper {
+    height: 360px;
+}
+
 .flex-between {
     display: flex;
     justify-content: space-between;
@@ -146,6 +162,9 @@ body {
 /* ===== Responsif ===== */
 @media (max-width: 1024px) {
     .charts-grid {
+        grid-template-columns: 1fr;
+    }
+    .comparison-charts-grid {
         grid-template-columns: 1fr;
     }
 }

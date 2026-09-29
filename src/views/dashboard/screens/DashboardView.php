@@ -4,6 +4,7 @@ $dashboard = $dashboard ?? [
     'solveRate' => 0, 'delta' => null, 'tahun' => (int) date('Y'), 'bulan' => (int) date('n'),
     'monthly' => ['masuk' => array_fill(1, 12, 0), 'selesai' => array_fill(1, 12, 0)],
     'byBarang' => [],
+    'monthlyByBarang' => [],
 ];
 
 $delta      = $dashboard['delta'];
@@ -27,7 +28,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/dashboard.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/dashboard.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/dashboard.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
 </head>
@@ -109,13 +110,34 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
                     <canvas id="doughnutChart"></canvas>
                 </div>
             </div>
+            <div class="comparison-charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Perbandingan Kerusakan per Bulan Tahun <?= (int)$dashboard['tahun'] ?></h3>
+                        <p>Jumlah laporan kerusakan setiap barang per bulan</p>
+                    </div>
+                    <div class="chart-wrapper monthly-items-wrapper">
+                        <canvas id="monthlyItemsChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <h3>Persentase Perbaikan per Bulan Tahun <?= (int)$dashboard['tahun'] ?></h3>
+                        <p>Persentase laporan per bulan dari total laporan tahunan</p>
+                    </div>
+                    <div class="chart-wrapper monthly-pie-wrapper">
+                        <canvas id="monthlyPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
     <script id="dashboardDataJson" type="application/json"><?= json_encode([
-        'monthly'  => $dashboard['monthly'],
-        'byBarang' => $dashboard['byBarang'],
+        'monthly'         => $dashboard['monthly'],
+        'byBarang'        => $dashboard['byBarang'],
+        'monthlyByBarang' => $dashboard['monthlyByBarang'],
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
-    <script src="<?= BASE_URL ?>/assets/js/dashboard.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/dashboard.js?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/js/dashboard.js') ?>"></script>
 </body>
 </html>

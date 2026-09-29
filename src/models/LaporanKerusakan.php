@@ -522,23 +522,73 @@ class LaporanKerusakan
     }
 
     /**
-     * Jumlah laporan per barang, urut terbanyak.
+     * Jumlah laporan per barang dalam periode tertentu, urut terbanyak.
      * @return array<int, array{nama:string, jumlah:int}>
      */
-    public function countByBarang(): array
+    public function countByBarang(?int $tahun = null, ?int $bulan = null): array
     {
         $out = [];
-        $res = $this->conn->query(
-            "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
+        $types  = [];
+        $params = [];
+        $sql = "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
              FROM laporan_kerusakan lk
              INNER JOIN barang b ON lk.id_barang = b.id
-             GROUP BY lk.id_barang, b.nama_barang
-             ORDER BY jumlah DESC"
-        );
+             WHERE 1=1"
+             . $this->periodeClause($tahun, $bulan, $types, $params)
+             . " GROUP BY lk.id_barang, b.nama_barang
+             ORDER BY jumlah DESC";
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types) {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
+        $stmt->execute();
+        $res = $stmt->get_result();
         while ($row = $res->fetch_assoc()) {
             $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
         }
         return $out;
+    }
+
+    /**
+     * Rekap jumlah laporan per barang untuk setiap bulan dalam satu tahun.
+     * @return array<int, array{nama:string, bulanan:int[]}>
+     */
+    public function monthlyByBarang(int $tahun): array
+    {
+        $barang = [];
+        $stmt = $this->conn->prepare(
+            "SELECT b.id, b.nama_barang AS nama, MONTH(lk.tanggal) AS bulan, COUNT(*) AS jumlah
+             FROM laporan_kerusakan lk
+             INNER JOIN barang b ON lk.id_barang = b.id
+             WHERE YEAR(lk.tanggal) = ?
+             GROUP BY b.id, b.nama_barang, MONTH(lk.tanggal)"
+        );
+        $stmt->bind_param('i', $tahun);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $id = (int) $row['id'];
+            if (!isset($barang[$id])) {
+                $barang[$id] = [
+                    'nama' => $row['nama'],
+                    'bulanan' => array_fill(1, 12, 0),
+                    'total' => 0,
+                ];
+            }
+
+            $jumlah = (int) $row['jumlah'];
+            $barang[$id]['bulanan'][(int) $row['bulan']] = $jumlah;
+            $barang[$id]['total'] += $jumlah;
+        }
+
+        usort($barang, static function (array $a, array $b): int {
+            return $b['total'] <=> $a['total'];
+        });
+
+        return array_map(static function (array $item): array {
+            return ['nama' => $item['nama'], 'bulanan' => $item['bulanan']];
+        }, $barang);
     }
 
     /**
