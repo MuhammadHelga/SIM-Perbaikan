@@ -245,6 +245,10 @@ body {
     background: #e2e8f0;
 }
 
+.subnet-empty {
+    text-align: center; 
+    padding: 40px; 
+}
 /* Pesan flash sekarang global (lihat navbar.css) */
 
 /* ===== Responsif ===== */

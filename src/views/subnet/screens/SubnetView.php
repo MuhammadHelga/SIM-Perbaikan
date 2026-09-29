@@ -74,7 +74,7 @@ $total        = count($subnetList);
                     </thead>
                     <tbody>
                         <?php if (!$subnetList): ?>
-                            <tr><td colspan="7">Belum ada subnet.</td></tr>
+                            <tr><td colspan="7" class="subnet-empty">Belum ada subnet.</td></tr>
                         <?php endif; ?>
                         <?php foreach ($subnetList as $i => $s): ?>
                             <tr>
