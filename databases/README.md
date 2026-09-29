@@ -16,12 +16,15 @@ databases/
     │   ├── 00001-seed-awal.sql       # Naik dari versi 0 -> 1
     │   └── 00002-....sql             # Naik dari versi 1 -> 2 (contoh berikutnya)
     └── down/
-        └── 00001-seed-awal.sql       # Kebalikan dari up/00001 (untuk rollback)
+        └── 00000-seed-awal.sql       # Kebalikan dari up/00001 (untuk rollback)
 ```
 
 - **`base.sql`** = isi database saat versi 0. Hanya dijalankan oleh perintah `reset`.
 - **`migrations/up/NNNNN-*.sql`** = perubahan menuju versi `NNNNN`.
-- **`migrations/down/NNNNN-*.sql`** = cara membatalkan `up/NNNNN` (opsional, tapi disarankan).
+- **`migrations/down/NNNNN-*.sql`** = rollback (opsional). Perhatikan konvensi tool: `down/NNNNN`
+  dijalankan saat **turun ke versi `NNNNN`**, jadi `down/00000` membatalkan `up/00001`,
+  `down/00001` membatalkan `up/00002`, dan seterusnya — **nomor `down` = versi tujuan, bukan
+  nomor `up` yang dibatalkan.**
 - Tabel `migration_version` dibuat otomatis oleh tool, **jangan diedit manual**.
 
 Aturan nama file: `NNNNN[-deskripsi].sql` (angka = versi tujuan). Contoh: `00002-tambah-kolom-prioritas.sql`.
@@ -67,6 +70,14 @@ php vendor/bin/migrate version -c "$URI" -p databases
 ```bash
 php vendor/bin/migrate up -c "$URI" -p databases -vv
 ```
+
+Jalankan perintah ini pada setiap laptop setelah menarik perubahan terbaru. Migrasi
+berjalan pada database lokal sesuai koneksi `URI`, dicatat pada `migration_version`,
+dan tidak menghapus data atau mengubah database laptop lain. Jangan gunakan `reset`
+pada database yang sudah berisi data. Migrasi `00007-normalisasi-nama-barang.sql`
+merapikan kapitalisasi nama barang yang sudah ada tanpa mengubah kode barang, ID,
+atau relasi laporan. Nama barang baru dan yang diedit juga dinormalisasi oleh aplikasi:
+huruf pertama kapital, kecuali singkatan yang dikenal seperti `SIMRS`, `CCTV`, dan `CPU`.
 
 ### Rollback
 

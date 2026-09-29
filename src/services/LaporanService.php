@@ -25,7 +25,7 @@ class LaporanService
         $perPage = (int) ($filters['per_page'] ?? 25);
         $page    = (int) ($filters['page'] ?? 1);
 
-        if (!in_array($perPage, [25, 50, 100, 200], true)) {
+        if (!in_array($perPage, [10, 25, 50, 100, 200], true)) {
             $perPage = 25;
         }
 
@@ -52,6 +52,18 @@ class LaporanService
             'totalPages' => $totalPages,
             'totalRows'  => $totalRows,
         ];
+    }
+
+    /** @return array<int, array<string,mixed>> */
+    public function getAllFiltered(array $filters): array
+    {
+        return $this->laporan->getAllFiltered($filters);
+    }
+
+    /** @return array{total:int, pending:int, selesai:int} */
+    public function getStats(string $periode): array
+    {
+        return $this->laporan->statsByPeriode($periode);
     }
 
     /** @return array<int, array<string,mixed>> */

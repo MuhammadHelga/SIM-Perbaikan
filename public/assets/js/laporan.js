@@ -7,13 +7,6 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    const btnCetak = document.getElementById('btnCetak');
-    if (btnCetak) {
-        btnCetak.addEventListener('click', function () {
-            window.print();
-        });
-    }
-
     // "Menampilkan ... Laporan": ubah jumlah baris lewat parameter GET
     const perPage = document.getElementById('perPage');
     const perPageValue = document.getElementById('perPageValue');

@@ -91,7 +91,7 @@ $periodeLabel = $namaBulanSingkat[$dashboard['bulan']] . ' ' . $dashboard['tahun
             <div class="chart-card">
                 <div class="chart-header">
                     <h3>Tren Laporan dan Penyelesaian (<?= (int)$dashboard['tahun'] ?>)</h3>
-                    <p>Perbandingan jumlah tiket laporan masuk vs perbaikan terselesaikan</p>
+                    <p>Perbandingan jumlah laporan masuk, pending, proses, dan selesai per bulan</p>
                 </div>
                 <div class="chart-wrapper">
                     <canvas id="barChart"></canvas>

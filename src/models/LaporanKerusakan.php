@@ -58,16 +58,11 @@ class LaporanKerusakan
     }
 
     /**
-     * Ambil satu halaman laporan sesuai filter (LIMIT/OFFSET).
-     *
-     * @param array{periode?:string, status?:string, search?:string} $filters
-     * @return array<int, array<string,mixed>>
+     * SELECT dasar untuk listing laporan (tanpa WHERE/ORDER).
      */
-    public function getListing(array $filters, int $limit, int $offset): array
+    private function listingSelect(): string
     {
-        [$where, $types, $params] = $this->buildFilters($filters);
-
-        $sql = "SELECT
+        return "SELECT
                     lk.id,
                     lk.tanggal,
                     r.nama_ruangan       AS urusan,
@@ -83,13 +78,49 @@ class LaporanKerusakan
                     CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
                 FROM laporan_kerusakan lk
                 INNER JOIN barang  b ON lk.id_barang  = b.id
-                INNER JOIN ruangan r ON lk.id_ruangan = r.id"
-                . $where
-                . " ORDER BY lk.tanggal DESC, lk.id DESC LIMIT ? OFFSET ?";
+                INNER JOIN ruangan r ON lk.id_ruangan = r.id";
+    }
+
+    /**
+     * Ambil satu halaman laporan sesuai filter (LIMIT/OFFSET).
+     *
+     * @param array{periode?:string, status?:string, search?:string} $filters
+     * @return array<int, array<string,mixed>>
+     */
+    public function getListing(array $filters, int $limit, int $offset): array
+    {
+        [$where, $types, $params] = $this->buildFilters($filters);
+
+        $sql = $this->listingSelect()
+             . $where
+             . " ORDER BY lk.tanggal DESC, lk.id DESC LIMIT ? OFFSET ?";
 
         $types   .= 'ii';
         $params[] = $limit;
         $params[] = $offset;
+
+        $stmt = $this->conn->prepare($sql);
+        if ($types !== '') {
+            $stmt->bind_param($types, ...$params);
+        }
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
+
+    /**
+     * Semua baris sesuai filter, tanpa LIMIT — dipakai untuk cetak rekap.
+     *
+     * @param array{periode?:string, status?:string, search?:string} $filters
+     * @return array<int, array<string,mixed>>
+     */
+    public function getAllFiltered(array $filters): array
+    {
+        [$where, $types, $params] = $this->buildFilters($filters);
+
+        $sql = $this->listingSelect()
+             . $where
+             . " ORDER BY lk.tanggal DESC, lk.id DESC";
 
         $stmt = $this->conn->prepare($sql);
         if ($types !== '') {
@@ -348,23 +379,34 @@ class LaporanKerusakan
     // ===== AGREGAT UNTUK DASHBOARD =====
 
     /**
-     * Bangun klausa periode (tahun wajib opsional, bulan opsional).
+     * Bangun klausa periode berbasis rentang tanggal (ramah index idx_lap_tanggal).
+     * Contoh: tahun=2026 -> " AND tanggal >= ? AND tanggal < ?" (2026-01-01 .. 2027-01-01).
      * Mengisi $types & $params untuk bind_param.
      */
     private function periodeClause(?int $tahun, ?int $bulan, array &$types, array &$params): string
     {
-        $sql = '';
-        if ($tahun !== null) {
-            $sql    .= " AND YEAR(tanggal) = ?";
-            $types[] = 'i';
-            $params[] = $tahun;
-        }
-        if ($bulan !== null) {
-            $sql    .= " AND MONTH(tanggal) = ?";
-            $types[] = 'i';
+        if ($tahun === null) {
+            if ($bulan === null) {
+                return '';
+            }
+
+            // Bulan tanpa tahun tidak bisa jadi rentang tanggal.
+            $types[]  = 'i';
             $params[] = $bulan;
+            return ' AND MONTH(tanggal) = ?';
         }
-        return $sql;
+
+        $start = sprintf('%04d-%02d-01', $tahun, $bulan ?? 1);
+        $end   = $bulan === null
+            ? sprintf('%04d-01-01', $tahun + 1)
+            : date('Y-m-d', strtotime($start . ' +1 month'));
+
+        $types[]  = 's';
+        $params[] = $start;
+        $types[]  = 's';
+        $params[] = $end;
+
+        return ' AND tanggal >= ? AND tanggal < ?';
     }
 
     private function countWhere(string $where, ?int $tahun, ?int $bulan): int
@@ -404,86 +446,89 @@ class LaporanKerusakan
 
     public function countPeriode(int $tahun, ?int $bulan = null): int
     {
-        $sql = "SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE YEAR(tanggal) = ?";
-        $stmt = $this->conn->prepare($sql . ($bulan !== null ? " AND MONTH(tanggal) = ?" : ""));
-
-        if ($bulan !== null) {
-            $stmt->bind_param('ii', $tahun, $bulan);
-        } else {
-            $stmt->bind_param('i', $tahun);
-        }
-
-        $stmt->execute();
-        return (int) $stmt->get_result()->fetch_assoc()['j'];
-    }
-
-    /**
-     * Rekap jumlah laporan per bulan dalam satu tahun.
-     * @return array{masuk:int[], selesai:int[]} indeks 1..12
-     */
-    public function monthlyRecap(int $tahun): array
-    {
-        $masuk   = array_fill(1, 12, 0);
-        $selesai = array_fill(1, 12, 0);
-
-        $stmt = $this->conn->prepare(
-            "SELECT MONTH(tanggal) AS bulan, COUNT(*) AS j
-             FROM laporan_kerusakan
-             WHERE YEAR(tanggal) = ?
-             GROUP BY MONTH(tanggal)"
-        );
-        $stmt->bind_param('i', $tahun);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        while ($row = $res->fetch_assoc()) {
-            $masuk[(int) $row['bulan']] = (int) $row['j'];
-        }
-
-        $stmt = $this->conn->prepare(
-            "SELECT MONTH(tanggal) AS bulan, COUNT(*) AS j
-             FROM laporan_kerusakan
-             WHERE YEAR(tanggal) = ? AND status_penanganan = 'Selesai'
-             GROUP BY MONTH(tanggal)"
-        );
-        $stmt->bind_param('i', $tahun);
-        $stmt->execute();
-        $res = $stmt->get_result();
-        while ($row = $res->fetch_assoc()) {
-            $selesai[(int) $row['bulan']] = (int) $row['j'];
-        }
-
-        return ['masuk' => $masuk, 'selesai' => $selesai];
-    }
-
-    /**
-<<<<<<< HEAD
-     * Jumlah laporan per barang dalam periode tertentu, urut terbanyak.
-=======
-     * Jumlah laporan per barang, urut terbanyak.
-     * Dapat dibatasi periode (tahun/bulan) agar cocok dengan label grafik.
-     *
->>>>>>> b926e95ba3899451e06b434f458eba907cad229d
-     * @return array<int, array{nama:string, jumlah:int}>
-     */
-    public function countByBarang(?int $tahun = null, ?int $bulan = null): array
-    {
-<<<<<<< HEAD
-        $out = [];
         $types  = [];
         $params = [];
-        $sql = "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
-             FROM laporan_kerusakan lk
-             INNER JOIN barang b ON lk.id_barang = b.id
-             WHERE 1=1"
-             . $this->periodeClause($tahun, $bulan, $types, $params)
-             . " GROUP BY lk.id_barang, b.nama_barang
-             ORDER BY jumlah DESC";
+        $sql = "SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE 1=1"
+             . $this->periodeClause($tahun, $bulan, $types, $params);
 
         $stmt = $this->conn->prepare($sql);
         if ($types) {
             $stmt->bind_param(implode('', $types), ...$params);
         }
         $stmt->execute();
+
+        return (int) $stmt->get_result()->fetch_assoc()['j'];
+    }
+
+    /**
+     * Rekap jumlah laporan per bulan dalam satu tahun, dipisah per status.
+     * @return array{masuk:int[], selesai:int[], pending:int[], proses:int[]} indeks 1..12
+     */
+    public function monthlyRecap(int $tahun): array
+    {
+        $masuk   = array_fill(1, 12, 0);
+        $selesai = array_fill(1, 12, 0);
+        $pending = array_fill(1, 12, 0);
+        $proses  = array_fill(1, 12, 0);
+
+        $types  = [];
+        $params = [];
+        $where  = $this->periodeClause($tahun, null, $types, $params);
+
+        $stmt = $this->conn->prepare(
+            "SELECT MONTH(tanggal) AS bulan, status_penanganan AS status, COUNT(*) AS j
+             FROM laporan_kerusakan
+             WHERE 1=1" . $where . "
+             GROUP BY MONTH(tanggal), status_penanganan"
+        );
+        if ($types) {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
+        $stmt->execute();
+        $res = $stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $bulan  = (int) $row['bulan'];
+            $jumlah = (int) $row['j'];
+
+            $masuk[$bulan] += $jumlah;
+            if ($row['status'] === 'Selesai') {
+                $selesai[$bulan] += $jumlah;
+            } elseif ($row['status'] === 'Proses') {
+                $proses[$bulan] += $jumlah;
+            } else {
+                $pending[$bulan] += $jumlah;
+            }
+        }
+
+        return ['masuk' => $masuk, 'selesai' => $selesai, 'pending' => $pending, 'proses' => $proses];
+    }
+
+    /**
+     * Jumlah laporan per barang, urut terbanyak.
+     * Dapat dibatasi periode (tahun/bulan) agar cocok dengan label grafik.
+     * @return array<int, array{nama:string, jumlah:int}>
+     */
+    public function countByBarang(?int $tahun = null, ?int $bulan = null): array
+    {
+        $types  = [];
+        $params = [];
+        $where  = $this->periodeClause($tahun, $bulan, $types, $params);
+
+        $stmt = $this->conn->prepare(
+            "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
+             FROM laporan_kerusakan lk
+             INNER JOIN barang b ON lk.id_barang = b.id
+             WHERE 1=1" . $where . "
+             GROUP BY lk.id_barang, b.nama_barang
+             ORDER BY jumlah DESC"
+        );
+
+        if ($types) {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
+        $stmt->execute();
+
+        $out = [];
         $res = $stmt->get_result();
         while ($row = $res->fetch_assoc()) {
             $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
@@ -498,14 +543,20 @@ class LaporanKerusakan
     public function monthlyByBarang(int $tahun): array
     {
         $barang = [];
+        $types  = [];
+        $params = [];
+        $where  = $this->periodeClause($tahun, null, $types, $params);
+
         $stmt = $this->conn->prepare(
             "SELECT b.id, b.nama_barang AS nama, MONTH(lk.tanggal) AS bulan, COUNT(*) AS jumlah
              FROM laporan_kerusakan lk
              INNER JOIN barang b ON lk.id_barang = b.id
-             WHERE YEAR(lk.tanggal) = ?
+             WHERE 1=1" . $where . "
              GROUP BY b.id, b.nama_barang, MONTH(lk.tanggal)"
         );
-        $stmt->bind_param('i', $tahun);
+        if ($types) {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
         $stmt->execute();
         $res = $stmt->get_result();
         while ($row = $res->fetch_assoc()) {
@@ -530,57 +581,6 @@ class LaporanKerusakan
         return array_map(static function (array $item): array {
             return ['nama' => $item['nama'], 'bulanan' => $item['bulanan']];
         }, $barang);
-    }
-
-    /**
-     * Hitung COUNT(*) dikelompokkan per kolom/label.
-     * @return array<int, array{label:string, jumlah:int}>
-     */
-    private function groupCount(
-        string $select,
-        string $join,
-        string $group,
-        string $order,
-        ?int $tahun,
-        ?int $bulan,
-        int $limit = 0
-    ): array {
-        $types  = [];
-        $params = [];
-        $sql = "SELECT $select FROM laporan_kerusakan lk $join WHERE 1=1 "
-             . $this->periodeClause($tahun, $bulan, $types, $params)
-             . " GROUP BY $group ORDER BY $order";
-        if ($limit > 0) {
-            $sql .= " LIMIT $limit";
-        }
-
-        $stmt = $this->conn->prepare($sql);
-=======
-        $types  = [];
-        $params = [];
-        $where  = $this->periodeClause($tahun, $bulan, $types, $params);
-
-        $stmt = $this->conn->prepare(
-            "SELECT b.nama_barang AS nama, COUNT(*) AS jumlah
-             FROM laporan_kerusakan lk
-             INNER JOIN barang b ON lk.id_barang = b.id
-             WHERE 1=1" . $where . "
-             GROUP BY lk.id_barang, b.nama_barang
-             ORDER BY jumlah DESC"
-        );
-
->>>>>>> b926e95ba3899451e06b434f458eba907cad229d
-        if ($types) {
-            $stmt->bind_param(implode('', $types), ...$params);
-        }
-        $stmt->execute();
-
-        $out = [];
-        $res = $stmt->get_result();
-        while ($row = $res->fetch_assoc()) {
-            $out[] = ['nama' => $row['nama'], 'jumlah' => (int) $row['jumlah']];
-        }
-        return $out;
     }
 
     /**
@@ -616,6 +616,10 @@ class LaporanKerusakan
      */
     public function recapSelesaiByRuangan(int $tahun): array
     {
+        $types  = [];
+        $params = [];
+        $where  = $this->periodeClause($tahun, null, $types, $params);
+
         $stmt = $this->conn->prepare(
             "SELECT r.id, r.nama_ruangan,
                     MONTH(lk.tanggal) AS bulan,
@@ -623,12 +627,13 @@ class LaporanKerusakan
              FROM ruangan r
              LEFT JOIN laporan_kerusakan lk
                     ON lk.id_ruangan = r.id
-                   AND lk.status_penanganan = 'Selesai'
-                   AND YEAR(lk.tanggal) = ?
+                   AND lk.status_penanganan = 'Selesai'" . $where . "
              GROUP BY r.id, r.nama_ruangan, MONTH(lk.tanggal)
              ORDER BY r.nama_ruangan ASC"
         );
-        $stmt->bind_param('i', $tahun);
+        if ($types) {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
         $stmt->execute();
         $res = $stmt->get_result();
 
