@@ -13,13 +13,15 @@ function renderCharts() {
         const el = document.getElementById('dashboardDataJson');
         if (!el) return null;
         try { return JSON.parse(el.textContent); } catch (e) { return null; }
-    })() || { monthly: { masuk: [], selesai: [] }, byBarang: [], monthlyByBarang: [] };
+    })() || { monthly: { masuk: [], selesai: [], pending: [], proses: [] }, byBarang: [], monthlyByBarang: [] };
 
     const gridColor = themeColor('--chart-grid', '#f1f5f9');
     const textColor = themeColor('--chart-text', '#64748b');
 
     const labels  = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGS', 'SEP', 'OKT', 'NOV', 'DES'];
-    const masuk   = labels.map(function (_, i) { return Number((data.monthly.masuk  || {})[i + 1] || 0); });
+    const masuk   = labels.map(function (_, i) { return Number((data.monthly.masuk   || {})[i + 1] || 0); });
+    const pending = labels.map(function (_, i) { return Number((data.monthly.pending || {})[i + 1] || 0); });
+    const proses  = labels.map(function (_, i) { return Number((data.monthly.proses  || {})[i + 1] || 0); });
     const selesai = labels.map(function (_, i) { return Number((data.monthly.selesai || {})[i + 1] || 0); });
 
     // Bar chart
@@ -31,6 +33,8 @@ function renderCharts() {
             labels: labels,
             datasets: [
                 { label: 'Masuk',   data: masuk,   backgroundColor: '#818cf8', borderRadius: 4 },
+                { label: 'Pending', data: pending, backgroundColor: '#ef4444', borderRadius: 4 },
+                { label: 'Proses',  data: proses,  backgroundColor: '#f59e0b', borderRadius: 4 },
                 { label: 'Selesai', data: selesai, backgroundColor: '#4ade80', borderRadius: 4 }
             ]
         },

@@ -430,23 +430,25 @@ class LaporanKerusakan
     }
 
     /**
-     * Rekap jumlah laporan per bulan dalam satu tahun.
-     * @return array{masuk:int[], selesai:int[]} indeks 1..12
+     * Rekap jumlah laporan per bulan dalam satu tahun, dipisah per status.
+     * @return array{masuk:int[], selesai:int[], pending:int[], proses:int[]} indeks 1..12
      */
     public function monthlyRecap(int $tahun): array
     {
         $masuk   = array_fill(1, 12, 0);
         $selesai = array_fill(1, 12, 0);
+        $pending = array_fill(1, 12, 0);
+        $proses  = array_fill(1, 12, 0);
 
         $types  = [];
         $params = [];
         $where  = $this->periodeClause($tahun, null, $types, $params);
 
         $stmt = $this->conn->prepare(
-            "SELECT MONTH(tanggal) AS bulan, COUNT(*) AS j
+            "SELECT MONTH(tanggal) AS bulan, status_penanganan AS status, COUNT(*) AS j
              FROM laporan_kerusakan
              WHERE 1=1" . $where . "
-             GROUP BY MONTH(tanggal)"
+             GROUP BY MONTH(tanggal), status_penanganan"
         );
         if ($types) {
             $stmt->bind_param(implode('', $types), ...$params);
@@ -454,25 +456,20 @@ class LaporanKerusakan
         $stmt->execute();
         $res = $stmt->get_result();
         while ($row = $res->fetch_assoc()) {
-            $masuk[(int) $row['bulan']] = (int) $row['j'];
+            $bulan  = (int) $row['bulan'];
+            $jumlah = (int) $row['j'];
+
+            $masuk[$bulan] += $jumlah;
+            if ($row['status'] === 'Selesai') {
+                $selesai[$bulan] += $jumlah;
+            } elseif ($row['status'] === 'Proses') {
+                $proses[$bulan] += $jumlah;
+            } else {
+                $pending[$bulan] += $jumlah;
+            }
         }
 
-        $stmt = $this->conn->prepare(
-            "SELECT MONTH(tanggal) AS bulan, COUNT(*) AS j
-             FROM laporan_kerusakan
-             WHERE 1=1" . $where . " AND status_penanganan = 'Selesai'
-             GROUP BY MONTH(tanggal)"
-        );
-        if ($types) {
-            $stmt->bind_param(implode('', $types), ...$params);
-        }
-        $stmt->execute();
-        $res = $stmt->get_result();
-        while ($row = $res->fetch_assoc()) {
-            $selesai[(int) $row['bulan']] = (int) $row['j'];
-        }
-
-        return ['masuk' => $masuk, 'selesai' => $selesai];
+        return ['masuk' => $masuk, 'selesai' => $selesai, 'pending' => $pending, 'proses' => $proses];
     }
 
     /**
