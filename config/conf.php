@@ -10,7 +10,11 @@
     define('DB_HOST', '127.0.0.1');
     define('DB_PORT', 3306);
     define('DB_USER', 'root');
+<<<<<<< HEAD
     // define('DB_PASS', 'myadminiscj7');
+=======
+    //define('DB_PASS', 'myadminiscj7');
+>>>>>>> 665718d77ce82b2b8aef3f497ffa4ccd3327382b
     define('DB_PASS', '');
     // define('DB_PASS', '');
     // define('DB_PASS', '');
