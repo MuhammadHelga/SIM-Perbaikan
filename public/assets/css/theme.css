@@ -210,6 +210,10 @@ html.theme-transition .alokasi-card {
   color: var(--text);
 }
 
+[data-theme='dark'] .chart-card h3{
+  color: #94a3b8;
+}
+
 [data-theme='dark'] .table-header,
 [data-theme='dark'] .header-title h3 {
   color: var(--text);

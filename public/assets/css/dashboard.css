@@ -250,6 +250,10 @@ html {
     align-items: center;
 }
 
+.chart-card h3 {
+    color: black;
+}
+
 /* ===== Responsif ===== */
 @media (max-width: 1024px) {
     .charts-grid {
