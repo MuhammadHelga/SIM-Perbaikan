@@ -16,7 +16,7 @@ $oldUsername  = $oldUsername ?? '';
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/login.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css?v=<?= filemtime(BASE_PATH . '/public/assets/css/theme.css') ?>">
     <script src="<?= BASE_URL ?>/assets/js/login.js" defer></script>
     <script src="<?= BASE_URL ?>/assets/js/app.js" defer></script>
 </head>

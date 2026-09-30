@@ -393,7 +393,10 @@ function renderCharts(animateFirst) {
     const yearlyTotal  = Array.isArray(yearly.total)  ? yearly.total  : [];
     const hasYearlyData = yearlyYears.length > 0 && yearlyBarang.length > 0;
     const yearLabels = yearlyYears.map(function (y) { return String(y); });
-    const totalLineColor = themeColor('--chart-total', '#0f172a');
+    const isDarkTheme = document.documentElement.getAttribute('data-theme') === 'dark';
+    // Pakai variabel tema bila ada; fallback sadar-tema supaya tetap kontras walau CSS basi.
+    const totalLineColor = themeColor('--chart-total', isDarkTheme ? '#f8fafc' : '#0f172a');
+    const totalPointRing = isDarkTheme ? '#1e293b' : '#ffffff';
 
     const yearlyDatasets = yearlyBarang.map(function (item, index) {
         const color = comparisonPalette[index % comparisonPalette.length];
@@ -418,13 +421,15 @@ function renderCharts(animateFirst) {
             data: yearLabels.map(function (_, i) { return Number(yearlyTotal[i] || 0); }),
             borderColor: totalLineColor,
             backgroundColor: totalLineColor,
-            borderWidth: 3,
+            borderWidth: 3.5,
             borderDash: [6, 4],
             tension: 0.35,
             pointRadius: 4,
             pointHoverRadius: 6,
             pointStyle: 'rectRot',
             pointBackgroundColor: totalLineColor,
+            pointBorderColor: totalPointRing,
+            pointBorderWidth: 2,
             fill: false,
             yAxisID: 'y1'
         });

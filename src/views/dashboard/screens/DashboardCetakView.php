@@ -34,6 +34,11 @@ $deltaText = $dashboard['delta'] === null
         : (int) $dashboard['delta'] . ' % vs tahun lalu');
 
 $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
+
+$trendYears = $dashboard['byBarangPerTahun']['tahun'] ?? [];
+$trendLabel = $trendYears
+    ? (int) $trendYears[0] . '–' . (int) end($trendYears)
+    : '5 tahun terakhir';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -256,7 +261,7 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
                 <div class="chart-box__head">
                     <div class="chart-box__head-row">
                         <h3>Tren Kerusakan per Jenis Barang</h3>
-                        <span class="chart-box__year">Lintas tahun</span>
+                        <span class="chart-box__year"><?= $esc($trendLabel) ?> (5 tahun terakhir)</span>
                     </div>
                     <p>Satu garis per jenis barang; garis putus-putus = total seluruh barang (sumbu kanan)</p>
                 </div>

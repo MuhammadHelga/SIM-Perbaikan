@@ -37,7 +37,7 @@ $utilisasi = $stats['total_unit'] > 0
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/navbar.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/jaringan.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/modal.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css?v=<?= filemtime(BASE_PATH . '/public/assets/css/theme.css') ?>">
 </head>
 <body>
     <?php $activeMenu = 'jaringan'; include BASE_PATH . '/components/shared/Navbar.php'; ?>

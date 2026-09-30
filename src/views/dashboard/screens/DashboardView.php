@@ -17,6 +17,11 @@ $deltaText  = $delta === null
     ? 'Belum ada pembanding'
     : ($delta >= 0 ? '+' . $delta . ' % vs tahun lalu' : $delta . ' % vs tahun lalu');
 $deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
+
+$trendYears = $dashboard['byBarangPerTahun']['tahun'] ?? [];
+$trendLabel = $trendYears
+    ? (int) $trendYears[0] . '–' . (int) end($trendYears)
+    : '5 tahun terakhir';
 ?>
 <!DOCTYPE html>
 <html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
@@ -32,7 +37,7 @@ $deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
     
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/dashboard.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/dashboard.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/navbar.css') ?>">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css?v=<?= filemtime(BASE_PATH . '/public/assets/css/theme.css') ?>">
 </head>
 <body>
     <?php $activeMenu = 'dashboard'; include BASE_PATH . '/components/shared/Navbar.php'; ?>
@@ -158,7 +163,7 @@ $deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
                 <div class="chart-header">
                     <div class="flex-between">
                         <h3>Tren Kerusakan per Jenis Barang</h3>
-                        <span class="text-muted">Lintas tahun</span>
+                        <span class="text-muted"><?= htmlspecialchars($trendLabel, ENT_QUOTES, 'UTF-8') ?> (5 tahun terakhir)</span>
                     </div>
                     <p>Satu garis per jenis barang; garis putus-putus = total seluruh barang (sumbu kanan). Klik legenda untuk menyembunyikan garis.</p>
                 </div>

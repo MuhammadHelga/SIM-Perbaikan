@@ -36,8 +36,8 @@ class DashboardService
             ? (int) round(($total - $totalLalu) / $totalLalu * 100)
             : null;
 
-        // Grafik lintas tahun memakai seluruh tahun yang tersedia (urut naik).
-        $tahunNaik = array_reverse($this->getTahunTersedia());
+        // Grafik lintas tahun: 5 tahun terakhir sampai tahun yang dipilih (tahun-4 .. tahun).
+        $tahunNaik = range($tahun - 4, $tahun);
 
         return [
             'total'           => $total,

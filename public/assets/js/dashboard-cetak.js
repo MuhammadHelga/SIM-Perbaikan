@@ -355,10 +355,12 @@
                 data: labels.map(function (_, i) { return Number(total[i] || 0); }),
                 borderColor: totalColor,
                 backgroundColor: totalColor,
-                borderWidth: 3,
+                borderWidth: 3.5,
                 borderDash: [6, 4],
                 pointStyle: 'rectRot',
                 pointRadius: 4,
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
                 tension: 0.35,
                 fill: false,
                 yAxisID: 'y1'
