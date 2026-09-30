@@ -13,6 +13,7 @@ $dashboard = $dashboard ?? [
     'monthly' => ['masuk' => array_fill(1, 12, 0), 'pending' => array_fill(1, 12, 0), 'proses' => array_fill(1, 12, 0), 'selesai' => array_fill(1, 12, 0)],
     'byBarang' => [],
     'monthlyByBarang' => [],
+    'byBarangPerTahun' => ['tahun' => [], 'barang' => [], 'total' => []],
 ];
 
 $bulanSingkat = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
@@ -139,6 +140,8 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
         .chart-box__canvas { position: relative; height: 155px; min-width: 0; }
         .chart-box__canvas--tall { height: 155px; }
         .chart-box__canvas canvas { max-width: 100%; }
+        .chart-box--wide { grid-column: 1 / -1; }
+        .chart-box__canvas--yearly { height: 240px; }
 
         table { width: 100%; border-collapse: collapse; font-size: 11px; }
         th, td { border: 1px solid #b9c2d6; padding: 4px 6px; text-align: center; }
@@ -248,6 +251,17 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
                 </div>
                 <div class="chart-box__canvas"><canvas id="monthlyPieChart"></canvas></div>
             </div>
+
+            <div class="chart-box chart-box--wide">
+                <div class="chart-box__head">
+                    <div class="chart-box__head-row">
+                        <h3>Tren Kerusakan per Jenis Barang</h3>
+                        <span class="chart-box__year">Lintas tahun</span>
+                    </div>
+                    <p>Satu garis per jenis barang; garis putus-putus = total seluruh barang (sumbu kanan)</p>
+                </div>
+                <div class="chart-box__canvas chart-box__canvas--yearly"><canvas id="yearlyTrendChart"></canvas></div>
+            </div>
         </div>
 
         <div class="block block--new-page">
@@ -338,6 +352,7 @@ $esc = static fn($v) => htmlspecialchars((string) $v, ENT_QUOTES, 'UTF-8');
         'monthly'         => $monthly,
         'byBarang'        => $byBarang,
         'monthlyByBarang' => $monthlyItem,
+        'byBarangPerTahun' => $dashboard['byBarangPerTahun'],
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

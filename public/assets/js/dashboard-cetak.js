@@ -21,7 +21,7 @@
     const PIE_SIDE_COLORS = ['#31548f', '#b85b24', '#777777', '#c18f00', '#3c729f', '#4e7a32', '#1a3053', '#6e320a', '#735600', '#194267', '#304a1e', '#594674'];
 
     function readData() {
-        const fallback = { monthly: {}, byBarang: [], monthlyByBarang: [] };
+        const fallback = { monthly: {}, byBarang: [], monthlyByBarang: [], byBarangPerTahun: { tahun: [], barang: [], total: [] } };
         const el = document.getElementById('dashboardCetakDataJson');
         if (!el) return fallback;
         try {
@@ -319,12 +319,93 @@
         });
     }
 
+    /* ===== Tren Kerusakan per Jenis Barang lintas tahun (line + total) ===== */
+    function renderYearlyTrendChart(data) {
+        const canvas = document.getElementById('yearlyTrendChart');
+        if (!canvas) return null;
+
+        const yearly = (data.byBarangPerTahun && typeof data.byBarangPerTahun === 'object')
+            ? data.byBarangPerTahun
+            : { tahun: [], barang: [], total: [] };
+        const years  = Array.isArray(yearly.tahun)  ? yearly.tahun  : [];
+        const barang = Array.isArray(yearly.barang) ? yearly.barang : [];
+        const total  = Array.isArray(yearly.total)  ? yearly.total  : [];
+        const hasData = years.length > 0 && barang.length > 0;
+        const labels = years.map(String);
+        const totalColor = '#0f172a';
+
+        const datasets = barang.map(function (item, index) {
+            const color = COMPARISON_PALETTE[index % COMPARISON_PALETTE.length];
+            return {
+                label: item.nama,
+                data: labels.map(function (_, i) { return Number((item.tahunan || [])[i] || 0); }),
+                borderColor: color,
+                backgroundColor: color,
+                borderWidth: 2,
+                tension: 0.35,
+                pointRadius: 3,
+                fill: false,
+                yAxisID: 'y'
+            };
+        });
+
+        if (hasData) {
+            datasets.push({
+                label: 'Total',
+                data: labels.map(function (_, i) { return Number(total[i] || 0); }),
+                borderColor: totalColor,
+                backgroundColor: totalColor,
+                borderWidth: 3,
+                borderDash: [6, 4],
+                pointStyle: 'rectRot',
+                pointRadius: 4,
+                tension: 0.35,
+                fill: false,
+                yAxisID: 'y1'
+            });
+        }
+
+        return new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: hasData ? labels : ['Belum ada data'],
+                datasets: hasData ? datasets : [{
+                    label: 'Belum ada data',
+                    data: [0],
+                    borderColor: GRID,
+                    backgroundColor: GRID,
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: { color: TEXT, usePointStyle: true, boxWidth: 10, padding: 10 }
+                    }
+                },
+                scales: {
+                    y: { beginAtZero: true, position: 'left', ticks: { color: TEXT, precision: 0 }, grid: { color: GRID } },
+                    y1: { beginAtZero: true, position: 'right', display: hasData, ticks: { color: totalColor, precision: 0 }, grid: { drawOnChartArea: false } },
+                    x: { grid: { display: false }, ticks: { color: TEXT } }
+                }
+            }
+        });
+    }
+
     function render() {
         const data = readData();
         renderBarChart(data);
         renderDoughnutChart(data);
         renderMonthlyItemsChart(data);
         renderMonthlyPieChart(data);
+        renderYearlyTrendChart(data);
     }
 
     function autoPrint() {

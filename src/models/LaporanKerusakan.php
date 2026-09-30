@@ -584,6 +584,80 @@ class LaporanKerusakan
     }
 
     /**
+     * Jumlah laporan per jenis barang untuk setiap tahun (lintas tahun).
+     *
+     * Deret diselaraskan dengan daftar $tahun yang diberikan supaya semua garis
+     * punya panjang sama dan titik-titiknya sejajar di sumbu X. Barang yang tidak
+     * punya data di suatu tahun diisi 0. Barang diurutkan dari total terbanyak.
+     *
+     * @param int[] $tahun daftar tahun yang ditampilkan, mis. [2024, 2025, 2026]
+     * @return array{tahun:int[], barang:array<int,array{nama:string, tahunan:int[]}>, total:int[]}
+     */
+    public function countByBarangPerTahun(array $tahun): array
+    {
+        $tahun = array_values(array_unique(array_map('intval', $tahun)));
+        sort($tahun);
+
+        if (!$tahun) {
+            return ['tahun' => [], 'barang' => [], 'total' => []];
+        }
+
+        $start = sprintf('%04d-01-01', $tahun[0]);
+        $end   = sprintf('%04d-01-01', $tahun[count($tahun) - 1] + 1);
+
+        $stmt = $this->conn->prepare(
+            "SELECT YEAR(lk.tanggal) AS tahun, b.id, b.nama_barang AS nama, COUNT(*) AS jumlah
+             FROM laporan_kerusakan lk
+             INNER JOIN barang b ON lk.id_barang = b.id
+             WHERE lk.tanggal >= ? AND lk.tanggal < ?
+             GROUP BY YEAR(lk.tanggal), b.id, b.nama_barang"
+        );
+        $stmt->bind_param("ss", $start, $end);
+        $stmt->execute();
+        $res = $stmt->get_result();
+
+        $posisi = array_flip($tahun); // tahun => indeks kolom
+        $jumlah = count($tahun);
+        $barang = []; // id => ['nama' => string, 'tahunan' => int[], 'total' => int]
+
+        while ($row = $res->fetch_assoc()) {
+            $th = (int) $row['tahun'];
+            if (!isset($posisi[$th])) {
+                continue;
+            }
+
+            $id = (int) $row['id'];
+            if (!isset($barang[$id])) {
+                $barang[$id] = [
+                    'nama'    => $row['nama'],
+                    'tahunan' => array_fill(0, $jumlah, 0),
+                    'total'   => 0,
+                ];
+            }
+
+            $j = (int) $row['jumlah'];
+            $barang[$id]['tahunan'][$posisi[$th]] += $j;
+            $barang[$id]['total'] += $j;
+        }
+
+        // Terbanyak lebih dulu agar warna/urutan garis konsisten.
+        uasort($barang, static function (array $a, array $b): int {
+            return $b['total'] <=> $a['total'];
+        });
+
+        $total = array_fill(0, $jumlah, 0);
+        $out   = [];
+        foreach ($barang as $item) {
+            $out[] = ['nama' => $item['nama'], 'tahunan' => $item['tahunan']];
+            foreach ($item['tahunan'] as $i => $j) {
+                $total[$i] += $j;
+            }
+        }
+
+        return ['tahun' => $tahun, 'barang' => $out, 'total' => $total];
+    }
+
+    /**
      * Daftar tahun yang punya data laporan (+ tahun berjalan), urut menurun.
      * @return int[]
      */

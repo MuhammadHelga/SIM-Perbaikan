@@ -244,6 +244,15 @@ html {
     height: 360px;
 }
 
+/* Baris penuh: grafik tren lintas tahun */
+.chart-card--wide {
+    grid-column: 1 / -1;
+}
+
+.yearly-trend-wrapper {
+    height: 380px;
+}
+
 .flex-between {
     display: flex;
     justify-content: space-between;

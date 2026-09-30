@@ -36,6 +36,9 @@ class DashboardService
             ? (int) round(($total - $totalLalu) / $totalLalu * 100)
             : null;
 
+        // Grafik lintas tahun memakai seluruh tahun yang tersedia (urut naik).
+        $tahunNaik = array_reverse($this->getTahunTersedia());
+
         return [
             'total'           => $total,
             'dalam'           => $this->laporan->countDalamPenanganan($tahun),
@@ -48,6 +51,7 @@ class DashboardService
             'monthly'         => $this->laporan->monthlyRecap($tahun),
             'byBarang'        => $this->laporan->countByBarang($tahun, null),
             'monthlyByBarang' => $this->laporan->monthlyByBarang($tahun),
+            'byBarangPerTahun' => $this->laporan->countByBarangPerTahun($tahunNaik),
         ];
     }
 }

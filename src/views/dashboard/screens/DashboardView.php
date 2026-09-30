@@ -5,6 +5,7 @@ $dashboard = $dashboard ?? [
     'monthly' => ['masuk' => array_fill(1, 12, 0), 'selesai' => array_fill(1, 12, 0)],
     'byBarang' => [],
     'monthlyByBarang' => [],
+    'byBarangPerTahun' => ['tahun' => [], 'barang' => [], 'total' => []],
 ];
 
 $tahunList = $tahunList ?? [$dashboard['tahun']];
@@ -152,6 +153,19 @@ $deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
                     </div>
                 </div>
             </div>
+
+            <div class="chart-card chart-card--wide">
+                <div class="chart-header">
+                    <div class="flex-between">
+                        <h3>Tren Kerusakan per Jenis Barang</h3>
+                        <span class="text-muted">Lintas tahun</span>
+                    </div>
+                    <p>Satu garis per jenis barang; garis putus-putus = total seluruh barang (sumbu kanan). Klik legenda untuk menyembunyikan garis.</p>
+                </div>
+                <div class="chart-wrapper yearly-trend-wrapper">
+                    <canvas id="yearlyTrendChart"></canvas>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -159,6 +173,7 @@ $deltaClass = ($delta !== null && $delta < 0) ? 'text-danger' : 'text-purple';
         'monthly'         => $dashboard['monthly'],
         'byBarang'        => $dashboard['byBarang'],
         'monthlyByBarang' => $dashboard['monthlyByBarang'],
+        'byBarangPerTahun' => $dashboard['byBarangPerTahun'],
     ], JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
     <script src="<?= BASE_URL ?>/assets/js/dashboard.js?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/js/dashboard.js') ?>"></script>
 </body>

@@ -2,6 +2,7 @@ let barChart = null;
 let doughnutChart = null;
 let monthlyItemsChart = null;
 let monthlyPieChart = null;
+let yearlyTrendChart = null;
 
 // Token render: membatalkan "forced animation" dari render sebelumnya.
 let chartsRenderToken = 0;
@@ -17,7 +18,7 @@ function renderCharts(animateFirst) {
         const el = document.getElementById('dashboardDataJson');
         if (!el) return null;
         try { return JSON.parse(el.textContent); } catch (e) { return null; }
-    })() || { monthly: { masuk: [], selesai: [], pending: [], proses: [] }, byBarang: [], monthlyByBarang: [] };
+    })() || { monthly: { masuk: [], selesai: [], pending: [], proses: [] }, byBarang: [], monthlyByBarang: [], byBarangPerTahun: { tahun: [], barang: [], total: [] } };
 
     const gridColor = themeColor('--chart-grid', '#f1f5f9');
     const textColor = themeColor('--chart-text', '#64748b');
@@ -383,11 +384,112 @@ function renderCharts(animateFirst) {
         }
     });
 
+    // ===== Tren kerusakan per jenis barang (lintas tahun) =====
+    const yearly = (data.byBarangPerTahun && typeof data.byBarangPerTahun === 'object')
+        ? data.byBarangPerTahun
+        : { tahun: [], barang: [], total: [] };
+    const yearlyYears  = Array.isArray(yearly.tahun)  ? yearly.tahun  : [];
+    const yearlyBarang = Array.isArray(yearly.barang) ? yearly.barang : [];
+    const yearlyTotal  = Array.isArray(yearly.total)  ? yearly.total  : [];
+    const hasYearlyData = yearlyYears.length > 0 && yearlyBarang.length > 0;
+    const yearLabels = yearlyYears.map(function (y) { return String(y); });
+    const totalLineColor = themeColor('--chart-total', '#0f172a');
+
+    const yearlyDatasets = yearlyBarang.map(function (item, index) {
+        const color = comparisonPalette[index % comparisonPalette.length];
+        return {
+            label: item.nama,
+            data: yearLabels.map(function (_, i) { return Number((item.tahunan || [])[i] || 0); }),
+            borderColor: color,
+            backgroundColor: color,
+            borderWidth: 2,
+            tension: 0.35,
+            pointRadius: 3,
+            pointHoverRadius: 5,
+            pointBackgroundColor: color,
+            fill: false,
+            yAxisID: 'y'
+        };
+    });
+
+    if (hasYearlyData) {
+        yearlyDatasets.push({
+            label: 'Total',
+            data: yearLabels.map(function (_, i) { return Number(yearlyTotal[i] || 0); }),
+            borderColor: totalLineColor,
+            backgroundColor: totalLineColor,
+            borderWidth: 3,
+            borderDash: [6, 4],
+            tension: 0.35,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+            pointStyle: 'rectRot',
+            pointBackgroundColor: totalLineColor,
+            fill: false,
+            yAxisID: 'y1'
+        });
+    }
+
+    const ctxYearly = document.getElementById('yearlyTrendChart').getContext('2d');
+    if (yearlyTrendChart) yearlyTrendChart.destroy();
+    yearlyTrendChart = new Chart(ctxYearly, {
+        type: 'line',
+        data: {
+            labels: hasYearlyData ? yearLabels : ['Belum ada data'],
+            datasets: hasYearlyData ? yearlyDatasets : [{
+                label: 'Belum ada data',
+                data: [0],
+                borderColor: gridColor,
+                backgroundColor: gridColor,
+                borderWidth: 2,
+                pointRadius: 0,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: textColor, usePointStyle: true, boxWidth: 10, padding: 14 }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function (context) {
+                            return context.dataset.label + ': ' + context.parsed.y;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    position: 'left',
+                    ticks: { color: textColor, precision: 0 },
+                    grid: { color: gridColor }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    display: hasYearlyData,
+                    ticks: { color: totalLineColor, precision: 0 },
+                    grid: { drawOnChartArea: false }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: textColor }
+                }
+            }
+        }
+    });
+
     // Chart.js (responsive) bisa memotong animasi pertama karena auto-resize.
     // Paksa animasi tumbuh dari nol hanya pada render pertama (bukan saat ganti tema),
     // dan hanya bila tab terlihat — agar data tidak "terjebak nol" di tab latar.
     if (animateFirst) {
-        animateChartsFromZero([barChart, doughnutChart, monthlyItemsChart, monthlyPieChart]);
+        animateChartsFromZero([barChart, doughnutChart, monthlyItemsChart, monthlyPieChart, yearlyTrendChart]);
     }
 }
 
