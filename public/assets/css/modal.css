@@ -22,12 +22,14 @@
   pointer-events: auto;
 }
 
-.modal-overlay .form-card {
+.modal-overlay .form-card,
+.modal-overlay .surat-modal-card {
   transform: translateY(-12px);
   transition: transform 0.18s ease;
 }
 
-.modal-overlay.open .form-card {
+.modal-overlay.open .form-card,
+.modal-overlay.open .surat-modal-card {
   transform: translateY(0);
 }
 

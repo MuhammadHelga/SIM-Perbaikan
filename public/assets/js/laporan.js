@@ -332,3 +332,334 @@ function initMonthPicker() {
         if (e.key === 'Escape') closePanel();
     });
 }
+
+// ============================================================
+// SURAT KERUSAKAN MODAL
+// ============================================================
+
+let _suratCurrentId = null;
+
+function openSuratModal(id, isReprint = false) {
+    const row = findLaporanById(id);
+    if (!row) { alert('Data laporan tidak ditemukan.'); return; }
+
+    _suratCurrentId = id;
+
+    // Isi info laporan
+    document.getElementById('suratLaporanId').textContent = id;
+    document.getElementById('suratInfoDetail').textContent =
+        ' — ' + (row.barang || '?') + ' | ' + (row.urusan || '?');
+
+    // Ubah header modal sesuai mode
+    const headerIcon = document.getElementById('suratModalHeaderIcon');
+    const headerTitle = document.getElementById('suratModalHeaderTitle');
+    const headerDesc  = document.getElementById('suratModalHeaderDesc');
+    const approvalBox = document.getElementById('suratApprovalBox');
+
+    if (isReprint) {
+        if (headerIcon)  headerIcon.textContent  = 'print';
+        if (headerTitle) headerTitle.textContent  = 'Lihat & Cetak Ulang Surat';
+        if (headerDesc)  headerDesc.textContent   = 'Isi ulang atau langsung cetak surat kerusakan yang sudah dikirim';
+        // Tampilkan badge reprint
+        document.getElementById('suratReprintBadge').style.display = 'flex';
+        // Approval sudah tidak wajib di reprint — checkbox langsung dicentang
+        document.getElementById('suratApprovalCheck').checked = true;
+        document.getElementById('suratBtnCetak').disabled = false;
+    } else {
+        if (headerIcon)  headerIcon.textContent  = 'description';
+        if (headerTitle) headerTitle.textContent  = 'Form Surat Kerusakan';
+        if (headerDesc)  headerDesc.textContent   = 'Isi form di bawah sebelum mencetak surat pengantar kerusakan';
+        document.getElementById('suratReprintBadge').style.display = 'none';
+        document.getElementById('suratApprovalCheck').checked = false;
+        document.getElementById('suratBtnCetak').disabled = true;
+    }
+
+    // Default tanggal hari ini
+    const today = new Date();
+    document.getElementById('suratTglSurat').value = today.toISOString().slice(0, 10);
+
+    // Auto-nomor surat (opsional, bisa diedit)
+    const bulanRomawi = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+    const bln = bulanRomawi[today.getMonth()];
+    const thn = today.getFullYear();
+    document.getElementById('suratNomor').value = `${String(id).padStart(3,'0')}/IT/${bln}/${thn}`;
+
+    // Reset field isian (nama/jabatan/keterangan)
+    document.getElementById('suratNamaPelapor').value = '';
+    document.getElementById('suratJabatan').value = '';
+    document.getElementById('suratKeterangan').value = '';
+
+    // Buat barcode / kode TTD digital
+    // Saat reprint, gunakan kode stabil berbasis tgl_kirim agar konsisten
+    const ttdCode = isReprint
+        ? generateStableTtdCode(id, row)
+        : generateTtdCode(id, row);
+    document.getElementById('suratTtdCode').textContent = ttdCode;
+    drawBarcode128(document.getElementById('suratBarcodeCanvas'), ttdCode);
+
+    openModal('modal-surat-kerusakan');
+}
+
+function closeSuratModal() {
+    closeModal('modal-surat-kerusakan');
+    _suratCurrentId = null;
+}
+
+function onSuratApprovalChange() {
+    const checked = document.getElementById('suratApprovalCheck').checked;
+    document.getElementById('suratBtnCetak').disabled = !checked;
+}
+
+/**
+ * Menghasilkan kode TTD digital unik berdasarkan id laporan + timestamp + serial
+ * (digunakan saat pertama kali kirim)
+ */
+function generateTtdCode(id, row) {
+    const ts = Date.now().toString(36).toUpperCase();
+    const sn = (row.serial_number || 'SN').replace(/[^A-Z0-9]/gi, '').slice(0, 6).toUpperCase();
+    return `LPR${String(id).padStart(4,'0')}-${sn}-${ts}`;
+}
+
+/**
+ * Kode TTD stabil untuk cetak ulang — berbasis tgl_kirim + id
+ * sehingga kode sama setiap kali surat dicetak ulang
+ */
+function generateStableTtdCode(id, row) {
+    const tglKirim = (row.tgl_kirim || '').replace(/-/g, '');
+    const sn = (row.serial_number || 'SN').replace(/[^A-Z0-9]/gi, '').slice(0, 6).toUpperCase();
+    // Hash sederhana dari tgl_kirim agar kode deterministik
+    const seed = (tglKirim + String(id)).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+    const seedCode = seed.toString(36).toUpperCase().padStart(4, '0');
+    return `LPR${String(id).padStart(4,'0')}-${sn}-${seedCode}R`;
+}
+
+/**
+ * Cetak surat kerusakan:
+ * 1. Validasi form
+ * 2. Bangun HTML surat
+ * 3. Buka window print baru
+ * 4. Kirim POST /laporan/kirim/{id} untuk update status
+ */
+function cetakSurat() {
+    const namaPelapor = document.getElementById('suratNamaPelapor').value.trim();
+    const jabatan     = document.getElementById('suratJabatan').value.trim();
+    const tglSurat    = document.getElementById('suratTglSurat').value;
+    const nomor       = document.getElementById('suratNomor').value.trim();
+    const keterangan  = document.getElementById('suratKeterangan').value.trim();
+    const ttdCode     = document.getElementById('suratTtdCode').textContent;
+
+    if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); document.getElementById('suratNamaPelapor').focus(); return; }
+    if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); document.getElementById('suratJabatan').focus(); return; }
+    if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); document.getElementById('suratTglSurat').focus(); return; }
+
+    const id  = _suratCurrentId;
+    const row = findLaporanById(id);
+    if (!row) return;
+
+    // Format tanggal
+    const tglFmt = formatTglIndo(tglSurat);
+
+    // Barcode sebagai data URL dari canvas
+    const canvas = document.getElementById('suratBarcodeCanvas');
+    const barcodeImg = canvas.toDataURL('image/png');
+
+    const html = buildSuratHtml({
+        nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, barcodeImg, row, id
+    });
+
+    // Buka window cetak
+    const pw = window.open('', '_blank', 'width=900,height=700');
+    if (!pw) { alert('Pop-up diblokir browser. Izinkan pop-up untuk mencetak.'); return; }
+    pw.document.write(html);
+    pw.document.close();
+    pw.onload = function() {
+        pw.focus();
+        pw.print();
+    };
+
+    // Tutup modal & update status kirim via POST
+    closeSuratModal();
+    postAction((window.BASE_URL || '') + '/laporan/kirim/' + id);
+}
+
+function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, barcodeImg, row, id }) {
+    const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    return `<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Surat Kerusakan #${id}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #111; background: #fff; padding: 20mm 25mm; }
+  .kop { display: flex; align-items: center; gap: 18px; border-bottom: 3px double #00288e; padding-bottom: 10px; margin-bottom: 14px; }
+  .kop-logo { width: 64px; height: 64px; object-fit: contain; }
+  .kop-text h1 { font-size: 15pt; color: #00288e; font-weight: bold; letter-spacing: 0.5px; }
+  .kop-text p { font-size: 10pt; color: #444; }
+  .judul { text-align: center; margin: 18px 0 10px; }
+  .judul h2 { font-size: 14pt; text-decoration: underline; letter-spacing: 1px; }
+  .judul .nomor { font-size: 10.5pt; margin-top: 4px; }
+  .tgl-right { text-align: right; font-size: 11pt; margin-bottom: 14px; }
+  .pembuka { margin-bottom: 14px; font-size: 11.5pt; line-height: 1.7; }
+  table.detail { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 11.5pt; }
+  table.detail td { padding: 5px 10px; vertical-align: top; }
+  table.detail td:first-child { width: 38%; font-weight: 600; }
+  table.detail td:nth-child(2) { width: 4%; }
+  .keterangan-box { border: 1px solid #aaa; border-radius: 4px; padding: 10px 14px; margin-bottom: 18px; font-size: 11.5pt; min-height: 48px; font-style: italic; color: #333; }
+  .ttd-section { display: flex; justify-content: flex-end; margin-top: 16px; gap: 60px; align-items: flex-start; }
+  .ttd-block { text-align: center; min-width: 180px; }
+  .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 4px; }
+  .ttd-block .barcode-wrap { border: 1px solid #ccc; border-radius: 4px; padding: 6px; display: inline-block; background: #fafafa; }
+  .ttd-block .barcode-wrap img { display: block; max-width: 180px; height: 50px; }
+  .ttd-block .ttd-code { font-family: monospace; font-size: 8pt; color: #555; margin-top: 4px; word-break: break-all; }
+  .ttd-block .ttd-name { margin-top: 6px; font-size: 10.5pt; border-top: 1px solid #555; padding-top: 4px; min-width: 160px; }
+  .footer-note { margin-top: 24px; font-size: 9pt; color: #777; border-top: 1px solid #ddd; padding-top: 6px; }
+  @media print {
+    body { padding: 0; }
+    @page { size: A4 portrait; margin: 15mm 20mm; }
+  }
+</style>
+</head>
+<body>
+
+<div class="kop">
+  <div class="kop-text">
+    <h1>RUMAH SAKIT AL-HUDA</h1>
+    <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan Perangkat</p>
+    <p>Jl. Raya Al-Huda · Telp. (xxx) xxxx-xxxx</p>
+  </div>
+</div>
+
+<div class="judul">
+  <h2>SURAT PENGANTAR KERUSAKAN BARANG</h2>
+  <div class="nomor">Nomor: ${esc(nomor) || '—'}</div>
+</div>
+
+<div class="tgl-right">Tanggal: ${esc(tglFmt)}</div>
+
+<div class="pembuka">
+  Yang bertanda tangan di bawah ini menyatakan bahwa barang/perangkat berikut telah mengalami kerusakan
+  dan perlu ditangani/dikirim ke unit terkait untuk perbaikan lebih lanjut.
+</div>
+
+<table class="detail">
+  <tr><td>ID Laporan</td><td>:</td><td>#${esc(id)}</td></tr>
+  <tr><td>Jenis Barang</td><td>:</td><td>${esc(row.barang)}</td></tr>
+  <tr><td>Unit / Ruangan</td><td>:</td><td>${esc(row.urusan)}</td></tr>
+  <tr><td>No. Seri</td><td>:</td><td>${esc(row.serial_number) || '—'}</td></tr>
+  <tr><td>Tanggal Laporan</td><td>:</td><td>${esc(formatTglIndo(row.tanggal))}</td></tr>
+  <tr><td>Status Penanganan</td><td>:</td><td>${esc(row.status_penanganan)}</td></tr>
+  <tr><td>Rincian Kerusakan</td><td>:</td><td>${esc(row.kerusakan)}</td></tr>
+  <tr><td>Uraian Kegiatan</td><td>:</td><td>${esc(row.uraian)}</td></tr>
+</table>
+
+<div style="font-weight:600; margin-bottom:6px; font-size:11.5pt;">Keterangan Tambahan:</div>
+<div class="keterangan-box">${esc(keterangan) || '(tidak ada keterangan tambahan)'}</div>
+
+<div class="ttd-section">
+  <div class="ttd-block">
+    <div class="ttd-title">Pelapor</div>
+    <div class="barcode-wrap">
+      <img src="${barcodeImg}" alt="Barcode TTD Digital" />
+    </div>
+    <div class="ttd-code">${esc(ttdCode)}</div>
+    <div class="ttd-name">${esc(namaPelapor)}<br><small>${esc(jabatan)}</small></div>
+  </div>
+  <div class="ttd-block">
+    <div class="ttd-title">Mengetahui,</div>
+    <div style="height: 60px; border: 1px dashed #ccc; border-radius:4px; margin-bottom:4px;"></div>
+    <div class="ttd-name">___________________<br><small>Kepala Unit / Pejabat</small></div>
+  </div>
+</div>
+
+<div class="footer-note">
+  ★ Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda.
+  Kode verifikasi TTD: <strong>${esc(ttdCode)}</strong>
+</div>
+
+</body>
+</html>`;
+}
+
+function formatTglIndo(tgl) {
+    if (!tgl) return '—';
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const d = new Date(tgl);
+    if (isNaN(d.getTime())) return tgl;
+    return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
+}
+
+// ──────────────────────────────────────────────────────────────
+// Barcode Code 128 — render ke <canvas>
+// Implementasi minimal: hanya subset ASCII printable (Code 128B)
+// ──────────────────────────────────────────────────────────────
+function drawBarcode128(canvas, text) {
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width;
+    const H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // Code 128B patterns (nilai 0–106)
+    // Setiap entry = 11 bit bar/space: 1=bar, 0=space
+    const CODE128B_PATTERNS = [
+        [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],
+        [1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
+        [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],
+        [1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
+        [2,2,1,2,3,1],[2,1,3,2,1,2],[2,2,3,1,1,2],[3,1,2,1,3,1],[3,1,1,2,2,2],
+        [3,2,1,1,2,2],[3,2,1,2,2,1],[3,1,2,2,1,2],[3,2,2,1,1,2],[3,2,2,2,1,1],
+        [2,1,2,1,2,3],[2,1,2,3,2,1],[2,3,2,1,2,1],[1,1,1,3,2,3],[1,3,1,1,2,3],
+        [1,3,1,3,2,1],[1,1,2,3,1,3],[1,3,2,1,1,3],[1,3,2,3,1,1],[2,1,1,3,1,3],
+        [2,3,1,1,1,3],[2,3,1,3,1,1],[1,1,2,1,3,3],[1,1,2,3,3,1],[1,3,2,1,3,1],
+        [1,1,3,1,2,3],[1,1,3,3,2,1],[1,3,3,1,2,1],[3,1,3,1,2,1],[2,1,1,3,3,1],
+        [2,3,1,1,3,1],[2,1,3,1,1,3],[2,1,3,3,1,1],[2,1,3,1,3,1],[3,1,1,1,2,3],
+        [3,1,1,3,2,1],[3,3,1,1,2,1],[3,1,2,1,1,3],[3,1,2,3,1,1],[3,3,2,1,1,1],
+        [3,1,4,1,1,1],[2,2,1,4,1,1],[4,3,1,1,1,1],[1,1,1,2,2,4],[1,1,1,4,2,2],
+        [1,2,1,1,2,4],[1,2,1,4,2,1],[1,4,1,1,2,2],[1,4,1,2,2,1],[1,1,2,2,1,4],
+        [1,1,2,4,1,2],[1,2,2,1,1,4],[1,2,2,4,1,1],[1,4,2,1,1,2],[1,4,2,2,1,1],
+        [2,4,1,2,1,1],[2,2,1,1,1,4],[4,1,3,1,1,1],[2,4,1,1,1,2],[1,3,4,1,1,1],
+        [1,1,1,2,4,2],[1,2,1,1,4,2],[1,2,1,2,4,1],[1,1,4,2,1,2],[1,2,4,1,1,2],
+        [1,2,4,2,1,1],[4,1,1,2,1,2],[4,2,1,1,1,2],[4,2,1,2,1,1],[2,1,2,1,4,1],
+        [2,1,4,1,2,1],[4,1,2,1,2,1],[1,1,1,1,4,3],[1,1,1,3,4,1],[1,3,1,1,4,1],
+        [1,1,4,1,1,3],[1,1,4,3,1,1],[4,1,1,1,1,3],[4,1,1,3,1,1],[1,1,3,1,4,1],
+        [1,1,4,1,3,1],[3,1,1,1,4,1],[4,1,1,1,3,1],[2,1,1,4,1,2],[2,1,1,2,1,4],
+        [2,1,1,2,3,2],[2,3,3,1,1,1],[1,1,2,1,1,4]
+    ];
+
+    const START_B = 104;
+    const STOP    = 106;
+
+    // Encode chars
+    const chars = text.split('').map(c => c.charCodeAt(0) - 32);
+    let checksum = START_B;
+    chars.forEach((v, i) => { checksum += v * (i + 1); });
+    checksum = checksum % 103;
+
+    const allCodes = [START_B, ...chars, checksum, STOP];
+
+    // Calculate total modules
+    let totalModules = allCodes.reduce((s, code) => {
+        const p = CODE128B_PATTERNS[code] || CODE128B_PATTERNS[0];
+        return s + p.reduce((a,b) => a+b, 0);
+    }, 0) + 2; // 2 quiet zones
+
+    const moduleW = W / (totalModules + 4);
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, H);
+
+    let x = moduleW * 2; // quiet zone start
+    allCodes.forEach((code, ci) => {
+        const p = CODE128B_PATTERNS[code] || CODE128B_PATTERNS[0];
+        p.forEach((width, idx) => {
+            const isBar = idx % 2 === 0;
+            const barW = width * moduleW;
+            if (isBar) {
+                ctx.fillStyle = '#111';
+                ctx.fillRect(Math.round(x), 0, Math.round(barW), H);
+            }
+            x += barW;
+        });
+    });
+}
