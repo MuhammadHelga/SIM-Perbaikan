@@ -5,35 +5,32 @@
  */
 
 return function (Router $router, mysqli $conn, string $basePath, AuthService $authService): void {
-    // Halaman verifikasi surat TTE (publik, dibuka saat QR code discan)
-    $router->any('/surat/verifikasi/{id:\d+}', function (array $params) use ($conn, $basePath) {
-        $id = (int) $params['id'];
+    // Halaman verifikasi surat (publik, dibuka saat QR discan).
+    // Sah hanya bila verify_token cocok — ID saja tidak cukup, jadi data
+    // tidak bisa dienumerasi dengan menebak ID.
+    $renderVerifikasi = function (int $id, string $token) use ($conn): void {
         require_once __DIR__ . '/../models/LaporanKerusakan.php';
         $model = new LaporanKerusakan($conn);
-        $row = $model->getById($id);
 
-        if (!$row) {
+        $row = $token !== '' ? $model->getByVerifyToken($token) : null;
+
+        if (!$row || ($id > 0 && (int) $row['id'] !== $id)) {
             http_response_code(404);
+            header('X-Robots-Tag: noindex');
             require __DIR__ . '/../views/errors/screens/404View.php';
             return;
         }
 
+        header('X-Robots-Tag: noindex');
         require __DIR__ . '/../views/laporan/screens/VerifikasiSuratView.php';
+    };
+
+    $router->any('/surat/verifikasi/{id:\d+}', function (array $params) use ($renderVerifikasi) {
+        $renderVerifikasi((int) $params['id'], (string) ($_GET['token'] ?? ''));
     });
 
-    $router->any('/surat/verifikasi', function () use ($conn, $basePath) {
-        $id = (int) ($_GET['id'] ?? 0);
-        require_once __DIR__ . '/../models/LaporanKerusakan.php';
-        $model = new LaporanKerusakan($conn);
-        $row = $id > 0 ? $model->getById($id) : null;
-
-        if (!$row) {
-            http_response_code(404);
-            require __DIR__ . '/../views/errors/screens/404View.php';
-            return;
-        }
-
-        require __DIR__ . '/../views/laporan/screens/VerifikasiSuratView.php';
+    $router->any('/surat/verifikasi', function () use ($renderVerifikasi) {
+        $renderVerifikasi((int) ($_GET['id'] ?? 0), (string) ($_GET['token'] ?? ''));
     });
 
     // Aksi dinamis (wajib POST + CSRF): /laporan/kirim/{id}, /laporan/terima/{id}, /laporan/hapus/{id}
@@ -68,6 +65,39 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
                 break;
         }
 
+        redirect($basePath . '/laporan');
+    });
+
+    // Simpan data penandatangan surat (dikirim dari modal cetak surat).
+    // Mode 'kirim' = cetak pertama (sekalian tandai terkirim);
+    // mode lain (mis. 'reprint') hanya menyimpan, tidak mengubah status.
+    $router->any('/laporan/surat/{id:\d+}', function (array $params) use ($conn, $basePath) {
+        requireLogin($basePath);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+            flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
+            redirect($basePath . '/laporan');
+        }
+
+        require_once __DIR__ . '/../controllers/laporankerusakanController.php';
+        $laporanController = new laporankerusakanController($conn);
+
+        $id      = (int) $params['id'];
+        $nama    = mb_substr(trim((string) ($_POST['nama_pelapor'] ?? '')), 0, 100);
+        $jabatan = mb_substr(trim((string) ($_POST['jabatan_pelapor'] ?? '')), 0, 100);
+        $nomor   = mb_substr(trim((string) ($_POST['nomor_surat'] ?? '')), 0, 60);
+        $tgl     = trim((string) ($_POST['tgl_surat'] ?? ''));
+        $mode    = (string) ($_POST['mode'] ?? 'kirim');
+
+        $tglSurat = preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl) === 1 ? $tgl : null;
+
+        $laporanController->simpanSurat($id, $nama, $jabatan, $nomor, $tglSurat);
+
+        if ($mode === 'kirim') {
+            $laporanController->kirim($id, date('Y-m-d'));
+        }
+
+        flash('success', 'Data surat kerusakan tersimpan.');
         redirect($basePath . '/laporan');
     });
 

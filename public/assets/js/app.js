@@ -311,8 +311,9 @@ function closeModal(id) {
     if (el) el.classList.remove('open');
 }
 
-/* Kirim aksi yang mengubah data lewat POST (bukan link GET) beserta token CSRF. */
-function postAction(url) {
+/* Kirim aksi yang mengubah data lewat POST (bukan link GET) beserta token CSRF.
+   `data` opsional: objek pasangan nama=>nilai untuk field tambahan. */
+function postAction(url, data) {
     const form = document.createElement('form');
     form.method = 'POST';
     form.action = url;
@@ -325,6 +326,16 @@ function postAction(url) {
         input.name = 'csrf';
         input.value = token;
         form.appendChild(input);
+    }
+
+    if (data) {
+        Object.keys(data).forEach(function (key) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = key;
+            input.value = data[key] == null ? '' : String(data[key]);
+            form.appendChild(input);
+        });
     }
 
     document.body.appendChild(form);

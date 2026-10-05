@@ -75,6 +75,11 @@ class LaporanKerusakan
                     lk.kirim_status,
                     lk.tgl_kirim,
                     lk.tgl_terima,
+                    lk.verify_token,
+                    lk.nama_pelapor,
+                    lk.jabatan_pelapor,
+                    lk.nomor_surat,
+                    lk.tgl_surat,
                     CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
                 FROM laporan_kerusakan lk
                 INNER JOIN barang  b ON lk.id_barang  = b.id
@@ -207,6 +212,34 @@ class LaporanKerusakan
         return $stmt->get_result()->fetch_assoc();
     }
 
+    /**
+     * Ambil laporan berdasarkan verify_token (untuk verifikasi surat via QR).
+     * Mengembalikan null bila token kosong atau tidak ditemukan.
+     */
+    public function getByVerifyToken(string $token)
+    {
+        if ($token === '') {
+            return null;
+        }
+
+        $stmt = $this->conn->prepare(
+            "SELECT
+                lk.*,
+                b.nama_barang        AS barang,
+                r.nama_ruangan       AS urusan,
+                CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
+             FROM laporan_kerusakan lk
+             INNER JOIN barang  b ON lk.id_barang  = b.id
+             INNER JOIN ruangan r ON lk.id_ruangan = r.id
+             WHERE lk.verify_token = ?"
+        );
+
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_assoc();
+    }
+
     // CREATE
     public function create(
         $id_barang,
@@ -219,6 +252,8 @@ class LaporanKerusakan
         $prioritas = 'Sedang',
         $id_user = null
     ) {
+        $verifyToken = bin2hex(random_bytes(16));
+
         $stmt = $this->conn->prepare(
             "INSERT INTO laporan_kerusakan
             (
@@ -230,13 +265,14 @@ class LaporanKerusakan
                 uraian_kegiatan,
                 status_penanganan,
                 prioritas,
-                id_user
+                id_user,
+                verify_token
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->bind_param(
-            "iissssssi",
+            "iissssssis",
             $id_barang,
             $id_ruangan,
             $tanggal,
@@ -245,7 +281,8 @@ class LaporanKerusakan
             $uraian_kegiatan,
             $status_penanganan,
             $prioritas,
-            $id_user
+            $id_user,
+            $verifyToken
         );
 
         return $stmt->execute();
@@ -319,8 +356,9 @@ class LaporanKerusakan
              SET
                 kirim_status = 'dikirim',
                 tgl_kirim = ?,
-                status_penanganan = IF(status_penanganan = 'Pending', 'Proses', status_penanganan)
-             WHERE id = ?"
+                status_penanganan = IF(status_penanganan = 'Pending', 'Proses', status_penanganan),
+                verify_token = COALESCE(verify_token, LEFT(SHA2(CONCAT(UUID(), '-', id, '-', RAND()), 256), 32))
+             WHERE id = ? AND kirim_status <> 'diterima'"
         );
 
         $stmt->bind_param("si", $tgl, $id);
@@ -343,6 +381,28 @@ class LaporanKerusakan
         );
 
         $stmt->bind_param("si", $tgl, $id);
+
+        return $stmt->execute();
+    }
+
+    /**
+     * Simpan data penandatangan surat agar halaman verifikasi & cetak ulang
+     * menampilkan nama/nomor yang sama dengan surat tercetak.
+     * $tglSurat boleh null.
+     */
+    public function simpanSurat($id, string $nama, string $jabatan, string $nomor, ?string $tglSurat)
+    {
+        $stmt = $this->conn->prepare(
+            "UPDATE laporan_kerusakan
+             SET
+                nama_pelapor = ?,
+                jabatan_pelapor = ?,
+                nomor_surat = ?,
+                tgl_surat = ?
+             WHERE id = ?"
+        );
+
+        $stmt->bind_param("ssssi", $nama, $jabatan, $nomor, $tglSurat, $id);
 
         return $stmt->execute();
     }

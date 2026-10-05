@@ -338,12 +338,14 @@ function initMonthPicker() {
 // ============================================================
 
 let _suratCurrentId = null;
+let _suratIsReprint = false;
 
 function openSuratModal(id, isReprint = false) {
     const row = findLaporanById(id);
     if (!row) { alert('Data laporan tidak ditemukan.'); return; }
 
     _suratCurrentId = id;
+    _suratIsReprint = !!isReprint;
 
     // Isi info laporan
     document.getElementById('suratLaporanId').textContent = id;
@@ -374,31 +376,32 @@ function openSuratModal(id, isReprint = false) {
         document.getElementById('suratBtnCetak').disabled = true;
     }
 
-    // Default tanggal hari ini
+    // Tanggal surat & nomor: pakai yang tersimpan bila ada (agar cetak ulang konsisten),
+    // kalau belum ada pakai default hari ini / nomor otomatis (tetap bisa diedit).
     const today = new Date();
-    document.getElementById('suratTglSurat').value = today.toISOString().slice(0, 10);
+    const todayStr = today.toISOString().slice(0, 10);
+    document.getElementById('suratTglSurat').value = row.tgl_surat || todayStr;
 
-    // Auto-nomor surat (opsional, bisa diedit)
     const bulanRomawi = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
     const bln = bulanRomawi[today.getMonth()];
     const thn = today.getFullYear();
-    document.getElementById('suratNomor').value = `${String(id).padStart(3,'0')}/IT/${bln}/${thn}`;
+    document.getElementById('suratNomor').value =
+        row.nomor_surat || `${String(id).padStart(3,'0')}/IT/${bln}/${thn}`;
 
-    // Reset field isian (nama/jabatan/keterangan)
-    document.getElementById('suratNamaPelapor').value = '';
-    document.getElementById('suratJabatan').value = '';
+    // Penandatangan tersimpan (agar halaman verifikasi = surat tercetak).
+    document.getElementById('suratNamaPelapor').value = row.nama_pelapor || '';
+    document.getElementById('suratJabatan').value = row.jabatan_pelapor || '';
     document.getElementById('suratKeterangan').value = '';
 
-    // Buat kode TTD digital unik
-    // Saat reprint, gunakan kode stabil berbasis tgl_kirim agar konsisten
-    const ttdCode = isReprint
-        ? generateStableTtdCode(id, row)
-        : generateTtdCode(id, row);
+    // Kode TTD & URL verifikasi diturunkan dari verify_token yang tersimpan di server
+    // (bukan dibuat di browser), supaya QR benar-benar bisa diverifikasi.
+    const verifyToken = String(row.verify_token || '');
+    const ttdCode = buildTtdCode(id, verifyToken);
     document.getElementById('suratTtdCode').textContent = ttdCode;
 
     // URL verifikasi yang encoded di QR Code (akan dibuka saat QR discan HP)
     const host = window.location.origin;
-    const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi/${id}?code=${encodeURIComponent(ttdCode)}`;
+    const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi/${id}?token=${encodeURIComponent(verifyToken)}`;
     const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda.svg`;
 
     // Render QR Code dengan logo di tengah canvas
@@ -466,6 +469,7 @@ function switchToFormMode() {
 function closeSuratModal() {
     closeModal('modal-surat-kerusakan');
     _suratCurrentId = null;
+    _suratIsReprint = false;
 }
 
 function onSuratApprovalChange() {
@@ -474,25 +478,13 @@ function onSuratApprovalChange() {
 }
 
 /**
- * Menghasilkan kode TTD digital unik berdasarkan id laporan + timestamp + serial
- * (digunakan saat pertama kali kirim)
+ * Bangun kode TTD yang ditampilkan dari verify_token yang tersimpan di server.
+ * Kode ini sama persis dengan yang dihitung halaman verifikasi (PHP), sehingga
+ * surat tercetak dan halaman verifikasi selalu konsisten.
  */
-function generateTtdCode(id, row) {
-    const ts = Date.now().toString(36).toUpperCase();
-    const sn = (row.serial_number || 'SN').replace(/[^A-Z0-9]/gi, '').slice(0, 6).toUpperCase();
-    return `LPR${String(id).padStart(4,'0')}-${sn}-${ts}`;
-}
-
-/**
- * Kode TTD stabil untuk cetak ulang — berbasis tgl_kirim + id
- * sehingga kode sama setiap kali surat dicetak ulang
- */
-function generateStableTtdCode(id, row) {
-    const tglKirim = (row.tgl_kirim || '').replace(/-/g, '');
-    const sn = (row.serial_number || 'SN').replace(/[^A-Z0-9]/gi, '').slice(0, 6).toUpperCase();
-    const seed = (tglKirim + String(id)).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
-    const seedCode = seed.toString(36).toUpperCase().padStart(4, '0');
-    return `LPR${String(id).padStart(4,'0')}-${sn}-${seedCode}R`;
+function buildTtdCode(id, token) {
+    const suffix = String(token || '').slice(0, 6).toUpperCase() || 'XXXXXX';
+    return `LPR${String(id).padStart(4, '0')}-TTE-${suffix}`;
 }
 
 /**
@@ -503,16 +495,23 @@ function generateStableTtdCode(id, row) {
  * 4. Kirim POST /laporan/kirim/{id} untuk update status
  */
 function cetakSurat() {
-    const namaPelapor = document.getElementById('suratNamaPelapor').value.trim();
-    const jabatan     = document.getElementById('suratJabatan').value.trim();
-    const tglSurat    = document.getElementById('suratTglSurat').value;
+    let namaPelapor = document.getElementById('suratNamaPelapor').value.trim();
+    let jabatan     = document.getElementById('suratJabatan').value.trim();
+    let tglSurat    = document.getElementById('suratTglSurat').value;
     const nomor       = document.getElementById('suratNomor').value.trim();
     const keterangan  = document.getElementById('suratKeterangan').value.trim();
     const ttdCode     = document.getElementById('suratTtdCode').textContent;
+    const isReprint   = _suratIsReprint;
 
-    if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); document.getElementById('suratNamaPelapor').focus(); return; }
-    if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); document.getElementById('suratJabatan').focus(); return; }
-    if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); document.getElementById('suratTglSurat').focus(); return; }
+    // Cetak pertama wajib lengkap; cetak ulang dokumen lama boleh pakai default.
+    if (!isReprint) {
+        if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); document.getElementById('suratNamaPelapor').focus(); return; }
+        if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); document.getElementById('suratJabatan').focus(); return; }
+        if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); document.getElementById('suratTglSurat').focus(); return; }
+    }
+    namaPelapor = namaPelapor || 'Petugas Unit IT';
+    jabatan     = jabatan || 'Penanggung Jawab / Staf IT';
+    tglSurat    = tglSurat || new Date().toISOString().slice(0, 10);
 
     const id  = _suratCurrentId;
     const row = findLaporanById(id);
@@ -539,9 +538,17 @@ function cetakSurat() {
         pw.print();
     };
 
-    // Tutup modal & update status kirim via POST
+    // Tutup modal, lalu simpan data penandatangan.
+    // mode 'kirim' (cetak pertama) sekaligus menandai barang terkirim;
+    // cetak ulang hanya menyimpan, tidak mengubah status / tgl_kirim.
     closeSuratModal();
-    postAction((window.BASE_URL || '') + '/laporan/kirim/' + id);
+    postAction((window.BASE_URL || '') + '/laporan/surat/' + id, {
+        nama_pelapor: namaPelapor,
+        jabatan_pelapor: jabatan,
+        nomor_surat: nomor,
+        tgl_surat: tglSurat,
+        mode: isReprint ? 'reprint' : 'kirim'
+    });
 }
 
 function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id }) {

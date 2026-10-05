@@ -80,4 +80,9 @@ class laporankerusakanController
     {
         return $this->laporankerusakan->terima($id, $tgl);
     }
+
+    public function simpanSurat($id, $nama, $jabatan, $nomor, $tglSurat)
+    {
+        return $this->laporankerusakan->simpanSurat($id, $nama, $jabatan, $nomor, $tglSurat);
+    }
 }

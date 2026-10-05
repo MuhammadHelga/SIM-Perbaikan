@@ -12,20 +12,30 @@ $statusPenanganan = $row['status_penanganan'] ?? 'Pending';
 $kirimStatus = $row['kirim_status'] ?? 'belum';
 $tglKirim = $row['tgl_kirim'] ?? $tgl;
 
+// Tanggal surat: pakai yang tersimpan bila ada, jika tidak pakai tgl kirim/laporan.
+$tglSuratRaw = !empty($row['tgl_surat']) ? $row['tgl_surat'] : $tglKirim;
+
 // Format tanggal Indonesia
 $bulanIndo = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-$d = strtotime($tglKirim);
+$d = strtotime($tglSuratRaw);
 $tglSuratFmt = date('d', $d) . ' ' . $bulanIndo[(int)date('m', $d)] . ' ' . date('Y', $d);
 
 $blnRomawi = ['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
 $blnNum = (int)date('m', $d);
 $thnNum = date('Y', $d);
-$nomorSurat = sprintf('%03d/IT/%s/%s', $id, $blnRomawi[$blnNum], $thnNum);
+$nomorSurat = !empty($row['nomor_surat'])
+    ? $row['nomor_surat']
+    : sprintf('%03d/IT/%s/%s', $id, $blnRomawi[$blnNum], $thnNum);
 
-// Nama & Jabatan dari GET / query params jika ada, atau default
-$namaPelapor = !empty($_GET['pelapor']) ? trim($_GET['pelapor']) : 'Petugas Unit IT';
-$jabatanPelapor = !empty($_GET['jabatan']) ? trim($_GET['jabatan']) : 'Penanggung Jawab / Staf IT';
-$ttdCode = !empty($_GET['code']) ? trim($_GET['code']) : sprintf('LPR%04d-TTE-%s', $id, strtoupper(substr(md5($id . $tglKirim), 0, 6)));
+// Penandatangan diambil dari data yang tersimpan (diisi saat surat dicetak),
+// bukan dari URL. Halaman ini hanya dirender saat verify_token cocok
+// (lihat src/routes/laporan.php), jadi badge "DOKUMEN VALID" benar-benar sah.
+$namaPelapor = !empty($row['nama_pelapor']) ? $row['nama_pelapor'] : 'Petugas Unit IT';
+$jabatanPelapor = !empty($row['jabatan_pelapor']) ? $row['jabatan_pelapor'] : 'Penanggung Jawab / Staf IT';
+
+// Kode TTE diturunkan dari verify_token tersimpan, bukan dari query.
+$verifyToken = (string) ($row['verify_token'] ?? '');
+$ttdCode = sprintf('LPR%04d-TTE-%s', $id, strtoupper(substr($verifyToken, 0, 6)));
 
 $statusSurat = 'Published';
 if ($kirimStatus === 'dikirim') $statusSurat = 'Dikirim (Proses)';
