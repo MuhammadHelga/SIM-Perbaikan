@@ -89,6 +89,19 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         $tgl     = trim((string) ($_POST['tgl_surat'] ?? ''));
         $mode    = (string) ($_POST['mode'] ?? 'kirim');
 
+        // Laporan harus ada.
+        if (!$laporanController->show($id)) {
+            flash('error', 'Laporan tidak ditemukan.');
+            redirect($basePath . '/laporan');
+        }
+
+        // Validasi sisi server (bukan hanya di browser): nama & jabatan penandatangan
+        // wajib terisi. Ini mencegah data surat kosong walau request dibuat manual.
+        if ($nama === '' || $jabatan === '') {
+            flash('error', 'Nama dan jabatan penandatangan wajib diisi.');
+            redirect($basePath . '/laporan');
+        }
+
         $tglSurat = preg_match('/^\d{4}-\d{2}-\d{2}$/', $tgl) === 1 ? $tgl : null;
 
         $laporanController->simpanSurat($id, $nama, $jabatan, $nomor, $tglSurat);

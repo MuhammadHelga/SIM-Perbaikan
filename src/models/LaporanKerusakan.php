@@ -75,15 +75,16 @@ class LaporanKerusakan
                     lk.kirim_status,
                     lk.tgl_kirim,
                     lk.tgl_terima,
-                    lk.verify_token,
-                    lk.nama_pelapor,
-                    lk.jabatan_pelapor,
-                    lk.nomor_surat,
-                    lk.tgl_surat,
+                    s.verify_uid,
+                    s.nama_pelapor,
+                    s.jabatan_pelapor,
+                    s.nomor_surat,
+                    s.tgl_surat,
                     CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
                 FROM laporan_kerusakan lk
                 INNER JOIN barang  b ON lk.id_barang  = b.id
-                INNER JOIN ruangan r ON lk.id_ruangan = r.id";
+                INNER JOIN ruangan r ON lk.id_ruangan = r.id
+                LEFT JOIN surat_kerusakan s ON s.id_laporan = lk.id";
     }
 
     /**
@@ -110,7 +111,7 @@ class LaporanKerusakan
         }
         $stmt->execute();
 
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        return array_map([$this, 'attachVerifyToken'], $stmt->get_result()->fetch_all(MYSQLI_ASSOC));
     }
 
     /**
@@ -133,7 +134,7 @@ class LaporanKerusakan
         }
         $stmt->execute();
 
-        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        return array_map([$this, 'attachVerifyToken'], $stmt->get_result()->fetch_all(MYSQLI_ASSOC));
     }
     /**
      * Hitung jumlah baris sesuai filter (untuk paginasi).
@@ -199,26 +200,35 @@ class LaporanKerusakan
                 lk.*,
                 b.nama_barang        AS barang,
                 r.nama_ruangan       AS urusan,
+                s.verify_uid,
+                s.nama_pelapor,
+                s.jabatan_pelapor,
+                s.nomor_surat,
+                s.tgl_surat,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
              FROM laporan_kerusakan lk
              INNER JOIN barang  b ON lk.id_barang  = b.id
              INNER JOIN ruangan r ON lk.id_ruangan = r.id
+             LEFT JOIN surat_kerusakan s ON s.id_laporan = lk.id
              WHERE lk.id = ?"
         );
 
         $stmt->bind_param("i", $id);
         $stmt->execute();
 
-        return $stmt->get_result()->fetch_assoc();
+        $row = $stmt->get_result()->fetch_assoc();
+        return $row ? $this->attachVerifyToken($row) : null;
     }
 
     /**
-     * Ambil laporan berdasarkan verify_token (untuk verifikasi surat via QR).
-     * Mengembalikan null bila token kosong atau tidak ditemukan.
+     * Ambil laporan berdasarkan token verifikasi (untuk halaman verifikasi QR).
+     * Token diverifikasi tanda tangan HMAC-nya, lalu dicari lewat verify_uid.
+     * Mengembalikan null bila token kosong, tanda tangan salah, atau tidak ada.
      */
     public function getByVerifyToken(string $token)
     {
-        if ($token === '') {
+        $uid = self::verifyUidFromToken($token);
+        if ($uid === null) {
             return null;
         }
 
@@ -227,17 +237,76 @@ class LaporanKerusakan
                 lk.*,
                 b.nama_barang        AS barang,
                 r.nama_ruangan       AS urusan,
+                s.verify_uid,
+                s.nama_pelapor,
+                s.jabatan_pelapor,
+                s.nomor_surat,
+                s.tgl_surat,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
-             FROM laporan_kerusakan lk
+             FROM surat_kerusakan s
+             INNER JOIN laporan_kerusakan lk ON lk.id = s.id_laporan
              INNER JOIN barang  b ON lk.id_barang  = b.id
              INNER JOIN ruangan r ON lk.id_ruangan = r.id
-             WHERE lk.verify_token = ?"
+             WHERE s.verify_uid = ?"
         );
 
-        $stmt->bind_param("s", $token);
+        $stmt->bind_param("s", $uid);
         $stmt->execute();
 
-        return $stmt->get_result()->fetch_assoc();
+        $row = $stmt->get_result()->fetch_assoc();
+        return $row ? $this->attachVerifyToken($row) : null;
+    }
+
+    /**
+     * Token verifikasi yang dipakai di QR: "<uid>.<hmac>". Tidak disimpan di DB,
+     * selalu dihitung dari verify_uid + APP_SECRET.
+     */
+    public static function verifyTokenFor(string $uid): string
+    {
+        $mac = hash_hmac('sha256', $uid, (string) APP_SECRET);
+        return $uid . '.' . substr($mac, 0, 32);
+    }
+
+    /**
+     * Validasi tanda tangan token; kembalikan uid bila sah, atau null.
+     */
+    public static function verifyUidFromToken(string $token): ?string
+    {
+        $parts = explode('.', $token, 2);
+        if (count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') {
+            return null;
+        }
+
+        $uid      = $parts[0];
+        $expected = substr(hash_hmac('sha256', $uid, (string) APP_SECRET), 0, 32);
+
+        return hash_equals($expected, $parts[1]) ? $uid : null;
+    }
+
+    /**
+     * Lengkapi satu baris dengan token tampilan (untuk QR) dari verify_uid.
+     */
+    private function attachVerifyToken(array $row): array
+    {
+        $row['verify_token'] = !empty($row['verify_uid'])
+            ? self::verifyTokenFor((string) $row['verify_uid'])
+            : null;
+
+        return $row;
+    }
+
+    /**
+     * Pastikan laporan punya baris surat (beserta uid). INSERT IGNORE membuat
+     * pemanggilan berulang aman (UNIQUE id_laporan).
+     */
+    private function ensureSurat($idLaporan): void
+    {
+        $uid = bin2hex(random_bytes(16));
+        $stmt = $this->conn->prepare(
+            "INSERT IGNORE INTO surat_kerusakan (id_laporan, verify_uid) VALUES (?, ?)"
+        );
+        $stmt->bind_param("is", $idLaporan, $uid);
+        $stmt->execute();
     }
 
     // CREATE
@@ -252,8 +321,6 @@ class LaporanKerusakan
         $prioritas = 'Sedang',
         $id_user = null
     ) {
-        $verifyToken = bin2hex(random_bytes(16));
-
         $stmt = $this->conn->prepare(
             "INSERT INTO laporan_kerusakan
             (
@@ -265,14 +332,13 @@ class LaporanKerusakan
                 uraian_kegiatan,
                 status_penanganan,
                 prioritas,
-                id_user,
-                verify_token
+                id_user
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->bind_param(
-            "iissssssis",
+            "iissssssi",
             $id_barang,
             $id_ruangan,
             $tanggal,
@@ -281,11 +347,15 @@ class LaporanKerusakan
             $uraian_kegiatan,
             $status_penanganan,
             $prioritas,
-            $id_user,
-            $verifyToken
+            $id_user
         );
 
-        return $stmt->execute();
+        $ok = $stmt->execute();
+        if ($ok) {
+            $this->ensureSurat((int) $this->conn->insert_id);
+        }
+
+        return $ok;
     }
 
     // UPDATE
@@ -356,8 +426,7 @@ class LaporanKerusakan
              SET
                 kirim_status = 'dikirim',
                 tgl_kirim = ?,
-                status_penanganan = IF(status_penanganan = 'Pending', 'Proses', status_penanganan),
-                verify_token = COALESCE(verify_token, LEFT(SHA2(CONCAT(UUID(), '-', id, '-', RAND()), 256), 32))
+                status_penanganan = IF(status_penanganan = 'Pending', 'Proses', status_penanganan)
              WHERE id = ? AND kirim_status <> 'diterima'"
         );
 
@@ -392,14 +461,17 @@ class LaporanKerusakan
      */
     public function simpanSurat($id, string $nama, string $jabatan, string $nomor, ?string $tglSurat)
     {
+        // Jaga-jaga untuk laporan lama yang belum punya baris surat.
+        $this->ensureSurat((int) $id);
+
         $stmt = $this->conn->prepare(
-            "UPDATE laporan_kerusakan
+            "UPDATE surat_kerusakan
              SET
                 nama_pelapor = ?,
                 jabatan_pelapor = ?,
                 nomor_surat = ?,
                 tgl_surat = ?
-             WHERE id = ?"
+             WHERE id_laporan = ?"
         );
 
         $stmt->bind_param("ssssi", $nama, $jabatan, $nomor, $tglSurat, $id);
