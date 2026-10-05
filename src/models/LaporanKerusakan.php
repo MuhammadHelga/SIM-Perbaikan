@@ -130,7 +130,6 @@ class LaporanKerusakan
 
         return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
-
     /**
      * Hitung jumlah baris sesuai filter (untuk paginasi).
      *

@@ -389,15 +389,78 @@ function openSuratModal(id, isReprint = false) {
     document.getElementById('suratJabatan').value = '';
     document.getElementById('suratKeterangan').value = '';
 
-    // Buat barcode / kode TTD digital
+    // Buat kode TTD digital unik
     // Saat reprint, gunakan kode stabil berbasis tgl_kirim agar konsisten
     const ttdCode = isReprint
         ? generateStableTtdCode(id, row)
         : generateTtdCode(id, row);
     document.getElementById('suratTtdCode').textContent = ttdCode;
-    drawBarcode128(document.getElementById('suratBarcodeCanvas'), ttdCode);
+
+    // URL verifikasi yang encoded di QR Code (akan dibuka saat QR discan HP)
+    const host = window.location.origin;
+    const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi/${id}?code=${encodeURIComponent(ttdCode)}`;
+    const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda.svg`;
+
+    // Render QR Code dengan logo di tengah canvas
+    const qrCanvas = document.getElementById('suratQrCanvas');
+    if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
+        window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function(dataUrl) {
+            const pvQrImg = document.getElementById('pvSuratQrImg');
+            if (pvQrImg) pvQrImg.src = dataUrl;
+        });
+    }
+
+    // Update elemen pratinjau dokumen jadi (paper view)
+    const tglSuratVal = document.getElementById('suratTglSurat').value;
+    const nomorVal    = document.getElementById('suratNomor').value;
+    const namaVal     = document.getElementById('suratNamaPelapor').value.trim() || 'Petugas Unit IT';
+    const jabVal      = document.getElementById('suratJabatan').value.trim() || 'Penanggung Jawab / Staf IT';
+    const ketVal      = document.getElementById('suratKeterangan').value.trim();
+
+    if (document.getElementById('pvSuratNomor')) document.getElementById('pvSuratNomor').textContent = nomorVal || '—';
+    if (document.getElementById('pvSuratTgl')) document.getElementById('pvSuratTgl').textContent = formatTglIndo(tglSuratVal);
+    if (document.getElementById('pvSuratId')) document.getElementById('pvSuratId').textContent = id;
+    if (document.getElementById('pvSuratBarang')) document.getElementById('pvSuratBarang').textContent = row.barang || '—';
+    if (document.getElementById('pvSuratRuangan')) document.getElementById('pvSuratRuangan').textContent = row.urusan || '—';
+    if (document.getElementById('pvSuratSn')) document.getElementById('pvSuratSn').textContent = row.serial_number || '—';
+    if (document.getElementById('pvSuratTglLaporan')) document.getElementById('pvSuratTglLaporan').textContent = formatTglIndo(row.tanggal);
+    if (document.getElementById('pvSuratStatus')) document.getElementById('pvSuratStatus').textContent = row.status_penanganan || 'Pending';
+    if (document.getElementById('pvSuratRincian')) document.getElementById('pvSuratRincian').textContent = row.kerusakan || '—';
+    if (document.getElementById('pvSuratUraian')) document.getElementById('pvSuratUraian').textContent = row.uraian || '—';
+    if (document.getElementById('pvSuratKeterangan')) document.getElementById('pvSuratKeterangan').textContent = ketVal || '(tidak ada keterangan tambahan)';
+    if (document.getElementById('pvSuratTtdCode')) document.getElementById('pvSuratTtdCode').textContent = ttdCode;
+    if (document.getElementById('pvSuratNamaPelapor')) document.getElementById('pvSuratNamaPelapor').textContent = namaVal;
+    if (document.getElementById('pvSuratJabatan')) document.getElementById('pvSuratJabatan').textContent = jabVal;
+
+    // Tampilkan tampilan surat jadi jika isReprint (Lihat Surat), atau form jika Kirim baru
+    const formSection = document.getElementById('suratFormSection');
+    const previewSection = document.getElementById('suratDocumentPreviewSection');
+
+    if (isReprint) {
+        if (formSection) formSection.style.display = 'none';
+        if (previewSection) previewSection.style.display = 'block';
+        if (headerTitle) headerTitle.textContent = 'Pratinjau Surat Kerusakan (Dokumen Jadi)';
+        if (headerDesc) headerDesc.textContent = 'Dokumen surat pengantar kerusakan resmi yang sudah siap dicetak';
+    } else {
+        if (formSection) formSection.style.display = 'block';
+        if (previewSection) previewSection.style.display = 'none';
+        if (headerTitle) headerTitle.textContent = 'Form Surat Kerusakan';
+        if (headerDesc) headerDesc.textContent = 'Isi form di bawah sebelum mencetak surat pengantar kerusakan';
+    }
 
     openModal('modal-surat-kerusakan');
+}
+
+function switchToFormMode() {
+    const formSection = document.getElementById('suratFormSection');
+    const previewSection = document.getElementById('suratDocumentPreviewSection');
+    const headerTitle = document.getElementById('suratModalHeaderTitle');
+    const headerDesc = document.getElementById('suratModalHeaderDesc');
+
+    if (formSection) formSection.style.display = 'block';
+    if (previewSection) previewSection.style.display = 'none';
+    if (headerTitle) headerTitle.textContent = 'Form Surat Kerusakan';
+    if (headerDesc) headerDesc.textContent = 'Edit isian form di bawah jika ada penyesuaian';
 }
 
 function closeSuratModal() {
@@ -427,7 +490,6 @@ function generateTtdCode(id, row) {
 function generateStableTtdCode(id, row) {
     const tglKirim = (row.tgl_kirim || '').replace(/-/g, '');
     const sn = (row.serial_number || 'SN').replace(/[^A-Z0-9]/gi, '').slice(0, 6).toUpperCase();
-    // Hash sederhana dari tgl_kirim agar kode deterministik
     const seed = (tglKirim + String(id)).split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
     const seedCode = seed.toString(36).toUpperCase().padStart(4, '0');
     return `LPR${String(id).padStart(4,'0')}-${sn}-${seedCode}R`;
@@ -436,7 +498,7 @@ function generateStableTtdCode(id, row) {
 /**
  * Cetak surat kerusakan:
  * 1. Validasi form
- * 2. Bangun HTML surat
+ * 2. Bangun HTML surat dengan QR Code Berlogo
  * 3. Buka window print baru
  * 4. Kirim POST /laporan/kirim/{id} untuk update status
  */
@@ -459,12 +521,12 @@ function cetakSurat() {
     // Format tanggal
     const tglFmt = formatTglIndo(tglSurat);
 
-    // Barcode sebagai data URL dari canvas
-    const canvas = document.getElementById('suratBarcodeCanvas');
-    const barcodeImg = canvas.toDataURL('image/png');
+    // QR Code sebagai Data URL dari canvas
+    const canvas = document.getElementById('suratQrCanvas');
+    const qrImg = canvas ? canvas.toDataURL('image/png') : '';
 
     const html = buildSuratHtml({
-        nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, barcodeImg, row, id
+        nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id
     });
 
     // Buka window cetak
@@ -482,8 +544,9 @@ function cetakSurat() {
     postAction((window.BASE_URL || '') + '/laporan/kirim/' + id);
 }
 
-function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, barcodeImg, row, id }) {
+function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id }) {
     const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda.svg`;
 
     return `<!DOCTYPE html>
 <html lang="id">
@@ -493,9 +556,9 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #111; background: #fff; padding: 20mm 25mm; }
-  .kop { display: flex; align-items: center; gap: 18px; border-bottom: 3px double #00288e; padding-bottom: 10px; margin-bottom: 14px; }
-  .kop-logo { width: 64px; height: 64px; object-fit: contain; }
-  .kop-text h1 { font-size: 15pt; color: #00288e; font-weight: bold; letter-spacing: 0.5px; }
+  .kop { display: flex; align-items: center; gap: 18px; border-bottom: 3px double #00288e; padding-bottom: 12px; margin-bottom: 16px; }
+  .kop-logo { width: 70px; height: 70px; object-fit: contain; }
+  .kop-text h1 { font-size: 16pt; color: #00288e; font-weight: bold; letter-spacing: 0.5px; }
   .kop-text p { font-size: 10pt; color: #444; }
   .judul { text-align: center; margin: 18px 0 10px; }
   .judul h2 { font-size: 14pt; text-decoration: underline; letter-spacing: 1px; }
@@ -507,14 +570,14 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   table.detail td:first-child { width: 38%; font-weight: 600; }
   table.detail td:nth-child(2) { width: 4%; }
   .keterangan-box { border: 1px solid #aaa; border-radius: 4px; padding: 10px 14px; margin-bottom: 18px; font-size: 11.5pt; min-height: 48px; font-style: italic; color: #333; }
-  .ttd-section { display: flex; justify-content: flex-end; margin-top: 16px; gap: 60px; align-items: flex-start; }
+  .ttd-section { display: flex; justify-content: flex-end; margin-top: 20px; gap: 60px; align-items: flex-start; }
   .ttd-block { text-align: center; min-width: 180px; }
-  .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 4px; }
-  .ttd-block .barcode-wrap { border: 1px solid #ccc; border-radius: 4px; padding: 6px; display: inline-block; background: #fafafa; }
-  .ttd-block .barcode-wrap img { display: block; max-width: 180px; height: 50px; }
-  .ttd-block .ttd-code { font-family: monospace; font-size: 8pt; color: #555; margin-top: 4px; word-break: break-all; }
+  .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 6px; }
+  .ttd-block .qr-wrap { border: 1px solid #ccc; border-radius: 8px; padding: 8px; display: inline-block; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .ttd-block .qr-wrap img { display: block; width: 130px; height: 130px; }
+  .ttd-block .ttd-code { font-family: monospace; font-size: 8.5pt; color: #333; margin-top: 6px; font-weight: bold; word-break: break-all; }
   .ttd-block .ttd-name { margin-top: 6px; font-size: 10.5pt; border-top: 1px solid #555; padding-top: 4px; min-width: 160px; }
-  .footer-note { margin-top: 24px; font-size: 9pt; color: #777; border-top: 1px solid #ddd; padding-top: 6px; }
+  .footer-note { margin-top: 28px; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; }
   @media print {
     body { padding: 0; }
     @page { size: A4 portrait; margin: 15mm 20mm; }
@@ -524,9 +587,10 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 <body>
 
 <div class="kop">
+  <img src="${logoSrc}" class="kop-logo" alt="Logo RS Al-Huda" />
   <div class="kop-text">
     <h1>RUMAH SAKIT AL-HUDA</h1>
-    <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan Perangkat</p>
+    <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan Perangkat (SIM-Perbaikan)</p>
     <p>Jl. Raya Al-Huda · Telp. (xxx) xxxx-xxxx</p>
   </div>
 </div>
@@ -559,23 +623,23 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 
 <div class="ttd-section">
   <div class="ttd-block">
-    <div class="ttd-title">Pelapor</div>
-    <div class="barcode-wrap">
-      <img src="${barcodeImg}" alt="Barcode TTD Digital" />
+    <div class="ttd-title">Pelapor / TTE Digital</div>
+    <div class="qr-wrap">
+      <img src="${qrImg}" alt="QR Code TTD Digital" />
     </div>
     <div class="ttd-code">${esc(ttdCode)}</div>
-    <div class="ttd-name">${esc(namaPelapor)}<br><small>${esc(jabatan)}</small></div>
+    <div class="ttd-name"><strong>${esc(namaPelapor)}</strong><br><small>${esc(jabatan)}</small></div>
   </div>
   <div class="ttd-block">
     <div class="ttd-title">Mengetahui,</div>
-    <div style="height: 60px; border: 1px dashed #ccc; border-radius:4px; margin-bottom:4px;"></div>
+    <div style="height: 120px; border: 1px dashed #ccc; border-radius:4px; margin-bottom:4px; display:flex; align-items:center; justify-content:center; color:#999; font-size:9pt; font-style:italic;">Stempel &amp; Paraf</div>
     <div class="ttd-name">___________________<br><small>Kepala Unit / Pejabat</small></div>
   </div>
 </div>
 
 <div class="footer-note">
-  ★ Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda.
-  Kode verifikasi TTD: <strong>${esc(ttdCode)}</strong>
+  <span>★ Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.</span>
+  <span>Kode: <strong>${esc(ttdCode)}</strong></span>
 </div>
 
 </body>
