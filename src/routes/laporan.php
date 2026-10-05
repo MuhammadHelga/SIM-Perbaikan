@@ -5,6 +5,37 @@
  */
 
 return function (Router $router, mysqli $conn, string $basePath, AuthService $authService): void {
+    // Halaman verifikasi surat TTE (publik, dibuka saat QR code discan)
+    $router->any('/surat/verifikasi/{id:\d+}', function (array $params) use ($conn, $basePath) {
+        $id = (int) $params['id'];
+        require_once __DIR__ . '/../models/LaporanKerusakan.php';
+        $model = new LaporanKerusakan($conn);
+        $row = $model->getById($id);
+
+        if (!$row) {
+            http_response_code(404);
+            require __DIR__ . '/../views/errors/screens/404View.php';
+            return;
+        }
+
+        require __DIR__ . '/../views/laporan/screens/VerifikasiSuratView.php';
+    });
+
+    $router->any('/surat/verifikasi', function () use ($conn, $basePath) {
+        $id = (int) ($_GET['id'] ?? 0);
+        require_once __DIR__ . '/../models/LaporanKerusakan.php';
+        $model = new LaporanKerusakan($conn);
+        $row = $id > 0 ? $model->getById($id) : null;
+
+        if (!$row) {
+            http_response_code(404);
+            require __DIR__ . '/../views/errors/screens/404View.php';
+            return;
+        }
+
+        require __DIR__ . '/../views/laporan/screens/VerifikasiSuratView.php';
+    });
+
     // Aksi dinamis (wajib POST + CSRF): /laporan/kirim/{id}, /laporan/terima/{id}, /laporan/hapus/{id}
     $router->any('/laporan/{action:kirim|terima|hapus}/{id:\d+}', function (array $params) use ($conn, $basePath) {
         requireLogin($basePath);

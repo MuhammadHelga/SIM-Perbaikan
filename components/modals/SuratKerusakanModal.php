@@ -90,11 +90,11 @@
             <div class="surat-ttd-section">
                 <div class="surat-ttd-label">
                     <span class="material-symbols-outlined">qr_code_2</span>
-                    <strong>Tanda Tangan Digital</strong>
-                    <span class="surat-ttd-hint">— Kode unik otomatis berdasarkan data laporan</span>
+                    <strong>Tanda Tangan Digital (QR Code TTE)</strong>
+                    <span class="surat-ttd-hint">— Kode QR unik berlogo RS Al-Huda untuk verifikasi naskah dinas</span>
                 </div>
                 <div class="surat-ttd-preview">
-                    <canvas id="suratBarcodeCanvas" width="200" height="60" title="Barcode TTD Digital"></canvas>
+                    <canvas id="suratQrCanvas" width="160" height="160" title="QR Code TTD Digital"></canvas>
                     <div class="surat-ttd-meta">
                         <span class="surat-ttd-code" id="suratTtdCode">—</span>
                         <span class="surat-ttd-sub">RS Al-Huda · SIM-Perbaikan</span>
@@ -120,6 +120,86 @@
                     <span class="material-symbols-outlined">close</span> Batal
                 </button>
                 <button type="button" class="surat-btn surat-btn--print" id="suratBtnCetak" disabled onclick="cetakSurat()">
+                    <span class="material-symbols-outlined">print</span> Cetak Surat
+                </button>
+            </div>
+        </div>
+
+        <!-- Body 2: Tampilan Surat Jadi (Dokumen Resmi Siap Cetak) -->
+        <div class="surat-modal-body" id="suratDocumentPreviewSection" style="display: none;">
+            <div class="surat-paper-wrapper">
+                <div class="surat-paper-container">
+                    <!-- Kop Surat -->
+                    <div class="surat-paper-kop">
+                        <img src="<?= BASE_URL ?>/assets/images/logo_alhuda.svg" class="surat-paper-logo" alt="Logo RS Al-Huda">
+                        <div class="surat-paper-kop-text">
+                            <h2>RUMAH SAKIT AL-HUDA</h2>
+                            <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan Perangkat (SIM-Perbaikan)</p>
+                            <p>Jl. Raya Al-Huda · Telp. (xxx) xxxx-xxxx</p>
+                        </div>
+                    </div>
+
+                    <!-- Judul & Nomor -->
+                    <div class="surat-paper-title">
+                        <h3>SURAT PENGANTAR KERUSAKAN BARANG</h3>
+                        <div class="surat-paper-nomor">Nomor: <span id="pvSuratNomor">—</span></div>
+                    </div>
+
+                    <div class="surat-paper-tgl">Tanggal: <span id="pvSuratTgl">—</span></div>
+
+                    <div class="surat-paper-pembuka">
+                        Yang bertanda tangan di bawah ini menyatakan bahwa barang/perangkat berikut telah mengalami kerusakan
+                        dan perlu ditangani/dikirim ke unit terkait untuk perbaikan lebih lanjut.
+                    </div>
+
+                    <!-- Tabel Detail -->
+                    <table class="surat-paper-table">
+                        <tr><td style="width:36%; font-weight:600;">ID Laporan</td><td style="width:4%;">:</td><td>#<span id="pvSuratId">—</span></td></tr>
+                        <tr><td style="font-weight:600;">Jenis Barang</td><td>:</td><td><span id="pvSuratBarang">—</span></td></tr>
+                        <tr><td style="font-weight:600;">Unit / Ruangan</td><td>:</td><td><span id="pvSuratRuangan">—</span></td></tr>
+                        <tr><td style="font-weight:600;">No. Seri (SN)</td><td>:</td><td><span id="pvSuratSn">—</span></td></tr>
+                        <tr><td style="font-weight:600;">Tanggal Laporan</td><td>:</td><td><span id="pvSuratTglLaporan">—</span></td></tr>
+                        <tr><td style="font-weight:600;">Status Penanganan</td><td>:</td><td><span id="pvSuratStatus">—</span></td></tr>
+                        <tr><td style="font-weight:600;">Rincian Kerusakan</td><td>:</td><td><span id="pvSuratRincian">—</span></td></tr>
+                        <tr><td style="font-weight:600;">Uraian Kegiatan</td><td>:</td><td><span id="pvSuratUraian">—</span></td></tr>
+                    </table>
+
+                    <div style="font-weight:600; margin: 12px 0 4px; font-size:11pt;">Keterangan Tambahan:</div>
+                    <div class="surat-paper-keterangan" id="pvSuratKeterangan">(tidak ada keterangan tambahan)</div>
+
+                    <!-- TTD & QR Code Row -->
+                    <div class="surat-paper-ttd-row">
+                        <div class="surat-paper-ttd-box">
+                            <div class="ttd-lbl">Pelapor / TTE Digital</div>
+                            <div class="qr-preview-img-box">
+                                <img id="pvSuratQrImg" src="" alt="QR Code TTE Berlogo" />
+                            </div>
+                            <div class="ttd-code-str" id="pvSuratTtdCode">—</div>
+                            <div class="ttd-name-str"><strong id="pvSuratNamaPelapor">—</strong><br><small id="pvSuratJabatan">—</small></div>
+                        </div>
+                        <div class="surat-paper-ttd-box">
+                            <div class="ttd-lbl">Mengetahui,</div>
+                            <div class="stempel-box">Stempel &amp; Paraf</div>
+                            <div class="ttd-name-str">___________________<br><small>Kepala Unit / Pejabat</small></div>
+                        </div>
+                    </div>
+
+                    <!-- Footer Note -->
+                    <div class="surat-paper-footer">
+                        ★ Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Aksi -->
+            <div class="surat-modal-actions">
+                <button type="button" class="surat-btn surat-btn--outline" onclick="switchToFormMode()">
+                    <span class="material-symbols-outlined">edit</span> Form Isian
+                </button>
+                <button type="button" class="surat-btn surat-btn--outline" onclick="closeSuratModal()">
+                    <span class="material-symbols-outlined">close</span> Tutup
+                </button>
+                <button type="button" class="surat-btn surat-btn--print" onclick="cetakSurat()">
                     <span class="material-symbols-outlined">print</span> Cetak Surat
                 </button>
             </div>
