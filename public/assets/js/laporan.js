@@ -399,9 +399,9 @@ function openSuratModal(id, isReprint = false) {
     const ttdCode = buildTtdCode(id, verifyToken);
     document.getElementById('suratTtdCode').textContent = ttdCode;
 
-    // URL verifikasi yang encoded di QR Code (akan dibuka saat QR discan HP)
+    // URL verifikasi (token saja, tanpa ID internal) yang di-encode ke QR Code.
     const host = window.location.origin;
-    const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi/${id}?token=${encodeURIComponent(verifyToken)}`;
+    const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi?token=${encodeURIComponent(verifyToken)}`;
     const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda.svg`;
 
     // Render QR Code dengan logo di tengah canvas

@@ -94,7 +94,7 @@
                     <span class="surat-ttd-hint">— Kode QR unik berlogo RS Al-Huda untuk verifikasi naskah dinas</span>
                 </div>
                 <div class="surat-ttd-preview">
-                    <canvas id="suratQrCanvas" width="160" height="160" title="QR Code TTD Digital"></canvas>
+                    <canvas id="suratQrCanvas" width="360" height="360" title="QR Code TTD Digital"></canvas>
                     <div class="surat-ttd-meta">
                         <span class="surat-ttd-code" id="suratTtdCode">—</span>
                         <span class="surat-ttd-sub">RS Al-Huda · SIM-Perbaikan</span>

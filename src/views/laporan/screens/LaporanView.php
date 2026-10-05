@@ -437,6 +437,6 @@ if ($search !== '') {
 <?php include __DIR__ . '/../../../../components/modals/SuratKerusakanModal.php'; ?>
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
-<script src="<?= BASE_URL ?>/assets/js/qrcode.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js"></script>
 </html>
