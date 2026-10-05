@@ -313,19 +313,42 @@ if ($search !== '') {
                                 <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($statusPenanganan) ?></span>
                             </td>
                             <td class="nowrap col-tgl-kirim">
+                                <?php
+                                    $statusPenangananKirim = $row['status_penanganan'] ?? 'Pending';
+                                    $isSelesai = $statusPenangananKirim === 'Selesai';
+                                ?>
                                 <?php if ($row['kirim_status'] === 'belum'): ?>
-                                    <button type="button" class="pill-btn pill-btn--navy" onclick="kirimBarang(<?= (int)$row['id'] ?>)">Kirim</button>
+                                    <?php if ($isSelesai): ?>
+                                        <span class="pill-btn pill-btn--disabled" title="Status sudah Selesai, tidak perlu dikirim">Kirim</span>
+                                    <?php else: ?>
+                                        <button type="button" class="pill-btn pill-btn--navy" onclick="openSuratModal(<?= (int)$row['id'] ?>)">Kirim</button>
+                                    <?php endif; ?>
                                 <?php elseif ($row['kirim_status'] === 'dikirim'): ?>
-                                    <div class="pill-stack">
-                                        <span class="pill-text">Dikirim: <?= htmlspecialchars($fmtTanggal($row['tgl_kirim'] ?? null)) ?></span>
-                                        <button type="button" class="pill-btn pill-btn--green" onclick="terimaBarang(<?= (int)$row['id'] ?>)">Terima</button>
+                                    <div class="pill-stack pill-stack--col">
+                                        <div class="pill-stack">
+                                            <span class="pill-text">Dikirim: <?= htmlspecialchars($fmtTanggal($row['tgl_kirim'] ?? null)) ?></span>
+                                            <button type="button" class="pill-btn pill-btn--green" onclick="terimaBarang(<?= (int)$row['id'] ?>)">Terima</button>
+                                        </div>
+                                        <button type="button" class="pill-surat-btn" title="Lihat &amp; Cetak Ulang Surat" onclick="openSuratModal(<?= (int)$row['id'] ?>, true)">
+                                            <span class="material-symbols-outlined">print</span> Lihat Surat
+                                        </button>
                                     </div>
                                 <?php elseif ($row['kirim_status'] === 'diterima'): ?>
-                                    <span class="pill-text">Diterima: <?= htmlspecialchars($fmtTanggal($row['tgl_terima'] ?? null)) ?></span>
+                                    <div class="pill-stack pill-stack--col">
+                                        <span class="pill-text">Diterima: <?= htmlspecialchars($fmtTanggal($row['tgl_terima'] ?? null)) ?></span>
+                                        <button type="button" class="pill-surat-btn" title="Lihat &amp; Cetak Ulang Surat" onclick="openSuratModal(<?= (int)$row['id'] ?>, true)">
+                                            <span class="material-symbols-outlined">print</span> Lihat Surat
+                                        </button>
+                                    </div>
                                 <?php else: ?>
-                                    <span class="pill-btn pill-btn--disabled">Kirim</span>
+                                    <?php if ($isSelesai): ?>
+                                        <span class="pill-btn pill-btn--disabled" title="Status sudah Selesai, tidak perlu dikirim">Kirim</span>
+                                    <?php else: ?>
+                                        <button type="button" class="pill-btn pill-btn--navy" onclick="openSuratModal(<?= (int)$row['id'] ?>)">Kirim</button>
+                                    <?php endif; ?>
                                 <?php endif; ?>
                             </td>
+
                             <td class="col-aksi">
                                 <div class="action-icons">
                                         <button type="button" class="icon-btn icon-btn--view" title="Lihat detail" onclick="openDetailModal(<?= (int)$row['id'] ?>)">
@@ -411,6 +434,7 @@ if ($search !== '') {
     </div>
 </body>
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
+<?php include __DIR__ . '/../../../../components/modals/SuratKerusakanModal.php'; ?>
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js"></script>
