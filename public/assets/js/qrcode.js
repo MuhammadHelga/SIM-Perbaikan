@@ -29,19 +29,18 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
         var ctx = canvas.getContext('2d');
         var size = canvas.width;
 
-        // Quiet zone: QR butuh border putih minimal 4 modul agar mudah dipindai.
+        // Quiet zone: QR butuh border polos minimal 4 modul agar mudah dipindai.
         var quiet = 4;
         var total = moduleCount + quiet * 2;
         var cellSize = size / total;
 
         ctx.imageSmoothingEnabled = false;
 
-        // Background putih (termasuk area quiet zone)
+        // Latar putih dan modul hitam menjaga kontras QR standar.
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, size, size);
 
-        // Modul QR, digeser oleh quiet zone. Tepi dibulatkan agar tidak bercelah.
-        ctx.fillStyle = '#0a0a0a';
+        ctx.fillStyle = '#000000';
         for (var r = 0; r < moduleCount; r++) {
             for (var c = 0; c < moduleCount; c++) {
                 if (!qr.isDark(r, c)) continue;
@@ -53,31 +52,34 @@ var qrcode=function(){var t=function(t,r){var e=t,n=g[r],o=null,i=0,a=null,u=[],
             }
         }
 
-        // Logo tengah (20% — konservatif agar pola QR tetap terbaca)
+        // Pelat putih berbingkai hijau membungkus logo transparan dengan rapi.
         var logoImg = new Image();
         logoImg.crossOrigin = 'Anonymous';
         logoImg.onload = function () {
-            var logoSize = Math.floor(size * 0.20);
-            var logoX = Math.floor((size - logoSize) / 2);
-            var logoY = Math.floor((size - logoSize) / 2);
-            var pad = Math.max(3, Math.floor(size * 0.012));
+            var logoArea = Math.floor(size * 0.20);
+            var logoScale = Math.min(logoArea / logoImg.naturalWidth, logoArea / logoImg.naturalHeight);
+            var logoWidth = Math.floor(logoImg.naturalWidth * logoScale);
+            var logoHeight = Math.floor(logoImg.naturalHeight * logoScale);
+            var logoX = Math.floor((size - logoWidth) / 2);
+            var logoY = Math.floor((size - logoHeight) / 2);
+            var platePadding = Math.max(5, Math.floor(size * 0.018));
+            var plateSize = logoArea + platePadding * 2;
+            var plateX = Math.floor((size - plateSize) / 2);
+            var plateY = Math.floor((size - plateSize) / 2);
+            var radius = Math.max(6, Math.floor(size * 0.025));
 
-            ctx.fillStyle = '#ffffff';
             ctx.beginPath();
-            var rx = logoX - pad, ry = logoY - pad;
-            var rw = logoSize + pad * 2, rh = logoSize + pad * 2;
             if (ctx.roundRect) {
-                ctx.roundRect(rx, ry, rw, rh, 6);
+                ctx.roundRect(plateX, plateY, plateSize, plateSize, radius);
             } else {
-                ctx.rect(rx, ry, rw, rh);
+                ctx.rect(plateX, plateY, plateSize, plateSize);
             }
+            ctx.fillStyle = '#ffffff';
             ctx.fill();
-
-            ctx.strokeStyle = '#22c55e';
-            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#16834a';
+            ctx.lineWidth = Math.max(1.5, size * 0.005);
             ctx.stroke();
-
-            ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+            ctx.drawImage(logoImg, logoX, logoY, logoWidth, logoHeight);
 
             if (callback) callback(canvas.toDataURL('image/png'));
         };

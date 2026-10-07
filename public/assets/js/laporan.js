@@ -29,6 +29,19 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    const unitSelect = document.getElementById('unit');
+    if (unitSelect) {
+        unitSelect.addEventListener('change', updateJenisPoliVisibility);
+    }
+    const incidentTime = document.getElementById('waktu_kejadian');
+    if (incidentTime) {
+        incidentTime.addEventListener('change', function () {
+            if (incidentTime.value) {
+                document.getElementById('tanggal').value = incidentTime.value.slice(0, 10);
+            }
+        });
+    }
+
     initMonthPicker();
     initTableScrollSync();
 });
@@ -67,8 +80,13 @@ function closeModal(id) {
 function openTambahModal() {
     setFormMode('create');
     const form = document.getElementById('form-tambah-laporan');
+    clearLaporanHistory();
+    clearLegacyJenisPoliOption();
     form.reset();
+    updateJenisPoliVisibility();
     document.getElementById('form-laporan-id').value = '';
+    document.getElementById('waktu_kejadian').value = getCurrentLocalDateTime();
+    setRecordedAt(null);
     document.getElementById('prioritas').value = 'Sedang';
     form.action = (window.BASE_URL || '') + '/laporan/simpan';
 
@@ -84,7 +102,9 @@ function openEditModal(id) {
     if (!row) { alert('Data laporan tidak ditemukan.'); return; }
 
     setFormMode('edit');
+    clearLaporanHistory();
     fillFormWithData(row);
+    setRecordedAt(null);
 
     const form = document.getElementById('form-tambah-laporan');
     form.action = (window.BASE_URL || '') + '/laporan/update';
@@ -100,14 +120,117 @@ function openDetailModal(id) {
     const row = findLaporanById(id);
     if (!row) { alert('Data laporan tidak ditemukan.'); return; }
 
-    setFormMode('view');
     fillFormWithData(row);
+    setFormMode('view');
+    setRecordedAt(row.created_at || null);
 
     document.getElementById('formLaporanIcon').textContent = 'visibility';
     document.getElementById('formLaporanTitle').textContent = 'Detail Laporan';
     document.getElementById('formLaporanDesc').textContent = 'Laporan #' + id + ' (hanya lihat)';
 
     openModal('modal-form-laporan');
+    loadLaporanHistory(id);
+}
+
+function clearLaporanHistory() {
+    const history = document.getElementById('laporanHistory');
+    const list = document.getElementById('laporanHistoryList');
+    if (history) history.hidden = true;
+    if (list) list.replaceChildren();
+}
+
+async function loadLaporanHistory(id) {
+    const history = document.getElementById('laporanHistory');
+    const list = document.getElementById('laporanHistoryList');
+    if (!history || !list) return;
+
+    history.hidden = false;
+    list.replaceChildren();
+    appendHistoryMessage(list, 'Memuat riwayat...');
+
+    try {
+        const response = await fetch((window.BASE_URL || '') + '/laporan/' + encodeURIComponent(id) + '/riwayat', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin'
+        });
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error(response.redirected
+                ? 'Sesi login berakhir. Silakan login kembali.'
+                : 'Server mengembalikan respons riwayat yang tidak valid.');
+        }
+        const events = await response.json();
+        if (!response.ok) {
+            throw new Error(events.error || 'Riwayat laporan gagal dimuat.');
+        }
+        if (!Array.isArray(events)) {
+            throw new Error('Format riwayat laporan tidak valid.');
+        }
+
+        list.replaceChildren();
+        if (events.length === 0) {
+            appendHistoryMessage(list, 'Belum ada riwayat yang tercatat sejak fitur ini diaktifkan.');
+            return;
+        }
+
+        events.forEach(function (event) {
+            const item = document.createElement('li');
+            item.className = 'laporan-history__item';
+
+            const action = document.createElement('p');
+            action.className = 'laporan-history__action';
+            action.textContent = event.aksi || 'Aktivitas';
+
+            const meta = document.createElement('p');
+            meta.className = 'laporan-history__meta';
+            meta.textContent = (event.actor_name || 'Pengguna') + ' · ' + formatHistoryDate(event.created_at);
+
+            const detail = document.createElement('p');
+            detail.className = 'laporan-history__detail';
+            detail.textContent = event.detail || '';
+
+            item.append(action, meta, detail);
+            list.appendChild(item);
+        });
+    } catch (error) {
+        list.replaceChildren();
+        appendHistoryMessage(list, error.message || 'Riwayat laporan gagal dimuat.');
+    }
+}
+
+function appendHistoryMessage(list, message) {
+    const item = document.createElement('li');
+    item.className = 'laporan-history__detail';
+    item.textContent = message;
+    list.appendChild(item);
+}
+
+function formatHistoryDate(value) {
+    const match = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2}):(\d{2})/.exec(String(value || ''));
+    if (!match) return String(value || '');
+    const date = new Date(
+        Number(match[1]),
+        Number(match[2]) - 1,
+        Number(match[3]),
+        Number(match[4]),
+        Number(match[5]),
+        Number(match[6])
+    );
+    return new Intl.DateTimeFormat('id-ID', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
+}
+
+function getCurrentLocalDateTime() {
+    const now = new Date();
+    const pad = value => String(value).padStart(2, '0');
+    return now.getFullYear() + '-' + pad(now.getMonth() + 1) + '-' + pad(now.getDate())
+        + 'T' + pad(now.getHours()) + ':' + pad(now.getMinutes());
+}
+
+function setRecordedAt(value) {
+    const wrapper = document.getElementById('laporanRecordedAt');
+    const label = document.getElementById('laporanRecordedAtValue');
+    if (!wrapper || !label) return;
+    wrapper.hidden = !value;
+    label.textContent = value ? formatHistoryDate(value) : '-';
 }
 
 function getLaporanData() {
@@ -123,8 +246,19 @@ function findLaporanById(id) {
 function fillFormWithData(row) {
     document.getElementById('form-laporan-id').value = row.id;
     document.getElementById('tanggal').value = toDateInputValue(row.tanggal);
+    document.getElementById('waktu_kejadian').value = toDateTimeLocalValue(row.waktu_kejadian);
 
     selectOptionByText('unit', row.urusan);
+    updateJenisPoliVisibility();
+    const jenisPoli = document.getElementById('jenis_poli');
+    clearLegacyJenisPoliOption();
+    const jenisPoliValue = row.jenis_poli || '';
+    if (jenisPoliValue && !Array.from(jenisPoli.options).some(option => option.value === jenisPoliValue)) {
+        const legacyOption = new Option(jenisPoliValue, jenisPoliValue);
+        legacyOption.dataset.legacyPoli = 'true';
+        jenisPoli.add(legacyOption);
+    }
+    jenisPoli.value = jenisPoliValue;
     selectOptionByText('jenis_barang', row.barang);
 
     document.getElementById('no_seri').value = (row.serial_number && row.serial_number !== '-') ? row.serial_number : '';
@@ -136,6 +270,37 @@ function fillFormWithData(row) {
     document.getElementById('status').value = statusValue;
 
     document.getElementById('prioritas').value = row.prioritas || 'Sedang';
+}
+
+function toDateTimeLocalValue(value) {
+    if (!value) return '';
+    const match = /^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})/.exec(String(value));
+    return match ? match[1] + 'T' + match[2] : '';
+}
+
+function clearLegacyJenisPoliOption() {
+    const jenisPoli = document.getElementById('jenis_poli');
+    if (!jenisPoli) return;
+    jenisPoli.querySelectorAll('option[data-legacy-poli="true"]').forEach(option => option.remove());
+}
+
+function updateJenisPoliVisibility() {
+    const unit = document.getElementById('unit');
+    const group = document.getElementById('jenis-poli-group');
+    const jenisPoli = document.getElementById('jenis_poli');
+    if (!unit || !group || !jenisPoli) return;
+
+    const selectedUnit = unit.options[unit.selectedIndex];
+    const isPoli = selectedUnit && selectedUnit.textContent.trim().toUpperCase() === 'POLI';
+    group.style.display = isPoli ? 'flex' : 'none';
+    group.setAttribute('aria-hidden', String(!isPoli));
+    jenisPoli.disabled = !isPoli;
+    jenisPoli.required = Boolean(isPoli);
+    if (!isPoli) jenisPoli.value = '';
+}
+
+function formatUnitLocation(row) {
+    return [row.urusan, row.jenis_poli].filter(Boolean).join(' - ');
 }
 
 function selectOptionByText(selectId, text) {
@@ -168,6 +333,8 @@ function setFormMode(mode) {
 
     document.getElementById('formLaporanActions').style.display = isView ? 'none' : 'flex';
     document.getElementById('formLaporanViewActions').style.display = isView ? 'flex' : 'none';
+    const history = document.getElementById('laporanHistory');
+    if (history && !isView) history.hidden = true;
 }
 
 function confirmDelete(id) {
@@ -350,7 +517,7 @@ function openSuratModal(id, isReprint = false) {
     // Isi info laporan
     document.getElementById('suratLaporanId').textContent = id;
     document.getElementById('suratInfoDetail').textContent =
-        ' — ' + (row.barang || '?') + ' | ' + (row.urusan || '?');
+        ' — ' + (row.barang || '?') + ' | ' + (formatUnitLocation(row) || '?');
 
     // Ubah header modal sesuai mode
     const headerIcon = document.getElementById('suratModalHeaderIcon');
@@ -402,7 +569,7 @@ function openSuratModal(id, isReprint = false) {
     // URL verifikasi (token saja, tanpa ID internal) yang di-encode ke QR Code.
     const host = window.location.origin;
     const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi?token=${encodeURIComponent(verifyToken)}`;
-    const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda.svg`;
+    const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
     // Render QR Code dengan logo di tengah canvas
     const qrCanvas = document.getElementById('suratQrCanvas');
@@ -424,7 +591,7 @@ function openSuratModal(id, isReprint = false) {
     if (document.getElementById('pvSuratTgl')) document.getElementById('pvSuratTgl').textContent = formatTglIndo(tglSuratVal);
     if (document.getElementById('pvSuratId')) document.getElementById('pvSuratId').textContent = id;
     if (document.getElementById('pvSuratBarang')) document.getElementById('pvSuratBarang').textContent = row.barang || '—';
-    if (document.getElementById('pvSuratRuangan')) document.getElementById('pvSuratRuangan').textContent = row.urusan || '—';
+    if (document.getElementById('pvSuratRuangan')) document.getElementById('pvSuratRuangan').textContent = formatUnitLocation(row) || '—';
     if (document.getElementById('pvSuratSn')) document.getElementById('pvSuratSn').textContent = row.serial_number || '—';
     if (document.getElementById('pvSuratTglLaporan')) document.getElementById('pvSuratTglLaporan').textContent = formatTglIndo(row.tanggal);
     if (document.getElementById('pvSuratStatus')) document.getElementById('pvSuratStatus').textContent = row.status_penanganan || 'Pending';
@@ -442,7 +609,7 @@ function openSuratModal(id, isReprint = false) {
     if (isReprint) {
         if (formSection) formSection.style.display = 'none';
         if (previewSection) previewSection.style.display = 'block';
-        if (headerTitle) headerTitle.textContent = 'Pratinjau Surat Kerusakan (Dokumen Jadi)';
+        if (headerTitle) headerTitle.textContent = 'Pratinjau Surat Kerusakan';
         if (headerDesc) headerDesc.textContent = 'Dokumen surat pengantar kerusakan resmi yang sudah siap dicetak';
     } else {
         if (formSection) formSection.style.display = 'block';
@@ -553,7 +720,7 @@ function cetakSurat() {
 
 function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id }) {
     const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda.svg`;
+    const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
     return `<!DOCTYPE html>
 <html lang="id">
@@ -563,10 +730,11 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Times New Roman', Times, serif; font-size: 12pt; color: #111; background: #fff; padding: 20mm 25mm; }
-  .kop { display: flex; align-items: center; gap: 18px; border-bottom: 3px double #00288e; padding-bottom: 12px; margin-bottom: 16px; }
-  .kop-logo { width: 70px; height: 70px; object-fit: contain; }
-  .kop-text h1 { font-size: 16pt; color: #00288e; font-weight: bold; letter-spacing: 0.5px; }
-  .kop-text p { font-size: 10pt; color: #444; }
+  .kop { position: relative; display: flex; align-items: center; justify-content: center; min-height: 96px; border-bottom: 3px double #00288e; padding: 0 0 12px 82px; margin-bottom: 16px; text-align: center; }
+  .kop-logo { position: absolute; left: 0; top: 0; width: 70px; height: 82px; object-fit: contain; }
+  .kop-text { width: 100%; text-align: center; }
+  .kop-text h1 { font-size: 16pt; color: #00288e; font-weight: bold; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .kop-text p { font-size: 9.5pt; color: #444; line-height: 1.4; }
   .judul { text-align: center; margin: 18px 0 10px; }
   .judul h2 { font-size: 14pt; text-decoration: underline; letter-spacing: 1px; }
   .judul .nomor { font-size: 10.5pt; margin-top: 4px; }
@@ -598,7 +766,8 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   <div class="kop-text">
     <h1>RUMAH SAKIT AL-HUDA</h1>
     <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan Perangkat (SIM-Perbaikan)</p>
-    <p>Jl. Raya Al-Huda · Telp. (xxx) xxxx-xxxx</p>
+    <p>Jl. Raya Gambiran No. 225, Gambiran, Kab. Banyuwangi, Jawa Timur 68486</p>
+    <p>Telp: (0333) 842034 / 842038 | Email: rs_alhuda@yahoo.com | Web: www.rsalhuda.co.id</p>
   </div>
 </div>
 
@@ -617,7 +786,7 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 <table class="detail">
   <tr><td>ID Laporan</td><td>:</td><td>#${esc(id)}</td></tr>
   <tr><td>Jenis Barang</td><td>:</td><td>${esc(row.barang)}</td></tr>
-  <tr><td>Unit / Ruangan</td><td>:</td><td>${esc(row.urusan)}</td></tr>
+  <tr><td>Unit / Ruangan</td><td>:</td><td>${esc(formatUnitLocation(row))}</td></tr>
   <tr><td>No. Seri</td><td>:</td><td>${esc(row.serial_number) || '—'}</td></tr>
   <tr><td>Tanggal Laporan</td><td>:</td><td>${esc(formatTglIndo(row.tanggal))}</td></tr>
   <tr><td>Status Penanganan</td><td>:</td><td>${esc(row.status_penanganan)}</td></tr>
@@ -630,9 +799,9 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 
 <div class="ttd-section">
   <div class="ttd-block">
-    <div class="ttd-title">Pelapor / TTE Digital</div>
+    <div class="ttd-title">Pelapor / TTE</div>
     <div class="qr-wrap">
-      <img src="${qrImg}" alt="QR Code TTD Digital" />
+      <img src="${qrImg}" alt="QR Code TTD" />
     </div>
     <div class="ttd-code">${esc(ttdCode)}</div>
     <div class="ttd-name"><strong>${esc(namaPelapor)}</strong><br><small>${esc(jabatan)}</small></div>
@@ -733,4 +902,4 @@ function drawBarcode128(canvas, text) {
             x += barW;
         });
     });
-}
+}

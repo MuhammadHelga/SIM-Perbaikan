@@ -7,6 +7,9 @@
 $id = (int) ($row['id'] ?? 0);
 $barang = $row['barang'] ?? 'Perangkat';
 $urusan = $row['urusan'] ?? 'Unit';
+if (!empty($row['jenis_poli'])) {
+    $urusan .= ' - ' . $row['jenis_poli'];
+}
 $tgl = $row['tanggal'] ?? date('Y-m-d');
 $statusPenanganan = $row['status_penanganan'] ?? 'Pending';
 $kirimStatus = $row['kirim_status'] ?? 'belum';
@@ -92,39 +95,59 @@ $base = BASE_URL;
             overflow: hidden;
         }
 
-        /* Top Banner Ribbon Tag "TTE" */
+        /* Diagonal corner badge */
         .tte-ribbon {
             position: absolute;
-            top: 24px;
-            right: -35px;
-            background: #16a34a;
+            top: 0;
+            right: 0;
+            width: 86px;
+            height: 86px;
+            background: linear-gradient(145deg, #22c55e, #15803d);
+            clip-path: polygon(0 0, 100% 0, 100% 100%);
+            filter: drop-shadow(0 2px 3px rgba(22, 101, 52, 0.24));
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .tte-ribbon span {
+            position: absolute;
+            top: 19px;
+            right: 7px;
             color: #ffffff;
             font-weight: 800;
-            font-size: 13px;
+            font-size: 12px;
             letter-spacing: 1px;
-            padding: 6px 40px;
             transform: rotate(45deg);
-            box-shadow: 0 2px 6px rgba(22, 163, 74, 0.3);
-            z-index: 10;
         }
 
         /* Kop Header */
         .verify-header {
-            padding: 28px 32px 20px;
+            position: relative;
+            min-height: 104px;
+            padding: 14px 72px 12px 82px;
             border-bottom: 2px dashed var(--border);
             display: flex;
             align-items: center;
-            gap: 16px;
+            justify-content: center;
         }
 
         .verify-header img {
-            width: 58px;
-            height: 58px;
+            position: absolute;
+            left: 24px;
+            top: 50%;
+            width: 46px;
+            height: 54px;
             object-fit: contain;
+            transform: translateY(-50%);
+        }
+
+        .header-title {
+            width: 100%;
+            text-align: center;
         }
 
         .header-title h1 {
-            font-size: 18px;
+            font-size: 15px;
             font-weight: 800;
             color: var(--primary);
             line-height: 1.2;
@@ -132,9 +155,10 @@ $base = BASE_URL;
         }
 
         .header-title p {
-            font-size: 12px;
+            font-size: 8px;
             color: var(--text-muted);
-            margin-top: 3px;
+            margin-top: 2px;
+            line-height: 1.35;
             font-weight: 500;
         }
 
@@ -309,7 +333,19 @@ $base = BASE_URL;
 
         @media (max-width: 540px) {
             .verify-header {
-                padding: 20px 20px 16px;
+                min-height: 104px;
+                padding: 12px 58px 10px;
+            }
+            .verify-header img {
+                left: 12px;
+                width: 38px;
+                height: 46px;
+            }
+            .header-title h1 {
+                font-size: 12px;
+            }
+            .header-title p {
+                font-size: 8px;
             }
             .verify-body {
                 padding: 20px;
@@ -333,14 +369,16 @@ $base = BASE_URL;
 
 <div class="verify-card">
     <!-- Green TTE Ribbon Tag -->
-    <div class="tte-ribbon">TTE</div>
+    <div class="tte-ribbon" aria-label="Tanda tangan elektronik"><span>TTE</span></div>
 
     <!-- Kop Header -->
     <div class="verify-header">
-        <img src="<?= $base ?>/assets/images/logo_alhuda.svg" alt="Logo RS Al-Huda">
+        <img src="<?= $base ?>/assets/images/logo_alhuda_kop.png" alt="Logo RS Al-Huda">
         <div class="header-title">
             <h1>RUMAH SAKIT AL-HUDA</h1>
-            <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan (SIM-Perbaikan)</p>
+            <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan Perangkat (SIM-Perbaikan)</p>
+            <p>Jl. Raya Gambiran No. 225, Gambiran, Kab. Banyuwangi, Jawa Timur 68486</p>
+            <p>Telp: (0333) 842034 / 842038 | Email: rs_alhuda@yahoo.com | Web: www.rsalhuda.co.id</p>
         </div>
     </div>
 
@@ -379,7 +417,7 @@ $base = BASE_URL;
                 <tr>
                     <td class="label-col">Jenis Tandatangan</td>
                     <td class="colon-col">:</td>
-                    <td class="val-col">Internal RS Al-Huda (TTE Digital)</td>
+                    <td class="val-col">Internal RS Al-Huda (TTE)</td>
                 </tr>
                 <tr>
                     <td class="label-col">Drafter</td>

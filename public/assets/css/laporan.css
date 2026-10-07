@@ -1298,18 +1298,29 @@ main.page-wrap {
 }
 
 .surat-paper-kop {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  justify-content: center;
+  min-height: 96px;
   border-bottom: 3px double #00288e;
-  padding-bottom: 10px;
+  padding: 0 0 12px 82px;
   margin-bottom: 14px;
+  text-align: center;
 }
 
 .surat-paper-logo {
-  width: 60px;
-  height: 60px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 70px;
+  height: 82px;
   object-fit: contain;
+}
+
+.surat-paper-kop-text {
+  width: 100%;
+  text-align: center;
 }
 
 .surat-paper-kop-text h2 {
@@ -1318,11 +1329,14 @@ main.page-wrap {
   font-weight: bold;
   letter-spacing: 0.5px;
   font-family: 'Times New Roman', Times, serif;
+  margin: 0 0 4px;
 }
 
 .surat-paper-kop-text p {
   font-size: 9.5pt;
   color: #444;
+  line-height: 1.4;
+  margin: 2px 0;
 }
 
 .surat-paper-title {
@@ -1443,4 +1457,3 @@ main.page-wrap {
   border-top: 1px solid #e2e8f0;
   padding-top: 6px;
 }
-

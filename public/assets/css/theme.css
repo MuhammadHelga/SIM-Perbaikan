@@ -68,9 +68,20 @@ html.theme-transition .rekap-table th,
 html.theme-transition .rekap-table td,
 html.theme-transition .form-card,
 html.theme-transition .confirm-card,
+html.theme-transition .surat-modal-card,
 html.theme-transition .form-body input,
 html.theme-transition .form-body select,
 html.theme-transition .form-body textarea,
+html.theme-transition .surat-input-wrap,
+html.theme-transition .surat-group textarea,
+html.theme-transition .surat-info-box,
+html.theme-transition .surat-ttd-section,
+html.theme-transition .surat-ttd-preview,
+html.theme-transition .surat-approval-box,
+html.theme-transition .surat-btn--outline,
+html.theme-transition .surat-paper-wrapper,
+html.theme-transition .surat-paper-container,
+html.theme-transition .surat-paper-keterangan,
 html.theme-transition .filter-input,
 html.theme-transition .form-control,
 html.theme-transition .theme-toggle,
@@ -447,6 +458,14 @@ html.theme-transition .alokasi-card {
   color: var(--text);
 }
 
+[data-theme='dark'] .form-body input:disabled,
+[data-theme='dark'] .form-body select:disabled,
+[data-theme='dark'] .form-body textarea:disabled {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--muted);
+}
+
 [data-theme='dark'] .modal-close {
   color: var(--muted);
 }
@@ -454,6 +473,142 @@ html.theme-transition .alokasi-card {
 [data-theme='dark'] .modal-close:hover {
   background: var(--surface-2);
   color: var(--text);
+}
+
+[data-theme='dark'] #modal-surat-kerusakan .surat-modal-card {
+  background: var(--surface);
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-group label,
+[data-theme='dark'] .surat-ttd-label {
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-input-wrap,
+[data-theme='dark'] .surat-group textarea {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-input-wrap:focus-within,
+[data-theme='dark'] .surat-group textarea:focus {
+  background: var(--surface);
+  border-color: var(--primary);
+}
+
+[data-theme='dark'] .surat-input-wrap input {
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-input-wrap input::placeholder,
+[data-theme='dark'] .surat-group textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+[data-theme='dark'] .surat-input-wrap .material-symbols-outlined,
+[data-theme='dark'] .surat-ttd-label .surat-ttd-hint,
+[data-theme='dark'] .surat-ttd-sub {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .surat-ttd-label .material-symbols-outlined {
+  color: var(--primary);
+}
+
+[data-theme='dark'] .surat-info-box {
+  background: #1e3a8a;
+  border-color: #334f9b;
+  color: #dbeafe;
+}
+
+[data-theme='dark'] .surat-info-box .material-symbols-outlined {
+  color: #bfdbfe;
+}
+
+[data-theme='dark'] .surat-ttd-section,
+[data-theme='dark'] .surat-paper-wrapper {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .surat-ttd-preview {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .surat-ttd-preview canvas {
+  background: #fff;
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .surat-paper-container {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-paper-kop {
+  border-bottom-color: var(--primary);
+}
+
+[data-theme='dark'] .surat-paper-kop-text h2 {
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .surat-paper-kop-text p,
+[data-theme='dark'] .surat-paper-footer {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .surat-paper-keterangan {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-paper-ttd-box .qr-preview-img-box {
+  background: #fff;
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .surat-paper-ttd-box .ttd-code-str {
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-ttd-code {
+  color: #93c5fd;
+}
+
+[data-theme='dark'] .surat-approval-box {
+  background: #422006;
+  border-color: #854d0e;
+}
+
+[data-theme='dark'] .surat-approval-text strong {
+  color: #fcd34d;
+}
+
+[data-theme='dark'] .surat-approval-text span {
+  color: #fde68a;
+}
+
+[data-theme='dark'] .surat-btn--outline {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .surat-btn--outline:hover {
+  background: #334155;
+  border-color: #64748b;
+}
+
+[data-theme='dark'] .surat-btn--print:disabled {
+  background: #475569;
+  color: #cbd5e1;
 }
 
 [data-theme='dark'] .confirm-btn--cancel {

@@ -82,19 +82,19 @@ try {
                 </button>
                 <div class="sidebar-pet__friends">
                     <button type="button" class="sidebar-pet" data-animal="Rico" aria-label="Sapa Rico">
-                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Rico!</span><span class="sidebar-pet__character" aria-hidden="true">🐱</span>
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, saya Rico!</span><span class="sidebar-pet__character" aria-hidden="true">🐱</span>
                     </button>
                     <button type="button" class="sidebar-pet" data-animal="Helga" aria-label="Sapa Helga">
-                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Helga!</span><span class="sidebar-pet__character" aria-hidden="true">🐨</span>
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, saya Helga!</span><span class="sidebar-pet__character" aria-hidden="true">🐨</span>
                     </button>
                     <button type="button" class="sidebar-pet" data-animal="Reza" aria-label="Sapa Reza">
-                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Reza!</span><span class="sidebar-pet__character" aria-hidden="true">🐰</span>
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, saya Reza!</span><span class="sidebar-pet__character" aria-hidden="true">🐰</span>
                     </button>
                     <button type="button" class="sidebar-pet" data-animal="Maria" aria-label="Sapa Maria">
-                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Maria!</span><span class="sidebar-pet__character" aria-hidden="true">🦊</span>
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, saya Maria!</span><span class="sidebar-pet__character" aria-hidden="true">🦊</span>
                     </button>
                     <button type="button" class="sidebar-pet" data-animal="Dewi" aria-label="Sapa Dewi">
-                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, nama saya Dewi!</span><span class="sidebar-pet__character" aria-hidden="true">🐸</span>
+                        <span class="sidebar-pet__bubble" aria-live="polite">Hai, saya Dewi!</span><span class="sidebar-pet__character" aria-hidden="true">🐸</span>
                     </button>
                 </div>
                 <span class="sidebar-pet__ground" aria-hidden="true"></span>

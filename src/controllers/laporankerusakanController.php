@@ -16,10 +16,22 @@ class laporankerusakanController
         return $this->laporankerusakan->getById($id);
     }
 
+    public function getHistory(int $id): array
+    {
+        return $this->laporankerusakan->getHistory($id);
+    }
+
+    public function recordHistory(int $id, ?int $userId, string $actorName, string $action, string $detail): bool
+    {
+        return $this->laporankerusakan->recordHistory($id, $userId, $actorName, $action, $detail);
+    }
+
     public function store(
         $id_barang,
         $id_ruangan,
+        $jenis_poli,
         $tanggal,
+        $waktu_kejadian,
         $serial_number,
         $rincian_kerusakan,
         $uraian_kegiatan,
@@ -30,7 +42,9 @@ class laporankerusakanController
         return $this->laporankerusakan->create(
             $id_barang,
             $id_ruangan,
+            $jenis_poli,
             $tanggal,
+            $waktu_kejadian,
             $serial_number,
             $rincian_kerusakan,
             $uraian_kegiatan,
@@ -44,7 +58,9 @@ class laporankerusakanController
         $id,
         $id_barang,
         $id_ruangan,
+        $jenis_poli,
         $tanggal,
+        $waktu_kejadian,
         $serial_number,
         $rincian_kerusakan,
         $uraian_kegiatan,
@@ -55,7 +71,9 @@ class laporankerusakanController
             $id,
             $id_barang,
             $id_ruangan,
+            $jenis_poli,
             $tanggal,
+            $waktu_kejadian,
             $serial_number,
             $rincian_kerusakan,
             $uraian_kegiatan,

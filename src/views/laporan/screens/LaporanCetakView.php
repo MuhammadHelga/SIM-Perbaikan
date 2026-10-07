@@ -148,7 +148,7 @@ $filterLabel = $filterParts ? implode(' · ', $filterParts) : 'Tanpa filter tamb
                     <tr>
                         <td class="center"><?= $i + 1 ?></td>
                         <td class="nowrap"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
-                        <td><?= htmlspecialchars($row['urusan']) ?></td>
+                        <td><?= htmlspecialchars(trim($row['urusan'] . (!empty($row['jenis_poli']) ? ' - ' . $row['jenis_poli'] : ''))) ?></td>
                         <td><?= htmlspecialchars($row['barang']) ?></td>
                         <td><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($row['kerusakan']) ?></td>

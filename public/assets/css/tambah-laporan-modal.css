@@ -60,10 +60,40 @@
     gap: 6px;
 }
 
+.form-group[hidden] {
+    display: none;
+}
+
 .form-group label {
     font-size: 0.85rem;
     font-weight: 600;
     color: #1e293b;
+}
+
+.form-label-optional,
+.form-hint {
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 400;
+}
+
+.form-hint {
+    line-height: 1.4;
+}
+
+.form-readonly-value {
+    margin: 0;
+    padding: 10px 12px;
+    min-height: 40px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 0.85rem;
+}
+
+#laporanRecordedAt[hidden] {
+    display: none;
 }
 
 .input-icon-wrapper {
@@ -122,6 +152,103 @@
     justify-content: flex-end;
     gap: 12px;
     margin-top: 10px;
+}
+
+.laporan-history[hidden] {
+    display: none;
+}
+
+.laporan-history {
+    border-top: 1px solid #dbe3ef;
+    padding-top: 18px;
+}
+
+.laporan-history h3 {
+    margin: 0 0 14px;
+    color: #0f172a;
+    font-size: 1rem;
+}
+
+.laporan-history__list {
+    display: grid;
+    gap: 12px;
+    list-style: none;
+    margin: 0;
+    padding: 0 0 0 14px;
+    border-left: 2px solid #cbd5e1;
+}
+
+.laporan-history__item {
+    position: relative;
+    padding: 0 0 2px 12px;
+}
+
+.laporan-history__item::before {
+    position: absolute;
+    left: -20px;
+    top: 5px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #2563eb;
+    content: '';
+}
+
+.laporan-history__action,
+.laporan-history__meta,
+.laporan-history__detail {
+    margin: 0;
+}
+
+.laporan-history__action {
+    color: #0f172a;
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.laporan-history__meta {
+    margin-top: 2px;
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+.laporan-history__detail {
+    margin-top: 4px;
+    color: #334155;
+    font-size: 0.82rem;
+    overflow-wrap: anywhere;
+}
+
+[data-theme='dark'] .laporan-history {
+    border-color: #334155;
+}
+
+[data-theme='dark'] .laporan-history h3,
+[data-theme='dark'] .laporan-history__action {
+    color: #e2e8f0;
+}
+
+[data-theme='dark'] .laporan-history__list {
+    border-color: #475569;
+}
+
+[data-theme='dark'] .laporan-history__meta {
+    color: #94a3b8;
+}
+
+[data-theme='dark'] .laporan-history__detail {
+    color: #cbd5e1;
+}
+
+[data-theme='dark'] .form-label-optional,
+[data-theme='dark'] .form-hint {
+    color: #94a3b8;
+}
+
+[data-theme='dark'] .form-readonly-value {
+    border-color: #334155;
+    background: #273449;
+    color: #cbd5e1;
 }
 
 .btn-simpan {

@@ -154,14 +154,22 @@ nomornya jadi `00044-dev.sql`. Detail: `vendor/byjg/migration/docs/migration-scr
 | `users` | Akun login (`username`, `password_hash`, `role`) |
 | `ruangan` | Master unit/ruangan (mis. POLI, UGD, Radiologi) |
 | `barang` | Master jenis barang/perangkat (mis. Komputer, Printer) |
-| `laporan_kerusakan` | Data laporan kerusakan/perbaikan |
+| `laporan_kerusakan` | Data laporan kerusakan/perbaikan, termasuk jenis poli untuk laporan dari POLI |
+| `laporan_riwayat` | Catatan aktivitas baru laporan, pengguna, detail perubahan, dan waktu kejadian |
 | `migration_version` | Versi migrasi (dikelola tool, jangan diubah manual) |
 
 Kolom penting di `laporan_kerusakan`:
 `tanggal`, `id_ruangan`, `id_barang`, `serial_number`, `rincian_kerusakan`,
-`uraian_kegiatan`, `status_penanganan` (`Pending`/`Proses`/`Selesai`),
+`jenis_poli` (diisi jika unitnya POLI), `uraian_kegiatan`,
+`status_penanganan` (`Pending`/`Proses`/`Selesai`),
 `prioritas` (`Rendah`/`Sedang`/`Tinggi`), `kirim_status` (`belum`/`dikirim`/`diterima`),
 `tgl_kirim`, `tgl_terima`, `id_user`.
+`waktu_kejadian` mencatat waktu kejadian/laporan diterima bila diketahui, sedangkan
+`created_at` otomatis mencatat waktu data dimasukkan ke sistem. Migrasi versi 15
+membiarkan `waktu_kejadian` laporan lama tetap `NULL` karena waktu sebenarnya tidak diketahui.
+
+Riwayat pada `laporan_riwayat` mulai tercatat sejak migrasi versi 14 diterapkan;
+aktivitas laporan yang terjadi sebelumnya tidak dapat direkonstruksi otomatis.
 
 ---
 

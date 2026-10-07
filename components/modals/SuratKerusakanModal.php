@@ -131,11 +131,12 @@
                 <div class="surat-paper-container">
                     <!-- Kop Surat -->
                     <div class="surat-paper-kop">
-                        <img src="<?= BASE_URL ?>/assets/images/logo_alhuda.svg" class="surat-paper-logo" alt="Logo RS Al-Huda">
+                        <img src="<?= BASE_URL ?>/assets/images/logo_alhuda_kop.png" class="surat-paper-logo" alt="Logo RS Al-Huda">
                         <div class="surat-paper-kop-text">
                             <h2>RUMAH SAKIT AL-HUDA</h2>
                             <p>Sistem Informasi Manajemen Perbaikan &amp; Kerusakan Perangkat (SIM-Perbaikan)</p>
-                            <p>Jl. Raya Al-Huda · Telp. (xxx) xxxx-xxxx</p>
+                            <p>Jl. Raya Gambiran No. 225, Gambiran, Kab. Banyuwangi, Jawa Timur 68486</p>
+                            <p>Telp: (0333) 842034 / 842038 | Email: rs_alhuda@yahoo.com | Web: www.rsalhuda.co.id</p>
                         </div>
                     </div>
 
@@ -170,7 +171,7 @@
                     <!-- TTD & QR Code Row -->
                     <div class="surat-paper-ttd-row">
                         <div class="surat-paper-ttd-box">
-                            <div class="ttd-lbl">Pelapor / TTE Digital</div>
+                            <div class="ttd-lbl">Pelapor / TTE</div>
                             <div class="qr-preview-img-box">
                                 <img id="pvSuratQrImg" src="" alt="QR Code TTE Berlogo" />
                             </div>

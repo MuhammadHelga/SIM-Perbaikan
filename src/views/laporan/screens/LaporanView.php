@@ -124,9 +124,9 @@ if ($search !== '') {
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/navbar.css') ?>">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/laporan.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/laporan.css?v=<?= filemtime(BASE_PATH . '/public/assets/css/laporan.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/modal.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/tambah-laporan-modal.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/tambah-laporan-modal.css?v=<?= filemtime(BASE_PATH . '/public/assets/css/tambah-laporan-modal.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/theme.css?v=<?= filemtime(BASE_PATH . '/public/assets/css/theme.css') ?>">
 </head>
 <body>
@@ -136,7 +136,7 @@ if ($search !== '') {
         <h1>SIM-Perbaikan &mdash; RS Al-Huda</h1>
         <h2>Rekap Laporan Kegiatan &amp; Kerusakan</h2>
         <p>Periode: <?= htmlspecialchars($periodeLabel, ENT_QUOTES, 'UTF-8') ?> &middot; Dicetak: <?= date('d M Y') ?></p>
-        <p>Total: <?= (int)$stats['total'] ?> &middot; Pending/Proses: <?= (int)$stats['pending'] ?> &middot; Selesai: <?= (int)$stats['selesai'] ?></p>
+        <p>Total: <?= (int)$stats['total'] ?> &middot; Pending: <?= (int)$stats['pending'] ?> &middot; Selesai: <?= (int)$stats['selesai'] ?></p>
     </div>
     
     <main class="page-wrap">
@@ -296,7 +296,7 @@ if ($search !== '') {
                     <?php foreach ($laporanList as $row): ?>
                         <tr>
                             <td class="nowrap col-tgl"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
-                            <td class="col-urusan"><?= htmlspecialchars($row['urusan']) ?></td>
+                            <td class="col-urusan"><?= htmlspecialchars(trim($row['urusan'] . (!empty($row['jenis_poli']) ? ' - ' . $row['jenis_poli'] : ''))) ?></td>
                             <td class="col-barang"><?= htmlspecialchars($row['barang']) ?></td>
                             <td class="col-sn"><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
                             <td class="truncate col-kerusakan" title="<?= htmlspecialchars($row['kerusakan']) ?>"><?= htmlspecialchars($row['kerusakan']) ?></td>
@@ -438,5 +438,5 @@ if ($search !== '') {
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
-<script src="<?= BASE_URL ?>/assets/js/laporan.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/laporan.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/laporan.js') ?>"></script>
 </html>

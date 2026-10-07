@@ -566,22 +566,12 @@ body.nav-collapsed .sidebar-pet__sparkle {
   display: none;
 }
 
-/* Saat sidebar dilipat, bubble pemimpin keluar ke KANAN agar tidak terpotong. */
-body.nav-collapsed .sidebar-pet--leader .sidebar-pet__bubble {
-  left: 100%;
-  right: auto;
-  bottom: 20px;
-  max-width: 150px;
-  border-radius: 3px 11px 11px 11px;
-  transform: translate(0, 5px) scale(0.92);
-  transform-origin: left bottom;
+@media (min-width: 993px) {
+  body.nav-collapsed .sidebar-pet__bubble {
+    display: none;
+  }
 }
 
-body.nav-collapsed .sidebar-pet--leader:hover .sidebar-pet__bubble,
-body.nav-collapsed .sidebar-pet--leader:focus-visible .sidebar-pet__bubble,
-body.nav-collapsed .sidebar-pet--leader.is-speaking .sidebar-pet__bubble {
-  transform: translate(8px, 0) scale(1);
-}
 body.nav-collapsed .sidebar-pet__leader-crown {
   top: 0;
   font-size: 14px;

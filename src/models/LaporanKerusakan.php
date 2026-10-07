@@ -46,10 +46,10 @@ class LaporanKerusakan
             // Netralkan wildcard LIKE agar dicari sebagai teks biasa.
             $like = '%' . str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search) . '%';
 
-            $where .= ' AND (r.nama_ruangan LIKE ? OR b.nama_barang LIKE ?'
+            $where .= ' AND (r.nama_ruangan LIKE ? OR lk.jenis_poli LIKE ? OR b.nama_barang LIKE ?'
                     . ' OR lk.rincian_kerusakan LIKE ? OR lk.serial_number LIKE ?)';
-            $types .= 'ssss';
-            for ($i = 0; $i < 4; $i++) {
+            $types .= 'sssss';
+            for ($i = 0; $i < 5; $i++) {
                 $params[] = $like;
             }
         }
@@ -65,7 +65,10 @@ class LaporanKerusakan
         return "SELECT
                     lk.id,
                     lk.tanggal,
+                    lk.waktu_kejadian,
+                    lk.created_at,
                     r.nama_ruangan       AS urusan,
+                    lk.jenis_poli,
                     b.nama_barang        AS barang,
                     lk.serial_number,
                     lk.rincian_kerusakan AS kerusakan,
@@ -171,6 +174,7 @@ class LaporanKerusakan
 
         $sql = "SELECT
                     COUNT(*) AS total,
+                    SUM(CASE WHEN status_penanganan = 'Pending' THEN 1 ELSE 0 END) AS pending,
                     SUM(CASE WHEN status_penanganan = 'Selesai' THEN 1 ELSE 0 END) AS selesai
                 FROM laporan_kerusakan lk"
                 . $where;
@@ -183,11 +187,12 @@ class LaporanKerusakan
 
         $row     = $stmt->get_result()->fetch_assoc();
         $total   = (int) $row['total'];
+        $pending = (int) $row['pending'];
         $selesai = (int) $row['selesai'];
 
         return [
             'total'   => $total,
-            'pending' => $total - $selesai,
+            'pending' => $pending,
             'selesai' => $selesai,
         ];
     }
@@ -218,6 +223,32 @@ class LaporanKerusakan
 
         $row = $stmt->get_result()->fetch_assoc();
         return $row ? $this->attachVerifyToken($row) : null;
+    }
+
+    public function recordHistory(int $reportId, ?int $userId, string $actorName, string $action, string $detail): bool
+    {
+        $stmt = $this->conn->prepare(
+            "INSERT INTO laporan_riwayat (laporan_id, user_id, actor_name, aksi, detail)
+             VALUES (?, ?, ?, ?, ?)"
+        );
+        $stmt->bind_param("iisss", $reportId, $userId, $actorName, $action, $detail);
+
+        return $stmt->execute();
+    }
+
+    /** @return array<int, array{aksi:string, detail:string, actor_name:string, created_at:string}> */
+    public function getHistory(int $reportId): array
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT aksi, detail, actor_name, created_at
+             FROM laporan_riwayat
+             WHERE laporan_id = ?
+             ORDER BY created_at DESC, id DESC"
+        );
+        $stmt->bind_param("i", $reportId);
+        $stmt->execute();
+
+        return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     }
 
     /**
@@ -313,7 +344,9 @@ class LaporanKerusakan
     public function create(
         $id_barang,
         $id_ruangan,
+        $jenis_poli,
         $tanggal,
+        $waktu_kejadian,
         $serial_number,
         $rincian_kerusakan,
         $uraian_kegiatan,
@@ -326,7 +359,9 @@ class LaporanKerusakan
             (
                 id_barang,
                 id_ruangan,
+                jenis_poli,
                 tanggal,
+                waktu_kejadian,
                 serial_number,
                 rincian_kerusakan,
                 uraian_kegiatan,
@@ -334,14 +369,16 @@ class LaporanKerusakan
                 prioritas,
                 id_user
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->bind_param(
-            "iissssssi",
+            "iissssssssi",
             $id_barang,
             $id_ruangan,
+            $jenis_poli,
             $tanggal,
+            $waktu_kejadian,
             $serial_number,
             $rincian_kerusakan,
             $uraian_kegiatan,
@@ -352,10 +389,12 @@ class LaporanKerusakan
 
         $ok = $stmt->execute();
         if ($ok) {
-            $this->ensureSurat((int) $this->conn->insert_id);
+            $id = (int) $this->conn->insert_id;
+            $this->ensureSurat($id);
+            return $id;
         }
 
-        return $ok;
+        return false;
     }
 
     // UPDATE
@@ -363,7 +402,9 @@ class LaporanKerusakan
         $id,
         $id_barang,
         $id_ruangan,
+        $jenis_poli,
         $tanggal,
+        $waktu_kejadian,
         $serial_number,
         $rincian_kerusakan,
         $uraian_kegiatan,
@@ -375,7 +416,9 @@ class LaporanKerusakan
              SET
                 id_barang = ?,
                 id_ruangan = ?,
+                jenis_poli = ?,
                 tanggal = ?,
+                waktu_kejadian = ?,
                 serial_number = ?,
                 rincian_kerusakan = ?,
                 uraian_kegiatan = ?,
@@ -385,10 +428,12 @@ class LaporanKerusakan
         );
 
         $stmt->bind_param(
-            "iissssssi",
+            "iissssssssi",
             $id_barang,
             $id_ruangan,
+            $jenis_poli,
             $tanggal,
+            $waktu_kejadian,
             $serial_number,
             $rincian_kerusakan,
             $uraian_kegiatan,
@@ -427,12 +472,14 @@ class LaporanKerusakan
                 kirim_status = 'dikirim',
                 tgl_kirim = ?,
                 status_penanganan = IF(status_penanganan = 'Pending', 'Proses', status_penanganan)
-             WHERE id = ? AND kirim_status <> 'diterima'"
+             WHERE id = ?
+               AND kirim_status = 'belum'
+               AND status_penanganan IN ('Pending', 'Proses')"
         );
 
         $stmt->bind_param("si", $tgl, $id);
 
-        return $stmt->execute();
+        return $stmt->execute() && $stmt->affected_rows === 1;
     }
 
     /**
@@ -446,12 +493,12 @@ class LaporanKerusakan
              SET
                 kirim_status = 'diterima',
                 tgl_terima = ?
-             WHERE id = ?"
+             WHERE id = ? AND kirim_status = 'dikirim'"
         );
 
         $stmt->bind_param("si", $tgl, $id);
 
-        return $stmt->execute();
+        return $stmt->execute() && $stmt->affected_rows === 1;
     }
 
     /**

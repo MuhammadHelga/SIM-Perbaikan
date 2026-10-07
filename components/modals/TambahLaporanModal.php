@@ -26,13 +26,32 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="tanggal">Tanggal</label>
+                    <label for="tanggal">Tanggal laporan</label>
                     <div class="input-icon-wrapper">
                         <span class="material-symbols-outlined field-icon">calendar_month</span>
                         <input type="date" id="tanggal" name="tanggal" value="<?= date('Y-m-d') ?>" required>
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label for="waktu_kejadian">Waktu kejadian / Laporan diterima <span class="form-label-optional">(opsional)</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">schedule</span>
+                        <input type="datetime-local" id="waktu_kejadian" name="waktu_kejadian" value="<?= date('Y-m-d\TH:i') ?>">
+                    </div>
+                    <small class="form-hint">Dapat disesuaikan jika laporan dicatat terlambat. Kosongkan jika waktu tidak diketahui.</small>
+                </div>
+            </div>
+
+            <div class="form-row" id="laporanRecordedAt" hidden>
+                <div class="form-group">
+                    <label>Waktu dicatat di sistem</label>
+                    <p class="form-readonly-value" id="laporanRecordedAtValue">-</p>
+                </div>
+                <div class="form-group"></div>
+            </div>
+
+            <div class="form-row">
                 <div class="form-group">
                     <label for="unit">Unit/Ruangan</label>
                     <div class="input-icon-wrapper">
@@ -44,6 +63,19 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                </div>
+            </div>
+
+            <div class="form-group" id="jenis-poli-group" style="display:none;" aria-hidden="true">
+                <label for="jenis_poli">Jenis Poli</label>
+                <div class="input-icon-wrapper">
+                    <span class="material-symbols-outlined field-icon">medical_services</span>
+                    <select id="jenis_poli" name="jenis_poli" disabled>
+                        <option value="" disabled selected>Pilih Jenis Poli</option>
+                        <?php foreach (poliJenisOptions() as $jenisPoli): ?>
+                            <option value="<?= htmlspecialchars($jenisPoli, ENT_QUOTES, 'UTF-8') ?>"><?= htmlspecialchars($jenisPoli, ENT_QUOTES, 'UTF-8') ?></option>
+                        <?php endforeach; ?>
+                    </select>
                 </div>
             </div>
 
@@ -118,6 +150,11 @@
             <div class="form-actions" id="formLaporanViewActions" style="display:none;">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-form-laporan')">Tutup</button>
             </div>
+
+            <section class="laporan-history" id="laporanHistory" hidden aria-labelledby="laporanHistoryTitle">
+                <h3 id="laporanHistoryTitle">Riwayat Perubahan</h3>
+                <ol class="laporan-history__list" id="laporanHistoryList" aria-live="polite"></ol>
+            </section>
         </form>
     </div>
 </div>

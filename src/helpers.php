@@ -24,6 +24,31 @@ function csrfValid(): bool
         && hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf']);
 }
 
+function poliJenisOptions(): array
+{
+    return [
+        'Poli Paru',
+        'Poli Penyakit Dalam',
+        'Poli Obgyn Mata',
+        'Poli Jiwa',
+        'Poli Andrologi',
+        'Poli Penyakit Dalam Dr. Afina',
+        'Poli DOTS',
+        'Poli Anak',
+        'Poli Jantung',
+        'Poli Syaraf',
+        'Poli KIA',
+        'Poli KIA Belakang',
+        'Poli Bedah Umum',
+        'Poli Gigi',
+        'Poli Gizi',
+        'Poli Dalam',
+        'Poli Orthopedi',
+        'Poli Bedah Saraf',
+        'Lainnya',
+    ];
+}
+
 // ===== Flash & redirect =====
 
 function flash(string $type, string $text): void
@@ -69,6 +94,23 @@ function validDateYmd($value): bool
     return $date !== false && $date->format('Y-m-d') === $value;
 }
 
+function parseLocalDateTime(?string $value)
+{
+    if ($value === null || $value === '') {
+        return null;
+    }
+    if (preg_match('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $value) !== 1) {
+        return false;
+    }
+
+    $date = DateTime::createFromFormat('!Y-m-d\TH:i', $value);
+    if ($date === false || $date->format('Y-m-d\TH:i') !== $value) {
+        return false;
+    }
+
+    return $date->format('Y-m-d H:i:s');
+}
+
 /** Cek keberadaan baris berdasarkan id. Nama tabel dibatasi whitelist. */
 function idExists(mysqli $conn, string $table, int $id): bool
 {
@@ -89,7 +131,7 @@ function idExists(mysqli $conn, string $table, int $id): bool
  *
  * @return array{0: array<string,mixed>, 1: string[]} [data bersih, daftar error]
  */
-function validateLaporanInput(mysqli $conn, array $input): array
+function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenisPoli = null): array
 {
     $statusList    = ['Pending', 'Proses', 'Selesai'];
     $prioritasList = ['Rendah', 'Sedang', 'Tinggi'];
@@ -97,7 +139,10 @@ function validateLaporanInput(mysqli $conn, array $input): array
 
     $barangId     = (int) ($input['barang_id'] ?? 0);
     $unitId       = (int) ($input['unit_id'] ?? 0);
+    $jenisPoli    = trim((string) ($input['jenis_poli'] ?? ''));
     $tanggal      = trim((string) ($input['tanggal'] ?? ''));
+    $waktuKejadianInput = trim((string) ($input['waktu_kejadian'] ?? ''));
+    $waktuKejadian = parseLocalDateTime($waktuKejadianInput);
     $noSeri       = trim((string) ($input['no_seri'] ?? ''));
     $rincian      = trim((string) ($input['rincian_kerusakan'] ?? ''));
     $uraian       = trim((string) ($input['uraian_kegiatan'] ?? ''));
@@ -107,8 +152,32 @@ function validateLaporanInput(mysqli $conn, array $input): array
     if (!idExists($conn, 'barang', $barangId)) {
         $errors[] = 'Jenis barang tidak valid.';
     }
+    $namaRuangan = null;
     if (!idExists($conn, 'ruangan', $unitId)) {
         $errors[] = 'Unit/ruangan tidak valid.';
+    } else {
+        $stmt = $conn->prepare('SELECT nama_ruangan FROM ruangan WHERE id = ?');
+        $stmt->bind_param('i', $unitId);
+        $stmt->execute();
+        $namaRuangan = $stmt->get_result()->fetch_column();
+    }
+
+    if (mb_strtoupper(trim((string) $namaRuangan), 'UTF-8') === 'POLI') {
+        $isExistingJenisPoli = $existingJenisPoli !== null
+            && $jenisPoli !== ''
+            && $jenisPoli === $existingJenisPoli;
+        if (!in_array($jenisPoli, poliJenisOptions(), true) && !$isExistingJenisPoli) {
+            $errors[] = 'Jenis poli wajib dipilih.';
+        }
+    } else {
+        $jenisPoli = '';
+    }
+
+    if ($waktuKejadian === false) {
+        $errors[] = 'Waktu kejadian/laporan diterima tidak valid.';
+        $waktuKejadian = null;
+    } elseif ($waktuKejadian !== null) {
+        $tanggal = substr($waktuKejadian, 0, 10);
     }
 
     if ($tanggal === '') {
@@ -140,7 +209,9 @@ function validateLaporanInput(mysqli $conn, array $input): array
     return [[
         'barang_id' => $barangId,
         'unit_id'   => $unitId,
+        'jenis_poli' => $jenisPoli,
         'tanggal'   => $tanggal,
+        'waktu_kejadian' => $waktuKejadian,
         'no_seri'   => $noSeri,
         'rincian'   => $rincian,
         'uraian'    => $uraian,
