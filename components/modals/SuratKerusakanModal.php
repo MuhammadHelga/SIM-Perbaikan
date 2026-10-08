@@ -24,10 +24,7 @@
                 <p id="suratModalHeaderDesc">Isi form di bawah sebelum mencetak surat pengantar kerusakan</p>
             </div>
             <!-- Badge reprint (hidden by default) -->
-            <div id="suratReprintBadge" class="surat-reprint-badge" style="display:none;">
-                <span class="material-symbols-outlined">replay</span>
-                Cetak Ulang
-            </div>
+            <div id="suratReprintBadge" class="surat-reprint-badge" style="display:none;"></div>
             <button type="button" class="modal-close" onclick="closeSuratModal()" aria-label="Tutup">
                 <span class="material-symbols-outlined">close</span>
             </button>
@@ -116,8 +113,8 @@
 
             <!-- Tombol aksi -->
             <div class="surat-modal-actions">
-                <button type="button" class="surat-btn surat-btn--outline" onclick="closeSuratModal()">
-                    <span class="material-symbols-outlined">close</span> Batal
+                <button type="button" class="surat-btn surat-btn--outline" onclick="suratCancel()">
+                    <span class="material-symbols-outlined" id="suratBtnBatalIcon">close</span> <span id="suratBtnBatalLabel">Batal</span>
                 </button>
                 <button type="button" class="surat-btn surat-btn--print" id="suratBtnCetak" disabled onclick="cetakSurat()">
                     <span class="material-symbols-outlined">print</span> Cetak Surat
