@@ -512,66 +512,49 @@ function openSuratModal(id, isReprint = false) {
     if (!row) { alert('Data laporan tidak ditemukan.'); return; }
 
     _suratCurrentId = id;
-    _suratIsReprint = !!isReprint;
+
+    // Jika nama_pelapor sudah tersimpan di DB ATAU tombol "Lihat Surat" diklik,
+    // langsung tampilkan Dokumen Surat Jadi (TTE Preview) tanpa minta isi nama lagi.
+    const hasSavedSurat = Boolean(row.nama_pelapor && String(row.nama_pelapor).trim() !== '');
+    const shouldShowPreview = Boolean(isReprint || hasSavedSurat);
+    _suratIsReprint = shouldShowPreview;
 
     // Isi info laporan
     document.getElementById('suratLaporanId').textContent = id;
     document.getElementById('suratInfoDetail').textContent =
         ' — ' + (row.barang || '?') + ' | ' + (formatUnitLocation(row) || '?');
 
-    // Ubah header modal sesuai mode
-    const headerIcon = document.getElementById('suratModalHeaderIcon');
-    const headerTitle = document.getElementById('suratModalHeaderTitle');
-    const headerDesc  = document.getElementById('suratModalHeaderDesc');
-    const approvalBox = document.getElementById('suratApprovalBox');
-
-    if (isReprint) {
-        if (headerIcon)  headerIcon.textContent  = 'print';
-        if (headerTitle) headerTitle.textContent  = 'Lihat & Cetak Ulang Surat';
-        if (headerDesc)  headerDesc.textContent   = 'Isi ulang atau langsung cetak surat kerusakan yang sudah dikirim';
-        // Tampilkan badge reprint
-        document.getElementById('suratReprintBadge').style.display = 'flex';
-        // Approval sudah tidak wajib di reprint — checkbox langsung dicentang
-        document.getElementById('suratApprovalCheck').checked = true;
-        document.getElementById('suratBtnCetak').disabled = false;
-    } else {
-        if (headerIcon)  headerIcon.textContent  = 'description';
-        if (headerTitle) headerTitle.textContent  = 'Form Surat Kerusakan';
-        if (headerDesc)  headerDesc.textContent   = 'Isi form di bawah sebelum mencetak surat pengantar kerusakan';
-        document.getElementById('suratReprintBadge').style.display = 'none';
-        document.getElementById('suratApprovalCheck').checked = false;
-        document.getElementById('suratBtnCetak').disabled = true;
-    }
-
-    // Tanggal surat & nomor: pakai yang tersimpan bila ada (agar cetak ulang konsisten),
-    // kalau belum ada pakai default hari ini / nomor otomatis (tetap bisa diedit).
+    // Tanggal surat & nomor
     const today = new Date();
     const todayStr = today.toISOString().slice(0, 10);
-    document.getElementById('suratTglSurat').value = row.tgl_surat || todayStr;
+    const tglSuratVal = row.tgl_surat || todayStr;
+    document.getElementById('suratTglSurat').value = tglSuratVal;
 
     const bulanRomawi = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
     const bln = bulanRomawi[today.getMonth()];
     const thn = today.getFullYear();
-    document.getElementById('suratNomor').value =
-        row.nomor_surat || `${String(id).padStart(3,'0')}/IT/${bln}/${thn}`;
+    const nomorVal = row.nomor_surat || `${String(id).padStart(3,'0')}/IT/${bln}/${thn}`;
+    document.getElementById('suratNomor').value = nomorVal;
 
-    // Penandatangan tersimpan (agar halaman verifikasi = surat tercetak).
-    document.getElementById('suratNamaPelapor').value = row.nama_pelapor || '';
-    document.getElementById('suratJabatan').value = row.jabatan_pelapor || '';
-    document.getElementById('suratKeterangan').value = '';
+    // Tidak auto-fill nama/jabatan agar user isi manual
+    const namaVal = (row.nama_pelapor && String(row.nama_pelapor).trim() !== '') ? row.nama_pelapor : '';
+    const jabVal  = row.jabatan_pelapor || '';
 
-    // Kode TTD & URL verifikasi diturunkan dari verify_token yang tersimpan di server
-    // (bukan dibuat di browser), supaya QR benar-benar bisa diverifikasi.
+    document.getElementById('suratNamaPelapor').value = namaVal;
+    document.getElementById('suratJabatan').value = jabVal;
+    document.getElementById('suratKeterangan').value = row.keterangan_tambahan || '';
+
+    // Kode TTD & URL verifikasi diturunkan dari verify_token tersimpan
     const verifyToken = String(row.verify_token || '');
     const ttdCode = buildTtdCode(id, verifyToken);
     document.getElementById('suratTtdCode').textContent = ttdCode;
 
-    // URL verifikasi (token saja, tanpa ID internal) yang di-encode ke QR Code.
+    // URL verifikasi QR Code
     const host = window.location.origin;
     const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi?token=${encodeURIComponent(verifyToken)}`;
     const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
-    // Render QR Code dengan logo di tengah canvas
+    // Render QR Code TTE dengan logo RS Al-Huda
     const qrCanvas = document.getElementById('suratQrCanvas');
     if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
         window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function(dataUrl) {
@@ -580,13 +563,50 @@ function openSuratModal(id, isReprint = false) {
         });
     }
 
-    // Update elemen pratinjau dokumen jadi (paper view)
-    const tglSuratVal = document.getElementById('suratTglSurat').value;
-    const nomorVal    = document.getElementById('suratNomor').value;
-    const namaVal     = document.getElementById('suratNamaPelapor').value.trim() || 'Petugas Unit IT';
-    const jabVal      = document.getElementById('suratJabatan').value.trim() || 'Penanggung Jawab / Staf IT';
-    const ketVal      = document.getElementById('suratKeterangan').value.trim();
+    // Update elemen paper view (Surat Jadi)
+    updateSuratPaperView({
+        id,
+        nomorVal,
+        tglSuratVal,
+        row,
+        namaVal,
+        jabVal,
+        ketVal: document.getElementById('suratKeterangan').value.trim(),
+        ttdCode
+    });
 
+    // Sesuaikan header modal & tampilan section
+    const headerIcon = document.getElementById('suratModalHeaderIcon');
+    const headerTitle = document.getElementById('suratModalHeaderTitle');
+    const headerDesc  = document.getElementById('suratModalHeaderDesc');
+    const formSection = document.getElementById('suratFormSection');
+    const previewSection = document.getElementById('suratDocumentPreviewSection');
+
+    if (shouldShowPreview) {
+        if (headerIcon)  headerIcon.textContent  = 'description';
+        if (headerTitle) headerTitle.textContent  = 'Surat Kerusakan Resmi (TTE)';
+        if (headerDesc)  headerDesc.textContent   = 'Dokumen surat pengantar kerusakan ber-TTE yang siap dicetak';
+        document.getElementById('suratReprintBadge').style.display = 'flex';
+        document.getElementById('suratReprintBadge').textContent = 'Surat Terbit (TTE)';
+        document.getElementById('suratApprovalCheck').checked = true;
+        if (document.getElementById('suratBtnCetak')) document.getElementById('suratBtnCetak').disabled = false;
+        if (formSection) formSection.style.display = 'none';
+        if (previewSection) previewSection.style.display = 'block';
+    } else {
+        if (headerIcon)  headerIcon.textContent  = 'edit_note';
+        if (headerTitle) headerTitle.textContent  = 'Form Surat Kerusakan';
+        if (headerDesc)  headerDesc.textContent   = 'Isi form di bawah untuk menerbitkan QR Code TTE dan surat kerusakan';
+        document.getElementById('suratReprintBadge').style.display = 'none';
+        document.getElementById('suratApprovalCheck').checked = true;
+        if (document.getElementById('suratBtnCetak')) document.getElementById('suratBtnCetak').disabled = false;
+        if (formSection) formSection.style.display = 'block';
+        if (previewSection) previewSection.style.display = 'none';
+    }
+
+    openModal('modal-surat-kerusakan');
+}
+
+function updateSuratPaperView({ id, nomorVal, tglSuratVal, row, namaVal, jabVal, ketVal, ttdCode }) {
     if (document.getElementById('pvSuratNomor')) document.getElementById('pvSuratNomor').textContent = nomorVal || '—';
     if (document.getElementById('pvSuratTgl')) document.getElementById('pvSuratTgl').textContent = formatTglIndo(tglSuratVal);
     if (document.getElementById('pvSuratId')) document.getElementById('pvSuratId').textContent = id;
@@ -599,26 +619,8 @@ function openSuratModal(id, isReprint = false) {
     if (document.getElementById('pvSuratUraian')) document.getElementById('pvSuratUraian').textContent = row.uraian || '—';
     if (document.getElementById('pvSuratKeterangan')) document.getElementById('pvSuratKeterangan').textContent = ketVal || '(tidak ada keterangan tambahan)';
     if (document.getElementById('pvSuratTtdCode')) document.getElementById('pvSuratTtdCode').textContent = ttdCode;
-    if (document.getElementById('pvSuratNamaPelapor')) document.getElementById('pvSuratNamaPelapor').textContent = namaVal;
-    if (document.getElementById('pvSuratJabatan')) document.getElementById('pvSuratJabatan').textContent = jabVal;
-
-    // Tampilkan tampilan surat jadi jika isReprint (Lihat Surat), atau form jika Kirim baru
-    const formSection = document.getElementById('suratFormSection');
-    const previewSection = document.getElementById('suratDocumentPreviewSection');
-
-    if (isReprint) {
-        if (formSection) formSection.style.display = 'none';
-        if (previewSection) previewSection.style.display = 'block';
-        if (headerTitle) headerTitle.textContent = 'Pratinjau Surat Kerusakan';
-        if (headerDesc) headerDesc.textContent = 'Dokumen surat pengantar kerusakan resmi yang sudah siap dicetak';
-    } else {
-        if (formSection) formSection.style.display = 'block';
-        if (previewSection) previewSection.style.display = 'none';
-        if (headerTitle) headerTitle.textContent = 'Form Surat Kerusakan';
-        if (headerDesc) headerDesc.textContent = 'Isi form di bawah sebelum mencetak surat pengantar kerusakan';
-    }
-
-    openModal('modal-surat-kerusakan');
+    if (document.getElementById('pvSuratNamaPelapor')) document.getElementById('pvSuratNamaPelapor').textContent = namaVal || 'Petugas Unit IT';
+    if (document.getElementById('pvSuratJabatan')) document.getElementById('pvSuratJabatan').textContent = jabVal || 'Penanggung Jawab / Staf IT';
 }
 
 function switchToFormMode() {
@@ -630,7 +632,7 @@ function switchToFormMode() {
     if (formSection) formSection.style.display = 'block';
     if (previewSection) previewSection.style.display = 'none';
     if (headerTitle) headerTitle.textContent = 'Form Surat Kerusakan';
-    if (headerDesc) headerDesc.textContent = 'Edit isian form di bawah jika ada penyesuaian';
+    if (headerDesc) headerDesc.textContent = 'Isi form di bawah sebelum mencetak surat pengantar kerusakan';
 }
 
 function closeSuratModal() {
@@ -641,13 +643,14 @@ function closeSuratModal() {
 
 function onSuratApprovalChange() {
     const checked = document.getElementById('suratApprovalCheck').checked;
-    document.getElementById('suratBtnCetak').disabled = !checked;
+    const btnCetak = document.getElementById('suratBtnCetak');
+    if (btnCetak) btnCetak.disabled = !checked;
 }
+
+
 
 /**
  * Bangun kode TTD yang ditampilkan dari verify_token yang tersimpan di server.
- * Kode ini sama persis dengan yang dihitung halaman verifikasi (PHP), sehingga
- * surat tercetak dan halaman verifikasi selalu konsisten.
  */
 function buildTtdCode(id, token) {
     const suffix = String(token || '').slice(0, 6).toUpperCase() || 'XXXXXX';
@@ -659,7 +662,7 @@ function buildTtdCode(id, token) {
  * 1. Validasi form
  * 2. Bangun HTML surat dengan QR Code Berlogo
  * 3. Buka window print baru
- * 4. Kirim POST /laporan/kirim/{id} untuk update status
+ * 4. Kirim POST /laporan/surat/{id} untuk simpan & update status
  */
 function cetakSurat() {
     let namaPelapor = document.getElementById('suratNamaPelapor').value.trim();
@@ -670,12 +673,9 @@ function cetakSurat() {
     const ttdCode     = document.getElementById('suratTtdCode').textContent;
     const isReprint   = _suratIsReprint;
 
-    // Cetak pertama wajib lengkap; cetak ulang dokumen lama boleh pakai default.
-    if (!isReprint) {
-        if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); document.getElementById('suratNamaPelapor').focus(); return; }
-        if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); document.getElementById('suratJabatan').focus(); return; }
-        if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); document.getElementById('suratTglSurat').focus(); return; }
-    }
+    if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); document.getElementById('suratNamaPelapor').focus(); return; }
+    if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); document.getElementById('suratJabatan').focus(); return; }
+    if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); document.getElementById('suratTglSurat').focus(); return; }
     namaPelapor = namaPelapor || 'Petugas Unit IT';
     jabatan     = jabatan || 'Penanggung Jawab / Staf IT';
     tglSurat    = tglSurat || new Date().toISOString().slice(0, 10);
@@ -684,10 +684,8 @@ function cetakSurat() {
     const row = findLaporanById(id);
     if (!row) return;
 
-    // Format tanggal
     const tglFmt = formatTglIndo(tglSurat);
 
-    // QR Code sebagai Data URL dari canvas
     const canvas = document.getElementById('suratQrCanvas');
     const qrImg = canvas ? canvas.toDataURL('image/png') : '';
 
@@ -695,7 +693,6 @@ function cetakSurat() {
         nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id
     });
 
-    // Buka window cetak
     const pw = window.open('', '_blank', 'width=900,height=700');
     if (!pw) { alert('Pop-up diblokir browser. Izinkan pop-up untuk mencetak.'); return; }
     pw.document.write(html);
@@ -705,10 +702,6 @@ function cetakSurat() {
         pw.print();
     };
 
-    // Tutup modal, lalu simpan data penandatangan.
-    // mode 'kirim' (cetak pertama) sekaligus menandai barang terkirim;
-    // cetak ulang hanya menyimpan, tidak mengubah status / tgl_kirim.
-    closeSuratModal();
     postAction((window.BASE_URL || '') + '/laporan/surat/' + id, {
         nama_pelapor: namaPelapor,
         jabatan_pelapor: jabatan,
@@ -716,6 +709,8 @@ function cetakSurat() {
         tgl_surat: tglSurat,
         mode: isReprint ? 'reprint' : 'kirim'
     });
+    // Modal tetap bisa ditutup user atau setelah postAction redirect; biar tetap responsif, tutup duluan opsional
+    closeSuratModal();
 }
 
 function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id }) {
