@@ -37,7 +37,9 @@ class laporankerusakanController
         $uraian_kegiatan,
         $status_penanganan,
         $prioritas = 'Sedang',
-        $id_user = null
+        $id_user = null,
+        $tipe_barang = null,
+        $id_aset = null
     ) {
         return $this->laporankerusakan->create(
             $id_barang,
@@ -50,7 +52,9 @@ class laporankerusakanController
             $uraian_kegiatan,
             $status_penanganan,
             $prioritas,
-            $id_user
+            $id_user,
+            $tipe_barang,
+            $id_aset
         );
     }
 
@@ -65,7 +69,9 @@ class laporankerusakanController
         $rincian_kerusakan,
         $uraian_kegiatan,
         $status_penanganan,
-        $prioritas = 'Sedang'
+        $prioritas = 'Sedang',
+        $tipe_barang = null,
+        $id_aset = null
     ) {
         return $this->laporankerusakan->update(
             $id,
@@ -78,7 +84,9 @@ class laporankerusakanController
             $rincian_kerusakan,
             $uraian_kegiatan,
             $status_penanganan,
-            $prioritas
+            $prioritas,
+            $tipe_barang,
+            $id_aset
         );
     }
 

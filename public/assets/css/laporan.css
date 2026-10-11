@@ -422,13 +422,14 @@ main.page-wrap {
   table-layout: fixed;
 }
 
-.data-table col.col-tgl { width: 9%; }
-.data-table col.col-urusan { width: 11%; }
-.data-table col.col-barang { width: 10%; }
-.data-table col.col-sn { width: 10%; }
-.data-table col.col-kerusakan { width: 15%; }
-.data-table col.col-uraian { width: 15%; }
-.data-table col.col-hasil { width: 8%; }
+.data-table col.col-tgl { width: 8%; }
+.data-table col.col-urusan { width: 10%; }
+.data-table col.col-barang { width: 9%; }
+.data-table col.col-tipe { width: 9%; }
+.data-table col.col-sn { width: 9%; }
+.data-table col.col-kerusakan { width: 13%; }
+.data-table col.col-uraian { width: 13%; }
+.data-table col.col-hasil { width: 7%; }
 .data-table col.col-tgl-kirim { width: 230px; }
 .data-table col.col-aksi { width: 105px; }
 
@@ -446,6 +447,10 @@ main.page-wrap {
 .col-tgl-kirim {
   width: 230px;
   min-width: 210px;
+}
+
+.col-tipe {
+  width: 9%;
 }
 
 .col-aksi {

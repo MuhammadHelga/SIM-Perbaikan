@@ -8,6 +8,7 @@ $perPage      = $perPage ?? 25;
 $page         = $page ?? 1;
 $totalPages   = $totalPages ?? 1;
 $totalRows    = $totalRows ?? count($laporanList);
+$asetList     = $asetList ?? [];
 
 $namaBulan = [
     1=>'Januari',
@@ -253,6 +254,7 @@ if ($search !== '') {
                         <col class="col-tgl">
                         <col class="col-urusan">
                         <col class="col-barang">
+                        <col class="col-tipe">
                         <col class="col-sn">
                         <col class="col-kerusakan">
                         <col class="col-uraian">
@@ -265,6 +267,7 @@ if ($search !== '') {
                             <th class="col-tgl">Tanggal</th>
                             <th class="col-urusan">Urusan/Ruangan</th>
                             <th class="col-barang">Barang</th>
+                            <th class="col-tipe">Tipe</th>
                             <th class="col-sn">Serial Number</th>
                             <th class="col-kerusakan">Kerusakan</th>
                             <th class="col-uraian">Uraian Kegiatan</th>
@@ -282,6 +285,7 @@ if ($search !== '') {
                         <col class="col-tgl">
                         <col class="col-urusan">
                         <col class="col-barang">
+                        <col class="col-tipe">
                         <col class="col-sn">
                         <col class="col-kerusakan">
                         <col class="col-uraian">
@@ -291,13 +295,14 @@ if ($search !== '') {
                     </colgroup>
                     <tbody>
                     <?php if (!$laporanList): ?>
-                        <tr><td colspan="9" class="empty-row">Belum ada laporan.</td></tr>
+                        <tr><td colspan="10" class="empty-row">Belum ada laporan.</td></tr>
                     <?php endif; ?>
                     <?php foreach ($laporanList as $row): ?>
                         <tr>
                             <td class="nowrap col-tgl"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
                             <td class="col-urusan"><?= htmlspecialchars(trim($row['urusan'] . (!empty($row['jenis_poli']) ? ' - ' . $row['jenis_poli'] : ''))) ?></td>
                             <td class="col-barang"><?= htmlspecialchars($row['barang']) ?></td>
+                            <td class="col-tipe"><?= htmlspecialchars(!empty($row['tipe_barang']) ? $row['tipe_barang'] : '-') ?></td>
                             <td class="col-sn"><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
                             <td class="truncate col-kerusakan" title="<?= htmlspecialchars($row['kerusakan']) ?>"><?= htmlspecialchars($row['kerusakan']) ?></td>
                             <td class="truncate col-uraian" title="<?= htmlspecialchars($row['uraian']) ?>"><?= htmlspecialchars($row['uraian']) ?></td>
@@ -436,6 +441,7 @@ if ($search !== '') {
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
 <?php include __DIR__ . '/../../../../components/modals/SuratKerusakanModal.php'; ?>
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
+<script id="asetDataJson" type="application/json"><?= json_encode($asetList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/laporan.js') ?>"></script>

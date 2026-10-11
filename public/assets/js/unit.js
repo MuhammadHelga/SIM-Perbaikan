@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     initUnitTableSync('ruanganScroll', 'ruanganHeadWrap');
     initUnitTableSync('barangScroll',  'barangHeadWrap');
+    initUnitTableSync('asetScroll',    'asetHeadWrap');
 });
 
 function initUnitTableSync(scrollId, headId) {
@@ -115,4 +116,50 @@ function openConfirmModal({ icon, title, text, confirmLabel, variant = 'primary'
     });
 
     openModal('modal-konfirmasi');
+}
+
+// ===== Aset Barang (unit fisik per ruangan) =====
+
+function openAsetModal() {
+    const form = document.getElementById('form-aset');
+    form.reset();
+    document.getElementById('aset-id').value = '';
+    form.action = (window.BASE_URL || '') + '/unit/aset/simpan';
+
+    document.getElementById('asetModalIcon').textContent = 'devices';
+    document.getElementById('asetModalTitle').textContent = 'Tambah Aset Barang';
+    document.getElementById('asetModalDesc').textContent = 'Daftarkan unit fisik barang di suatu ruangan';
+
+    openModal('modal-aset');
+}
+
+function openAsetEdit(btn) {
+    const form = document.getElementById('form-aset');
+
+    document.getElementById('aset-id').value          = btn.dataset.id || '';
+    document.getElementById('aset-ruangan').value     = btn.dataset.idRuangan || '';
+    document.getElementById('aset-barang').value      = btn.dataset.idBarang || '';
+    document.getElementById('aset-serial').value      = btn.dataset.serial || '';
+    document.getElementById('aset-tipe').value        = btn.dataset.tipe || '';
+    document.getElementById('aset-keterangan').value  = btn.dataset.keterangan || '';
+    form.action = (window.BASE_URL || '') + '/unit/aset/simpan';
+
+    document.getElementById('asetModalIcon').textContent = 'edit';
+    document.getElementById('asetModalTitle').textContent = 'Edit Aset Barang';
+    document.getElementById('asetModalDesc').textContent = 'Perbarui data unit fisik barang';
+
+    openModal('modal-aset');
+}
+
+function confirmAsetDelete(id, serial) {
+    openConfirmModal({
+        icon: 'delete',
+        title: 'Hapus Aset Barang',
+        text: 'Yakin hapus aset "' + serial + '"? Laporan yang pernah memakainya tetap utuh.',
+        confirmLabel: 'Ya, Hapus',
+        variant: 'red',
+        onConfirm: function () {
+            postAction((window.BASE_URL || '') + '/unit/aset/hapus/' + id);
+        }
+    });
 }

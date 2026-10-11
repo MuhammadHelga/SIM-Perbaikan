@@ -101,6 +101,7 @@ class RuangService
             'peakMonths'    => $peakMonths,
             'peakTotal'     => $peakTotal,
             'jumlahRuangan' => $jumlahRuangan,
+            'kecepatanServis' => $this->laporan->avgServiceDurationDays($tahun),
         ];
     }
 }

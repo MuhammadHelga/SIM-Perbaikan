@@ -143,7 +143,10 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
     $tanggal      = trim((string) ($input['tanggal'] ?? ''));
     $waktuKejadianInput = trim((string) ($input['waktu_kejadian'] ?? ''));
     $waktuKejadian = parseLocalDateTime($waktuKejadianInput);
+    $asetId       = (int) ($input['aset_id'] ?? 0);
     $noSeri       = trim((string) ($input['no_seri'] ?? ''));
+    $noSeriManual = trim((string) ($input['no_seri_manual'] ?? ''));
+    $tipe         = trim((string) ($input['tipe_barang'] ?? ''));
     $rincian      = trim((string) ($input['rincian_kerusakan'] ?? ''));
     $uraian       = trim((string) ($input['uraian_kegiatan'] ?? ''));
     $status       = (string) ($input['status'] ?? '');
@@ -160,6 +163,36 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
         $stmt->bind_param('i', $unitId);
         $stmt->execute();
         $namaRuangan = $stmt->get_result()->fetch_column();
+    }
+
+    // Bila aset dipilih dari daftar: pastikan cocok dengan unit & barang, lalu
+    // isi serial & tipe dari aset (tidak percaya nilai kiriman untuk kedua itu).
+    $asetTipe = null;
+    if ($asetId > 0) {
+        $stmt = $conn->prepare(
+            'SELECT id_ruangan, id_barang, serial_number, tipe FROM aset_barang WHERE id = ? LIMIT 1'
+        );
+        $stmt->bind_param('i', $asetId);
+        $stmt->execute();
+        $asetRow = $stmt->get_result()->fetch_assoc();
+
+        if (!$asetRow
+            || (int) $asetRow['id_ruangan'] !== $unitId
+            || (int) $asetRow['id_barang'] !== $barangId) {
+            $errors[] = 'Aset terpilih tidak sesuai unit/ruangan dan jenis barang.';
+            $asetId = 0;
+        } else {
+            $noSeri   = $asetRow['serial_number'];
+            $asetTipe = $asetRow['tipe'];
+        }
+    }
+
+    // Fallback: serial ketik manual (dipakai bila tidak memilih aset).
+    if ($noSeri === '') {
+        $noSeri = $noSeriManual;
+    }
+    if ($asetTipe !== null && $asetTipe !== '') {
+        $tipe = $asetTipe;
     }
 
     if (mb_strtoupper(trim((string) $namaRuangan), 'UTF-8') === 'POLI') {
@@ -198,6 +231,9 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
     if (mb_strlen($noSeri) > 50) {
         $errors[] = 'No seri maksimal 50 karakter.';
     }
+    if (mb_strlen($tipe) > 80) {
+        $errors[] = 'Tipe barang maksimal 80 karakter.';
+    }
 
     if (!in_array($status, $statusList, true)) {
         $errors[] = 'Status penanganan tidak valid.';
@@ -212,7 +248,9 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
         'jenis_poli' => $jenisPoli,
         'tanggal'   => $tanggal,
         'waktu_kejadian' => $waktuKejadian,
+        'aset_id'   => $asetId > 0 ? $asetId : null,
         'no_seri'   => $noSeri,
+        'tipe'      => $tipe,
         'rincian'   => $rincian,
         'uraian'    => $uraian,
         'status'    => $status,

@@ -281,6 +281,84 @@
     background-image: none;
 }
 
+.form-body input.is-readonly {
+    background-color: #f1f5f9;
+    color: #475569;
+    cursor: not-allowed;
+}
+
+[data-theme='dark'] .form-body input.is-readonly {
+    background-color: #273449;
+    color: #cbd5e1;
+}
+
+/* ============================================================
+   Modal Tambah/Edit/Detail Laporan
+   Kop (header) tetap terlihat, isi form yang men-scroll,
+   dan tombol aksi menempel di bawah. Semua ter-scope agar
+   modal lain yang memakai .form-card tidak terpengaruh.
+   ============================================================ */
+
+#modal-form-laporan.modal-overlay {
+    align-items: flex-start;
+    padding: 24px 16px;
+}
+
+#modal-form-laporan .form-card {
+    margin: auto;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100vh - 48px);
+    max-height: min(880px, calc(100dvh - 48px));
+    overflow: hidden;
+}
+
+#modal-form-laporan .form-header {
+    flex-shrink: 0;
+}
+
+#modal-form-laporan .form-body {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: 0;
+}
+
+/* Footer aksi menempel di dasar area scroll (tanpa celah bawah) */
+#modal-form-laporan .form-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 12px -24px 0;
+    padding: 14px 24px;
+    background: #ffffff;
+    border-top: 1px solid #e2e8f0;
+    box-shadow: 0 -8px 14px -10px rgba(15, 23, 42, 0.25);
+}
+
+/* Judul seksi */
+.form-section-title {
+    margin: 6px 0 -4px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #64748b;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+[data-theme='dark'] .form-section-title {
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+[data-theme='dark'] #modal-form-laporan .form-actions {
+    background: #1e293b;
+    border-color: #334155;
+}
+
 /* ===== Responsif ===== */
 @media (max-width: 640px) {
     .form-card {
@@ -294,5 +372,12 @@
     }
     .form-header {
         padding: 16px;
+    }
+    #modal-form-laporan .form-body {
+        padding-bottom: 0;
+    }
+    #modal-form-laporan .form-actions {
+        margin: 12px -18px 0;
+        padding: 12px 18px;
     }
 }

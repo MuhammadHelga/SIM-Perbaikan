@@ -1,8 +1,10 @@
 <?php
 $ruanganList  = $ruanganList ?? [];
 $barangList   = $barangList ?? [];
+$asetList     = $asetList ?? [];
 $totalRuangan = count($ruanganList);
 $totalBarang  = count($barangList);
+$totalAset    = count($asetList);
 ?>
 <!DOCTYPE html>
 <html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
@@ -15,7 +17,7 @@ $totalBarang  = count($barangList);
     <!-- Font Poppins & Material Symbols -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20,400,0,0" rel="stylesheet">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/unit.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/unit.css?v=<?= filemtime(BASE_PATH . '/public/assets/css/unit.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/navbar.css?v=<?= filemtime(dirname(__DIR__, 4) . '/public/assets/css/navbar.css') ?>">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/modal.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/tambah-laporan-modal.css">
@@ -48,6 +50,16 @@ $totalBarang  = count($barangList);
                 </div>
                 <div class="card-icon bg-teal">
                     <span class="material-symbols-outlined">inventory_2</span>
+                </div>
+            </div>
+
+            <div class="card border-purple">
+                <div class="card-body">
+                    <span class="card-subtitle">TOTAL ASET</span>
+                    <div class="card-value text-purple"><?= $totalAset ?> <small>Unit Fisik</small></div>
+                </div>
+                <div class="card-icon bg-purple">
+                    <span class="material-symbols-outlined">devices</span>
                 </div>
             </div>
         </div>
@@ -190,6 +202,83 @@ $totalBarang  = count($barangList);
             </div>
 
         </div>
+
+        <!-- Full width: Daftar Aset Barang -->
+        <div class="table-card table-card--full">
+            <div class="table-header">
+                <div class="header-title">
+                    <div class="icon-badge bg-purple"><span class="material-symbols-outlined">devices</span></div>
+                    <h3>Daftar Aset Barang</h3>
+                </div>
+                <button class="btn btn-primary" onclick="openAsetModal()">
+                    <span class="material-symbols-outlined">add_circle</span> Tambah Aset
+                </button>
+            </div>
+            <div class="unit-head-wrap" id="asetHeadWrap">
+                <table class="data-table">
+                    <colgroup>
+                        <col style="width:6%">
+                        <col style="width:18%">
+                        <col style="width:18%">
+                        <col style="width:16%">
+                        <col style="width:22%">
+                        <col style="width:14%">
+                    </colgroup>
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Ruang</th>
+                            <th>Barang</th>
+                            <th>Serial Number</th>
+                            <th>Tipe / Model</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+            <div class="table-responsive" id="asetScroll">
+                <table class="data-table">
+                    <colgroup>
+                        <col style="width:6%">
+                        <col style="width:18%">
+                        <col style="width:18%">
+                        <col style="width:16%">
+                        <col style="width:22%">
+                        <col style="width:14%">
+                    </colgroup>
+                    <tbody>
+                        <?php if (!$asetList): ?>
+                            <tr><td colspan="6">Belum ada aset. Tambahkan aset fisik (ruangan + barang + serial) agar pilihan di form laporan otomatis tersaring.</td></tr>
+                        <?php endif; ?>
+                        <?php foreach ($asetList as $i => $a): ?>
+                            <tr>
+                                <td><?= $i + 1 ?></td>
+                                <td><?= htmlspecialchars($a['nama_ruangan']) ?></td>
+                                <td><?= htmlspecialchars($a['nama_barang']) ?></td>
+                                <td><?= htmlspecialchars($a['serial_number']) ?></td>
+                                <td><?= $a['tipe'] !== null && $a['tipe'] !== '' ? htmlspecialchars($a['tipe']) : '-' ?></td>
+                                <td class="action-buttons">
+                                    <button type="button" class="icon-action text-warning" title="Edit"
+                                        data-id="<?= (int)$a['id'] ?>"
+                                        data-id-ruangan="<?= (int)$a['id_ruangan'] ?>"
+                                        data-id-barang="<?= (int)$a['id_barang'] ?>"
+                                        data-serial="<?= htmlspecialchars($a['serial_number'], ENT_QUOTES) ?>"
+                                        data-tipe="<?= htmlspecialchars($a['tipe'] ?? '', ENT_QUOTES) ?>"
+                                        data-keterangan="<?= htmlspecialchars($a['keterangan'] ?? '', ENT_QUOTES) ?>"
+                                        onclick="openAsetEdit(this)">
+                                        <span class="material-symbols-outlined">edit</span>
+                                    </button>
+                                    <button type="button" class="icon-action text-danger" title="Hapus"
+                                        onclick="confirmAsetDelete(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($a['serial_number'], ENT_QUOTES) ?>')">
+                                        <span class="material-symbols-outlined">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <!-- Modal tambah/edit unit & barang (gaya sama seperti modal laporan) -->
@@ -238,6 +327,87 @@ $totalBarang  = count($barangList);
         </div>
     </div>
 
+    <!-- Modal tambah/edit aset barang (unit fisik per ruangan) -->
+    <div class="modal-overlay" id="modal-aset">
+        <div class="form-card">
+            <div class="form-header">
+                <div class="header-icon">
+                    <span class="material-symbols-outlined" id="asetModalIcon">devices</span>
+                </div>
+                <div class="header-text">
+                    <h2 id="asetModalTitle">Tambah Aset Barang</h2>
+                    <p id="asetModalDesc">Daftarkan unit fisik barang di suatu ruangan</p>
+                </div>
+                <button type="button" class="modal-close" onclick="closeModal('modal-aset')" aria-label="Tutup">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <form method="post" class="form-body" id="form-aset">
+                <?= csrfField() ?>
+                <input type="hidden" name="id" id="aset-id" value="">
+
+                <div class="form-group">
+                    <label for="aset-ruangan">Unit/Ruangan</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">meeting_room</span>
+                        <select id="aset-ruangan" name="id_ruangan" required>
+                            <option value="" disabled selected>Pilih Unit / Ruang</option>
+                            <?php foreach ($ruanganList as $r): ?>
+                                <option value="<?= (int)$r['id'] ?>"><?= htmlspecialchars($r['nama_ruangan']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="aset-barang">Jenis Barang</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">inventory_2</span>
+                        <select id="aset-barang" name="id_barang" required>
+                            <option value="" disabled selected>Pilih Jenis Barang</option>
+                            <?php foreach ($barangList as $b): ?>
+                                <option value="<?= (int)$b['id'] ?>"><?= htmlspecialchars($b['nama_barang']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="aset-serial">Serial Number</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">tag</span>
+                        <input type="text" id="aset-serial" name="serial_number" placeholder="Contoh: SN-1234" maxlength="50" required>
+                    </div>
+                    <small class="form-hint">Harus unik; dipakai sebagai pilihan di form laporan.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="aset-tipe">Tipe / Model <span class="form-label-optional">(opsional)</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">build</span>
+                        <input type="text" id="aset-tipe" name="tipe" placeholder="Contoh: Epson L3110 / Dell OptiPlex" maxlength="80">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="aset-keterangan">Keterangan <span class="form-label-optional">(opsional)</span></label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">notes</span>
+                        <input type="text" id="aset-keterangan" name="keterangan" placeholder="Catatan tambahan" maxlength="200">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeModal('modal-aset')">Batal</button>
+                    <button type="submit" class="btn-simpan">
+                        <span class="material-symbols-outlined">save</span> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal konfirmasi (sama seperti halaman laporan) -->
     <div class="modal-overlay" id="modal-konfirmasi">
         <div class="confirm-card">
@@ -254,6 +424,6 @@ $totalBarang  = count($barangList);
     </div>
 
     <script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
-    <script src="<?= BASE_URL ?>/assets/js/unit.js"></script>
+    <script src="<?= BASE_URL ?>/assets/js/unit.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/unit.js') ?>"></script>
 </body>
 </html>

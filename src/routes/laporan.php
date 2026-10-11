@@ -256,6 +256,10 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
         $ruanganList = $service->getRuangan();
         $barangList  = $service->getBarang();
+        $asetList    = (function () use ($conn): array {
+            require_once __DIR__ . '/../controllers/asetBarangController.php';
+            return (new asetBarangController($conn))->index();
+        })();
 
         require __DIR__ . '/../views/laporan/screens/LaporanView.php';
     });
@@ -317,7 +321,9 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
                     $data['uraian'],
                     $data['status'],
                     $data['prioritas'],
-                    $_SESSION['user_id'] ?? null
+                    $_SESSION['user_id'] ?? null,
+                    $data['tipe'] ?? null,
+                    $data['aset_id'] ?? null
                 );
                 $newId = (int) $newId;
                 if ($newId < 1 || !$laporanController->recordHistory(
@@ -398,6 +404,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
                         $data['waktu_kejadian'] ?? '',
                     ],
                     'no_seri' => ['Nomor seri', $existing['serial_number'] ?? '', $data['no_seri']],
+                    'tipe_barang' => ['Tipe barang', $existing['tipe_barang'] ?? '', $data['tipe']],
                     'rincian_kerusakan' => ['Rincian kerusakan', $existing['rincian_kerusakan'] ?? '', $data['rincian']],
                     'uraian_kegiatan' => ['Uraian kegiatan', $existing['uraian_kegiatan'] ?? '', $data['uraian']],
                     'status_penanganan' => ['Status penanganan', $existing['status_penanganan'] ?? '', $data['status']],
@@ -432,7 +439,9 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
                     $data['rincian'],
                     $data['uraian'],
                     $data['status'],
-                    $data['prioritas']
+                    $data['prioritas'],
+                    $data['tipe'] ?? null,
+                    $data['aset_id'] ?? null
                 );
                 if (!$updated || !$laporanController->recordHistory(
                     $id,

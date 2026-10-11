@@ -70,6 +70,9 @@ class LaporanKerusakan
                     r.nama_ruangan       AS urusan,
                     lk.jenis_poli,
                     b.nama_barang        AS barang,
+                    b.id                 AS barang_id,
+                    lk.id_aset,
+                    lk.tipe_barang,
                     lk.serial_number,
                     lk.rincian_kerusakan AS kerusakan,
                     lk.uraian_kegiatan   AS uraian,
@@ -352,34 +355,43 @@ class LaporanKerusakan
         $uraian_kegiatan,
         $status_penanganan,
         $prioritas = 'Sedang',
-        $id_user = null
+        $id_user = null,
+        $tipe_barang = null,
+        $id_aset = null
     ) {
+        $id_aset = ($id_aset !== null && (int) $id_aset > 0) ? (int) $id_aset : null;
+        $tipe_barang = $tipe_barang !== null && $tipe_barang !== '' ? $tipe_barang : null;
+
         $stmt = $this->conn->prepare(
             "INSERT INTO laporan_kerusakan
             (
                 id_barang,
                 id_ruangan,
+                id_aset,
                 jenis_poli,
                 tanggal,
                 waktu_kejadian,
                 serial_number,
+                tipe_barang,
                 rincian_kerusakan,
                 uraian_kegiatan,
                 status_penanganan,
                 prioritas,
                 id_user
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
 
         $stmt->bind_param(
-            "iissssssssi",
+            "iiisssssssssi",
             $id_barang,
             $id_ruangan,
+            $id_aset,
             $jenis_poli,
             $tanggal,
             $waktu_kejadian,
             $serial_number,
+            $tipe_barang,
             $rincian_kerusakan,
             $uraian_kegiatan,
             $status_penanganan,
@@ -409,17 +421,24 @@ class LaporanKerusakan
         $rincian_kerusakan,
         $uraian_kegiatan,
         $status_penanganan,
-        $prioritas = 'Sedang'
+        $prioritas = 'Sedang',
+        $tipe_barang = null,
+        $id_aset = null
     ) {
+        $id_aset = ($id_aset !== null && (int) $id_aset > 0) ? (int) $id_aset : null;
+        $tipe_barang = $tipe_barang !== null && $tipe_barang !== '' ? $tipe_barang : null;
+
         $stmt = $this->conn->prepare(
             "UPDATE laporan_kerusakan
              SET
                 id_barang = ?,
                 id_ruangan = ?,
+                id_aset = ?,
                 jenis_poli = ?,
                 tanggal = ?,
                 waktu_kejadian = ?,
                 serial_number = ?,
+                tipe_barang = ?,
                 rincian_kerusakan = ?,
                 uraian_kegiatan = ?,
                 status_penanganan = ?,
@@ -428,13 +447,15 @@ class LaporanKerusakan
         );
 
         $stmt->bind_param(
-            "iissssssssi",
+            "iiisssssssssi",
             $id_barang,
             $id_ruangan,
+            $id_aset,
             $jenis_poli,
             $tanggal,
             $waktu_kejadian,
             $serial_number,
+            $tipe_barang,
             $rincian_kerusakan,
             $uraian_kegiatan,
             $status_penanganan,
@@ -910,5 +931,56 @@ class LaporanKerusakan
         }
 
         return array_values($index);
+    }
+
+    /**
+     * Rata-rata durasi penyelesaian (hari) laporan yang ditangani internal.
+     *
+     * Cakupan: status 'Selesai' dan tidak dikirim ke vendor (tgl_kirim IS NULL).
+     * Titik mulai  = waktu_kejadian, fallback created_at.
+     * Waktu selesai = riwayat transisi status -> 'Selesai' (atau laporan yang
+     *                 lahir berstatus 'Selesai'). Laporan tanpa baris riwayat
+     *                 yang sesuai dilewati (mode ketat).
+     *
+     * @return array{days: float|null, count: int}
+     */
+    public function avgServiceDurationDays(?int $tahun = null): array
+    {
+        $types  = [];
+        $params = [];
+        $where  = $this->periodeClause($tahun, null, $types, $params);
+
+        $stmt = $this->conn->prepare(
+            "SELECT AVG(GREATEST(0, TIMESTAMPDIFF(HOUR,
+                        COALESCE(lk.waktu_kejadian, lk.created_at), h.finish_at)) / 24) AS avg_days,
+                    COUNT(*) AS n
+             FROM laporan_kerusakan lk
+             INNER JOIN (
+                 SELECT laporan_id,
+                        MIN(CASE
+                              WHEN detail LIKE ? THEN created_at
+                              WHEN aksi = 'Laporan dibuat' AND detail LIKE ? THEN created_at
+                            END) AS finish_at
+                 FROM laporan_riwayat
+                 GROUP BY laporan_id
+             ) h ON h.laporan_id = lk.id
+             WHERE lk.status_penanganan = 'Selesai'
+               AND lk.tgl_kirim IS NULL
+               AND h.finish_at IS NOT NULL"
+            . $where
+        );
+
+        $bindTypes  = 'ss' . implode('', $types);
+        $bindParams = array_merge(['Status penanganan:%→ Selesai%', '%status Selesai%'], $params);
+        $stmt->bind_param($bindTypes, ...$bindParams);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+
+        $avg = $row['avg_days'] ?? null;
+
+        return [
+            'days'  => $avg === null ? null : (float) $avg,
+            'count' => (int) ($row['n'] ?? 0),
+        ];
     }
 }

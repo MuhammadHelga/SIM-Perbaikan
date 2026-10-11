@@ -24,6 +24,7 @@
             <?= csrfField() ?>
             <input type="hidden" id="form-laporan-id" name="id" value="">
 
+            <h3 class="form-section-title">Waktu Laporan</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label for="tanggal">Tanggal laporan</label>
@@ -34,7 +35,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="waktu_kejadian">Waktu kejadian / Laporan diterima <span class="form-label-optional">(opsional)</span></label>
+                    <label for="waktu_kejadian">Waktu kejadian <span class="form-label-optional">(opsional)</span></label>
                     <div class="input-icon-wrapper">
                         <span class="material-symbols-outlined field-icon">schedule</span>
                         <input type="datetime-local" id="waktu_kejadian" name="waktu_kejadian" value="<?= date('Y-m-d\TH:i') ?>">
@@ -51,6 +52,7 @@
                 <div class="form-group"></div>
             </div>
 
+            <h3 class="form-section-title">Lokasi &amp; Perangkat</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label for="unit">Unit/Ruangan</label>
@@ -63,6 +65,20 @@
                             <?php endforeach; ?>
                         </select>
                     </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="jenis_barang">Jenis Barang</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">inventory_2</span>
+                        <select id="jenis_barang" name="barang_id" required>
+                            <option value="" disabled selected>Pilih Jenis Barang</option>
+                            <?php foreach (($barangList ?? []) as $barang): ?>
+                                <option value="<?= (int)$barang['id'] ?>"><?= htmlspecialchars($barang['nama_barang']) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <small class="form-hint" id="barang-filter-hint" style="display:none;"></small>
                 </div>
             </div>
 
@@ -79,29 +95,32 @@
                 </div>
             </div>
 
+            <h3 class="form-section-title">Identitas Perangkat</h3>
             <div class="form-row">
-                <div class="form-group">
-                    <label for="jenis_barang">Jenis Barang</label>
-                    <div class="input-icon-wrapper">
-                        <span class="material-symbols-outlined field-icon">inventory_2</span>
-                        <select id="jenis_barang" name="barang_id" required>
-                            <option value="" disabled selected>Pilih Jenis Barang</option>
-                            <?php foreach (($barangList ?? []) as $barang): ?>
-                                <option value="<?= (int)$barang['id'] ?>"><?= htmlspecialchars($barang['nama_barang']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </div>
-                </div>
-
                 <div class="form-group">
                     <label for="no_seri">No Seri</label>
                     <div class="input-icon-wrapper">
                         <span class="material-symbols-outlined field-icon">tag</span>
-                        <input type="text" id="no_seri" name="no_seri" placeholder="Contoh: SN-1234">
+                        <select id="no_seri" name="no_seri">
+                            <option value="" disabled selected>Pilih No Seri</option>
+                            <option value="" class="no-seri-manual-option">&#10133; Ketik manual&hellip;</option>
+                        </select>
+                        <input type="text" id="no_seri_manual" name="no_seri_manual" placeholder="Contoh: SN-1234" maxlength="50" autocomplete="off" style="display:none;">
+                        <input type="hidden" id="aset_id" name="aset_id" value="">
+                    </div>
+                    <small class="form-hint">Serial bisa dipilih dari aset ruangan atau manual.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="tipe_barang">Tipe / Model</label>
+                    <div class="input-icon-wrapper">
+                        <span class="material-symbols-outlined field-icon">build</span>
+                        <input type="text" id="tipe_barang" name="tipe_barang" placeholder="Otomatis dari aset / ketik manual" maxlength="80" autocomplete="off">
                     </div>
                 </div>
             </div>
 
+            <h3 class="form-section-title">Detail Pekerjaan</h3>
             <div class="form-group">
                 <label for="rincian_kerusakan">Rincian Kerusakan</label>
                 <textarea id="rincian_kerusakan" name="rincian_kerusakan" rows="3" placeholder="Contoh: SIMRS admisi tidak bisa" required></textarea>
@@ -112,6 +131,7 @@
                 <textarea id="uraian_kegiatan" name="uraian_kegiatan" rows="3" placeholder="Contoh: Melakukan konfigurasi jaringan IP static"></textarea>
             </div>
 
+            <h3 class="form-section-title">Status &amp; Prioritas</h3>
             <div class="form-row">
                 <div class="form-group">
                     <label for="status">Status Penanganan</label>
@@ -140,6 +160,11 @@
                 </div>
             </div>
 
+            <section class="laporan-history" id="laporanHistory" hidden aria-labelledby="laporanHistoryTitle">
+                <h3 id="laporanHistoryTitle">Riwayat Perubahan</h3>
+                <ol class="laporan-history__list" id="laporanHistoryList" aria-live="polite"></ol>
+            </section>
+
             <div class="form-actions" id="formLaporanActions">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-form-laporan')">Batal</button>
                 <button type="submit" class="btn-simpan" id="formLaporanSubmitBtn">
@@ -150,11 +175,6 @@
             <div class="form-actions" id="formLaporanViewActions" style="display:none;">
                 <button type="button" class="btn btn-outline" onclick="closeModal('modal-form-laporan')">Tutup</button>
             </div>
-
-            <section class="laporan-history" id="laporanHistory" hidden aria-labelledby="laporanHistoryTitle">
-                <h3 id="laporanHistoryTitle">Riwayat Perubahan</h3>
-                <ol class="laporan-history__list" id="laporanHistoryList" aria-live="polite"></ol>
-            </section>
         </form>
     </div>
 </div>

@@ -8,6 +8,7 @@ $totalPerBulan = $totalPerBulan ?? array_fill(1, 12, 0);
 $topUnit       = $topUnit ?? null;
 $peakMonths    = $peakMonths ?? [];
 $peakTotal     = $peakTotal ?? 0;
+$kecepatanServis = $kecepatanServis ?? ['days' => null, 'count' => 0];
 $jumlahRuangan = $jumlahRuangan ?? 0;
 
 $namaBulan = [
@@ -29,6 +30,15 @@ $cetakQuery = http_build_query(array_filter([
     'sort'  => $sort,
 ], fn($v) => $v !== '' && $v !== null));
 $cetakUrl = BASE_URL . '/ruang/cetak' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
+
+$kecepatanDays  = $kecepatanServis['days'];
+$kecepatanCount = (int) ($kecepatanServis['count'] ?? 0);
+$kecepatanLabel = $kecepatanDays !== null
+    ? number_format((float) $kecepatanDays, 1, ',', '.') . ' Hari'
+    : '—';
+$kecepatanNote  = $kecepatanCount > 0
+    ? 'Rata-rata dari ' . $kecepatanCount . ' laporan selesai'
+    : 'Belum ada data';
 ?>
 <!DOCTYPE html>
 <html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
@@ -91,8 +101,8 @@ $cetakUrl = BASE_URL . '/ruang/cetak' . ($cetakQuery !== '' ? '?' . $cetakQuery 
             <div class="card border-teal">
                 <div class="card-body">
                     <span class="card-subtitle">TINGKAT KECEPATAN SERVIS</span>
-                    <div class="card-value text-teal">—</div>
-                    <span class="card-footnote">Belum dihitung</span>
+                    <div class="card-value text-teal"><?= htmlspecialchars($kecepatanLabel) ?></div>
+                    <span class="card-footnote"><?= htmlspecialchars($kecepatanNote) ?></span>
                 </div>
                 <div class="card-icon bg-teal">
                     <span class="material-symbols-outlined">bolt</span>

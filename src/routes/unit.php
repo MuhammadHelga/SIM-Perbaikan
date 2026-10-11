@@ -85,14 +85,78 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         $handleUnitSimpan('barang');
     });
 
+    // Simpan (tambah/edit) aset barang: unit fisik yang menautkan ruangan & barang.
+    $handleAsetSimpan = function () use ($conn, $basePath): void {
+        requireRole($basePath, ['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            if (!csrfValid()) {
+                flash('error', 'Sesi tidak valid. Silakan coba lagi.');
+                redirect($basePath . '/unit');
+            }
+
+            require_once __DIR__ . '/../controllers/asetBarangController.php';
+
+            $id         = (int) ($_POST['id'] ?? 0);
+            $idRuangan  = (int) ($_POST['id_ruangan'] ?? 0);
+            $idBarang   = (int) ($_POST['id_barang'] ?? 0);
+            $serial     = mb_substr(trim((string) ($_POST['serial_number'] ?? '')), 0, 50);
+            $tipe       = trim((string) ($_POST['tipe'] ?? ''));
+            $keterangan = trim((string) ($_POST['keterangan'] ?? ''));
+
+            if ($idRuangan <= 0 || $idBarang <= 0 || $serial === '') {
+                flash('error', 'Ruangan, barang, dan serial number wajib diisi.');
+            } else {
+                $tipe = $tipe === '' ? null : mb_substr($tipe, 0, 80);
+                $keterangan = $keterangan === '' ? null : mb_substr($keterangan, 0, 200);
+
+                try {
+                    $asetController = new asetBarangController($conn);
+                    if ($id > 0) {
+                        $asetController->update($id, $idRuangan, $idBarang, $serial, $tipe, $keterangan);
+                        flash('success', 'Aset barang berhasil diperbarui.');
+                    } else {
+                        $asetController->store($idRuangan, $idBarang, $serial, $tipe, $keterangan);
+                        flash('success', 'Aset barang berhasil ditambahkan.');
+                    }
+                } catch (mysqli_sql_exception $e) {
+                    flash('error', 'Gagal menyimpan: serial number mungkin sudah dipakai.');
+                }
+            }
+        }
+
+        redirect($basePath . '/unit');
+    };
+
+    $router->any('/unit/aset/simpan', function () use ($handleAsetSimpan) {
+        $handleAsetSimpan();
+    });
+
+    $router->any('/unit/aset/hapus/{id:\d+}', function (array $params) use ($conn, $basePath) {
+        requireRole($basePath, ['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+            flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
+            redirect($basePath . '/unit');
+        }
+
+        require_once __DIR__ . '/../controllers/asetBarangController.php';
+        (new asetBarangController($conn))->destroy((int) $params['id']);
+
+        flash('success', 'Aset barang berhasil dihapus. Laporan yang pernah memakainya tetap utuh.');
+        redirect($basePath . '/unit');
+    });
+
     $router->any('/unit', function () use ($conn, $basePath) {
         requireRole($basePath, ['admin']);
 
         require_once __DIR__ . '/../controllers/ruanganController.php';
         require_once __DIR__ . '/../controllers/barangController.php';
+        require_once __DIR__ . '/../controllers/asetBarangController.php';
 
         $ruanganList = (new ruanganController($conn))->index()->fetch_all(MYSQLI_ASSOC);
         $barangList  = (new barangController($conn))->index()->fetch_all(MYSQLI_ASSOC);
+        $asetList    = (new asetBarangController($conn))->index();
 
         require __DIR__ . '/../views/unit_barang/screens/UnitBarangView.php';
     });

@@ -133,6 +133,7 @@ $filterLabel = $filterParts ? implode(' · ', $filterParts) : 'Tanpa filter tamb
                     <th class="nowrap">Tanggal</th>
                     <th>Urusan/Ruangan</th>
                     <th>Barang</th>
+                    <th>Tipe</th>
                     <th>No Seri</th>
                     <th>Rincian Kerusakan</th>
                     <th>Uraian Kegiatan</th>
@@ -142,7 +143,7 @@ $filterLabel = $filterParts ? implode(' · ', $filterParts) : 'Tanpa filter tamb
             </thead>
             <tbody>
                 <?php if (!$laporanList): ?>
-                    <tr><td class="empty" colspan="9">Tidak ada data untuk periode/filter ini.</td></tr>
+                    <tr><td class="empty" colspan="10">Tidak ada data untuk periode/filter ini.</td></tr>
                 <?php endif; ?>
                 <?php foreach ($laporanList as $i => $row): ?>
                     <tr>
@@ -150,6 +151,7 @@ $filterLabel = $filterParts ? implode(' · ', $filterParts) : 'Tanpa filter tamb
                         <td class="nowrap"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
                         <td><?= htmlspecialchars(trim($row['urusan'] . (!empty($row['jenis_poli']) ? ' - ' . $row['jenis_poli'] : ''))) ?></td>
                         <td><?= htmlspecialchars($row['barang']) ?></td>
+                        <td><?= htmlspecialchars(!empty($row['tipe_barang']) ? $row['tipe_barang'] : '-') ?></td>
                         <td><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
                         <td><?= htmlspecialchars($row['kerusakan']) ?></td>
                         <td><?= htmlspecialchars($row['uraian']) ?></td>

@@ -28,6 +28,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         $peakMonths    = $ruangData['peakMonths'];
         $peakTotal     = $ruangData['peakTotal'];
         $jumlahRuangan = $ruangData['jumlahRuangan'];
+        $kecepatanServis = $ruangData['kecepatanServis'];
 
         require __DIR__ . '/../views/ruang/screens/RuangView.php';
     });

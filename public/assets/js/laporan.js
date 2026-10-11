@@ -31,7 +31,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const unitSelect = document.getElementById('unit');
     if (unitSelect) {
-        unitSelect.addEventListener('change', updateJenisPoliVisibility);
+        unitSelect.addEventListener('change', function () {
+            updateJenisPoliVisibility();
+            refreshBarangOptions();
+        });
+    }
+    const jenisBarangSelect = document.getElementById('jenis_barang');
+    if (jenisBarangSelect) {
+        jenisBarangSelect.addEventListener('change', syncSerialOptions);
+    }
+    const noSeriSelect = document.getElementById('no_seri');
+    if (noSeriSelect) {
+        noSeriSelect.addEventListener('change', onNoSeriChange);
     }
     const incidentTime = document.getElementById('waktu_kejadian');
     if (incidentTime) {
@@ -84,6 +95,7 @@ function openTambahModal() {
     clearLegacyJenisPoliOption();
     form.reset();
     updateJenisPoliVisibility();
+    refreshBarangOptions();
     document.getElementById('form-laporan-id').value = '';
     document.getElementById('waktu_kejadian').value = getCurrentLocalDateTime();
     setRecordedAt(null);
@@ -259,9 +271,18 @@ function fillFormWithData(row) {
         jenisPoli.add(legacyOption);
     }
     jenisPoli.value = jenisPoliValue;
+
+    refreshBarangOptions();
+    const jenisBarang = document.getElementById('jenis_barang');
+    const rowBarangName = String(row.barang || '').trim();
+    if (rowBarangName && !hasOptionByText(jenisBarang, rowBarangName)) {
+        jenisBarang.add(new Option(row.barang, row.barang_id || '', false, true));
+    }
     selectOptionByText('jenis_barang', row.barang);
 
-    document.getElementById('no_seri').value = (row.serial_number && row.serial_number !== '-') ? row.serial_number : '';
+    syncSerialOptions();
+    restoreSerialFromRow(row);
+
     document.getElementById('rincian_kerusakan').value = row.kerusakan || '';
     document.getElementById('uraian_kegiatan').value = row.uraian || '';
 
@@ -310,6 +331,210 @@ function selectOptionByText(selectId, text) {
         opt => opt.textContent.trim().toLowerCase() === String(text).trim().toLowerCase()
     );
     select.value = match ? match.value : '';
+}
+
+function getAsetData() {
+    const el = document.getElementById('asetDataJson');
+    if (!el) return [];
+    try { return JSON.parse(el.textContent); } catch (e) { return []; }
+}
+
+function refreshBarangOptions() {
+    const select = document.getElementById('jenis_barang');
+    const unit = document.getElementById('unit');
+    const hint = document.getElementById('barang-filter-hint');
+    if (!select || !unit) return;
+
+    if (!select._fullOptions) select._fullOptions = Array.from(select.options);
+
+    const unitId = Number(unit.value || 0);
+    const asets = unitId ? getAsetData().filter(a => Number(a.id_ruangan) === unitId) : [];
+    const byBarang = new Map();
+    asets.forEach(a => {
+        if (!byBarang.has(String(a.id_barang))) byBarang.set(String(a.id_barang), a.nama_barang);
+    });
+
+    select.replaceChildren();
+    const placeholder = new Option('Pilih Jenis Barang', '');
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.add(placeholder);
+
+    let mode = 'all';
+    if (byBarang.size > 0) {
+        mode = 'filtered';
+        byBarang.forEach((name, idBarang) => {
+            const opt = new Option(name, idBarang);
+            select.add(opt);
+        });
+    } else {
+        select._fullOptions.forEach(opt => {
+            if (opt.value === '' && opt.disabled) return;
+            select.add(new Option(opt.textContent, opt.value));
+        });
+    }
+
+    if (hint) {
+        if (mode === 'filtered') {
+            hint.textContent = 'Hanya menampilkan barang yang terdaftar sebagai aset di ruangan ini.';
+            hint.style.display = 'block';
+        } else if (unitId) {
+            hint.textContent = 'Belum ada aset terdaftar untuk ruangan ini. Menampilkan semua jenis barang.';
+            hint.style.display = 'block';
+        } else {
+            hint.style.display = 'none';
+        }
+    }
+
+    clearSerialGroup();
+}
+
+function clearSerialGroup() {
+    const noSeri = document.getElementById('no_seri');
+    const manual = document.getElementById('no_seri_manual');
+    const tipe = document.getElementById('tipe_barang');
+    const asetId = document.getElementById('aset_id');
+    if (noSeri) { noSeri.style.display = ''; resetNoSeriSelect(noSeri); }
+    if (manual) { manual.style.display = 'none'; manual.value = ''; }
+    if (tipe) { tipe.value = ''; tipe.readOnly = false; tipe.classList.remove('is-readonly'); }
+    if (asetId) asetId.value = '';
+}
+
+function resetNoSeriSelect(noSeri) {
+    noSeri.replaceChildren();
+    const placeholder = new Option('Pilih No Seri', '');
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    noSeri.add(placeholder);
+    const manualOpt = new Option('\u2795 Ketik manual\u2026', '');
+    manualOpt.className = 'no-seri-manual-option';
+    noSeri.add(manualOpt);
+}
+
+function syncSerialOptions() {
+    const unit = document.getElementById('unit');
+    const barang = document.getElementById('jenis_barang');
+    const noSeri = document.getElementById('no_seri');
+    if (!noSeri) return;
+
+    resetNoSeriSelect(noSeri);
+    clearTipeGroup();
+
+    if (!unit || !barang) return;
+    const unitId = Number(unit.value || 0);
+    const barangId = Number(barang.value || 0);
+    if (!unitId || !barangId) return;
+
+    const asets = getAsetData().filter(a =>
+        Number(a.id_ruangan) === unitId && Number(a.id_barang) === barangId
+    );
+    asets.forEach(a => {
+        const opt = new Option(a.serial_number, a.serial_number);
+        opt.dataset.id_aset = String(a.id);
+        opt.dataset.tipe = a.tipe || '';
+        noSeri.add(opt);
+    });
+}
+
+function clearTipeGroup() {
+    const noSeri = document.getElementById('no_seri');
+    const manual = document.getElementById('no_seri_manual');
+    const tipe = document.getElementById('tipe_barang');
+    const asetId = document.getElementById('aset_id');
+    if (noSeri) noSeri.style.display = '';
+    if (manual) { manual.style.display = 'none'; manual.value = ''; }
+    if (tipe) { tipe.value = ''; tipe.readOnly = false; tipe.classList.remove('is-readonly'); }
+    if (asetId) asetId.value = '';
+}
+
+function onNoSeriChange() {
+    const select = document.getElementById('no_seri');
+    const manual = document.getElementById('no_seri_manual');
+    const tipe = document.getElementById('tipe_barang');
+    const asetId = document.getElementById('aset_id');
+    if (!select || !manual || !tipe || !asetId) return;
+
+    const option = select.options[select.selectedIndex];
+    const isManualOption = option && option.classList.contains('no-seri-manual-option');
+    const isAsetOption = option && option.dataset && option.dataset.id_aset;
+
+    if (isManualOption) {
+        asetId.value = '';
+        select.style.display = 'none';
+        manual.style.display = 'block';
+        tipe.readOnly = false;
+        tipe.classList.remove('is-readonly');
+        manual.focus();
+        return;
+    }
+
+    select.style.display = '';
+    manual.style.display = 'none';
+    manual.value = '';
+
+    if (isAsetOption) {
+        asetId.value = option.dataset.id_aset;
+        tipe.value = option.dataset.tipe || '';
+        tipe.readOnly = true;
+        tipe.classList.add('is-readonly');
+    } else {
+        asetId.value = '';
+        tipe.readOnly = false;
+        tipe.classList.remove('is-readonly');
+    }
+}
+
+function restoreSerialFromRow(row) {
+    const noSeri = document.getElementById('no_seri');
+    const manual = document.getElementById('no_seri_manual');
+    const tipe = document.getElementById('tipe_barang');
+    const asetId = document.getElementById('aset_id');
+    if (!noSeri) return;
+
+    resetNoSeriSelect(noSeri);
+    noSeri.style.display = '';
+
+    // Prioritaskan tautan lewat id_aset agar serial apa pun (termasuk "-") tetap
+    // terpulihkan, tanpa bergantung pada teks serial.
+    const asetIdNum = Number(row.id_aset);
+    const aset = asetIdNum
+        ? getAsetData().find(a => Number(a.id) === asetIdNum)
+        : null;
+
+    if (aset) {
+        const opt = new Option(aset.serial_number, aset.serial_number);
+        opt.dataset.id_aset = String(aset.id);
+        opt.dataset.tipe = aset.tipe || '';
+        noSeri.add(opt);
+        noSeri.value = aset.serial_number;
+        if (asetId) asetId.value = String(aset.id);
+        if (tipe) {
+            tipe.value = aset.tipe || '';
+            tipe.readOnly = true;
+            tipe.classList.add('is-readonly');
+        }
+        if (manual) { manual.style.display = 'none'; manual.value = ''; }
+        return;
+    }
+
+    // Fallback: serial manual lama. "-" tetap dianggap nilai sah (bukan kosong).
+    const serial = row.serial_number != null ? String(row.serial_number).trim() : '';
+    if (serial) {
+        noSeri.add(new Option(serial, serial));
+        noSeri.value = serial;
+    }
+    if (asetId) asetId.value = '';
+    if (tipe) {
+        tipe.value = serial ? (row.tipe_barang || '') : '';
+        tipe.readOnly = false;
+        tipe.classList.remove('is-readonly');
+    }
+    if (manual) { manual.style.display = 'none'; manual.value = ''; }
+}
+
+function hasOptionByText(select, text) {
+    const needle = String(text).trim().toLowerCase();
+    return Array.from(select.options).some(opt => opt.textContent.trim().toLowerCase() === needle);
 }
 
 function toDateInputValue(rawDate) {
