@@ -334,16 +334,16 @@ if ($search !== '') {
                                             <span class="pill-text">Dikirim: <?= htmlspecialchars($fmtTanggal($row['tgl_kirim'] ?? null)) ?></span>
                                             <button type="button" class="pill-btn pill-btn--green" onclick="terimaBarang(<?= (int)$row['id'] ?>)">Terima</button>
                                         </div>
-                                        <button type="button" class="pill-surat-btn" title="Lihat &amp; Cetak Ulang Surat" onclick="openSuratModal(<?= (int)$row['id'] ?>, true)">
-                                            <span class="material-symbols-outlined">print</span> Lihat Surat
-                                        </button>
+                                         <button type="button" class="pill-surat-btn" title="Lihat &amp; Cetak Surat" onclick="openSuratModal(<?= (int)$row['id'] ?>, true)">
+                                             <span class="material-symbols-outlined">print</span> Lihat Surat
+                                         </button>
                                     </div>
                                 <?php elseif ($row['kirim_status'] === 'diterima'): ?>
                                     <div class="pill-stack pill-stack--col">
                                         <span class="pill-text">Diterima: <?= htmlspecialchars($fmtTanggal($row['tgl_terima'] ?? null)) ?></span>
-                                        <button type="button" class="pill-surat-btn" title="Lihat &amp; Cetak Ulang Surat" onclick="openSuratModal(<?= (int)$row['id'] ?>, true)">
-                                            <span class="material-symbols-outlined">print</span> Lihat Surat
-                                        </button>
+                                         <button type="button" class="pill-surat-btn" title="Lihat &amp; Cetak Surat" onclick="openSuratModal(<?= (int)$row['id'] ?>, true)">
+                                             <span class="material-symbols-outlined">print</span> Lihat Surat
+                                         </button>
                                     </div>
                                 <?php else: ?>
                                     <?php if ($isSelesai): ?>
@@ -441,8 +441,6 @@ if ($search !== '') {
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
 <?php include __DIR__ . '/../../../../components/modals/SuratKerusakanModal.php'; ?>
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
-<script id="asetDataJson" type="application/json"><?= json_encode($asetList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
-<script>window.BASE_URL = <?= json_encode(BASE_URL) ?>; window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>;</script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/laporan.js') ?>"></script>
 </html>

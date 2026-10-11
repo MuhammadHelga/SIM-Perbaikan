@@ -83,37 +83,24 @@
                 </div>
             </div>
 
-            <!-- Pratinjau TTD Digital -->
-            <div class="surat-ttd-section">
-                <div class="surat-ttd-label">
-                    <span class="material-symbols-outlined">qr_code_2</span>
-                    <strong>Tanda Tangan Digital (QR Code TTE)</strong>
-                    <span class="surat-ttd-hint">— Kode QR unik berlogo RS Al-Huda untuk verifikasi naskah dinas</span>
-                </div>
-                <div class="surat-ttd-preview">
-                    <canvas id="suratQrCanvas" width="360" height="360" title="QR Code TTD Digital"></canvas>
-                    <div class="surat-ttd-meta">
-                        <span class="surat-ttd-code" id="suratTtdCode">—</span>
-                        <span class="surat-ttd-sub">RS Al-Huda · SIM-Perbaikan</span>
-                    </div>
-                </div>
-            </div>
+            <!-- Hidden Canvas for QR Generator -->
+            <canvas id="suratQrCanvas" width="360" height="360" style="display:none;"></canvas>
+            <span id="suratTtdCode" style="display:none;">—</span>
 
             <!-- Checklist Persetujuan -->
             <div class="surat-approval-box" id="suratApprovalBox">
                 <label class="surat-approval-label" for="suratApprovalCheck">
                     <input type="checkbox" id="suratApprovalCheck" onchange="onSuratApprovalChange()">
                     <div class="surat-approval-text">
-                        <strong>Saya menyetujui penggunaan tanda tangan digital</strong>
-                        <span>Dengan mencentang ini, saya menyatakan data pada surat ini benar dan tanda tangan digital di atas berlaku sebagai persetujuan resmi.</span>
-                        <span class="surat-reprint-note" id="suratReprintNote" style="display:none;">ℹ️ Mode cetak ulang — centang untuk mengaktifkan tombol cetak, atau langsung cetak jika sudah tercentang.</span>
+                        <strong>Saya menyetujui penggunaan tanda tangan digital (TTE)</strong>
+                        <span>Dengan mencentang ini, saya menyatakan data pada surat ini benar.</span>
                     </div>
                 </label>
             </div>
 
             <!-- Tombol aksi -->
             <div class="surat-modal-actions">
-                <button type="button" class="surat-btn surat-btn--outline" onclick="suratCancel()">
+                <button type="button" class="surat-btn surat-btn--outline" onclick="closeSuratModal()">
                     <span class="material-symbols-outlined" id="suratBtnBatalIcon">close</span> <span id="suratBtnBatalLabel">Batal</span>
                 </button>
                 <button type="button" class="surat-btn surat-btn--print" id="suratBtnCetak" disabled onclick="cetakSurat()">
@@ -191,9 +178,6 @@
 
             <!-- Tombol Aksi -->
             <div class="surat-modal-actions">
-                <button type="button" class="surat-btn surat-btn--outline" onclick="switchToFormMode()">
-                    <span class="material-symbols-outlined">edit</span> Form Isian
-                </button>
                 <button type="button" class="surat-btn surat-btn--outline" onclick="closeSuratModal()">
                     <span class="material-symbols-outlined">close</span> Tutup
                 </button>
