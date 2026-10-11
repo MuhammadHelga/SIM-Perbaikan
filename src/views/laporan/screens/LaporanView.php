@@ -413,9 +413,9 @@ if ($search !== '') {
                         <?php endforeach; ?>
 
                         <a class="pager__btn<?= $page >= $totalPages ? ' is-disabled' : '' ?>"
-                           href="<?= $page >= $totalPages ? '#' : htmlspecialchars($pageUrl($page + 1), ENT_QUOTES, 'UTF-8') ?>"
-                           <?= $page >= $totalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>
-                           aria-label="Halaman berikutnya">
+                            href="<?= $page >= $totalPages ? '#' : htmlspecialchars($pageUrl($page + 1), ENT_QUOTES, 'UTF-8') ?>"
+                            <?= $page >= $totalPages ? 'aria-disabled="true" tabindex="-1"' : '' ?>
+                            aria-label="Halaman berikutnya">
                             <span class="material-symbols-outlined">chevron_right</span>
                         </a>
                     </nav>
@@ -440,7 +440,14 @@ if ($search !== '') {
 </body>
 <?php include __DIR__ . '/../../../../components/modals/TambahLaporanModal.php'; ?>
 <?php include __DIR__ . '/../../../../components/modals/SuratKerusakanModal.php'; ?>
+<!-- Data JSON Aset dan Laporan untuk Frontend -->
+<script id="asetDataJson" type="application/json"><?= json_encode($asetList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
+<script>
+    window.BASE_URL = <?= json_encode(BASE_URL) ?>; 
+    window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>; 
+    window.CURRENT_USER_NAME = <?= json_encode($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>;
+</script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/laporan.js') ?>"></script>
 </html>
