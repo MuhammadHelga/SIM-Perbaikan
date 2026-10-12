@@ -416,7 +416,7 @@ main.page-wrap {
 
 .data-table {
   width: 100%;
-  min-width: 1180px;
+  min-width: 1024px;
   border-collapse: collapse;
   font-size: 13px;
   table-layout: fixed;
@@ -430,7 +430,7 @@ main.page-wrap {
 .data-table col.col-kerusakan { width: 13%; }
 .data-table col.col-uraian { width: 13%; }
 .data-table col.col-hasil { width: 7%; }
-.data-table col.col-tgl-kirim { width: 230px; }
+.data-table col.col-tgl-kirim { width: 190px; }
 .data-table col.col-aksi { width: 150px; }
 
 .data-table thead th {
@@ -445,8 +445,8 @@ main.page-wrap {
 }
 
 .col-tgl-kirim {
-  width: 230px;
-  min-width: 210px;
+  width: 190px;
+  min-width: 170px;
 }
 
 .col-tipe {
