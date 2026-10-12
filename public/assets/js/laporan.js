@@ -215,8 +215,14 @@ function initCustomSelect(selectId) {
             if (match) shown++;
         });
         empty.style.display = shown === 0 ? 'block' : 'none';
+        clearHighlight();
+    }
+
+    function clearHighlight() {
+        list.querySelectorAll('.cs__option.is-highlight').forEach(function (el) {
+            el.classList.remove('is-highlight');
+        });
         highlight = -1;
-        setHighlight(0);
     }
 
     function sync() {
@@ -299,10 +305,10 @@ function initCustomSelect(selectId) {
             trigger.focus();
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
-            setHighlight(highlight + 1);
+            setHighlight(highlight < 0 ? 0 : highlight + 1);
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
-            setHighlight(highlight - 1);
+            setHighlight(highlight < 0 ? visibleOptions().length - 1 : highlight - 1);
         } else if (e.key === 'Enter') {
             e.preventDefault();
             const opts = visibleOptions();
