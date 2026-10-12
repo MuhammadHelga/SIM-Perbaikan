@@ -72,6 +72,10 @@ html.theme-transition .surat-modal-card,
 html.theme-transition .form-body input,
 html.theme-transition .form-body select,
 html.theme-transition .form-body textarea,
+html.theme-transition .cs__trigger,
+html.theme-transition .cs__panel,
+html.theme-transition .cs__search-wrap,
+html.theme-transition .cs__option,
 html.theme-transition .surat-input-wrap,
 html.theme-transition .surat-group textarea,
 html.theme-transition .surat-info-box,
@@ -473,6 +477,73 @@ html.theme-transition .alokasi-card {
 [data-theme='dark'] .modal-close:hover {
   background: var(--surface-2);
   color: var(--text);
+}
+
+/* Custom searchable select (Unit & Jenis Barang) */
+[data-theme='dark'] .cs__trigger {
+  background-color: var(--surface);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .cs__value.is-placeholder {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .cs__chevron {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .cs.is-disabled .cs__trigger {
+  background-color: var(--surface-2);
+  border-color: var(--border);
+  color: var(--muted);
+}
+
+[data-theme='dark'] .cs.is-disabled .cs__chevron {
+  color: var(--border);
+}
+
+[data-theme='dark'] .cs__panel {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme='dark'] .cs__search-wrap {
+  background: var(--surface-2);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .cs__search-wrap .material-symbols-outlined {
+  color: var(--muted);
+}
+
+[data-theme='dark'] .cs__search {
+  color: var(--text);
+}
+
+[data-theme='dark'] .cs__search::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+[data-theme='dark'] .cs__option {
+  color: var(--text);
+}
+
+[data-theme='dark'] .cs__option:hover,
+[data-theme='dark'] .cs__option.is-highlight {
+  background: var(--surface-2);
+}
+
+[data-theme='dark'] .cs__option.is-selected {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+[data-theme='dark'] .cs__empty {
+  color: var(--muted);
 }
 
 [data-theme='dark'] #modal-surat-kerusakan .surat-modal-card {
