@@ -88,6 +88,14 @@ function closeModal(id) {
     if (el) el.classList.remove('open');
 }
 
+// Konfigurasi header modal laporan per mode (tambah/edit/lihat).
+// Ini satu-satunya sumber teks judul, deskripsi, dan ikon — jangan set ulang di open*Modal().
+const FORM_MODES = {
+    create: { icon: 'note_add',   title: 'Tambah Laporan Baru', desc: () => 'Input catatan kerusakan perangkat fasilitas rumah sakit' },
+    edit:   { icon: 'edit',       title: 'Edit Laporan',        desc: (id) => 'Perbarui data laporan #' + id },
+    view:   { icon: 'visibility', title: 'Detail Laporan',      desc: (id) => 'Laporan #' + id + ' (hanya lihat)' },
+};
+
 function openTambahModal() {
     setFormMode('create');
     const form = document.getElementById('form-tambah-laporan');
@@ -102,10 +110,6 @@ function openTambahModal() {
     document.getElementById('prioritas').value = 'Sedang';
     form.action = (window.BASE_URL || '') + '/laporan/simpan';
 
-    document.getElementById('formLaporanIcon').textContent = 'note_add';
-    document.getElementById('formLaporanTitle').textContent = 'Tambah Laporan Baru';
-    document.getElementById('formLaporanDesc').textContent = 'Input catatan kerusakan perangkat fasilitas rumah sakit';
-
     openModal('modal-form-laporan');
 }
 
@@ -113,17 +117,13 @@ function openEditModal(id) {
     const row = findLaporanById(id);
     if (!row) { alert('Data laporan tidak ditemukan.'); return; }
 
-    setFormMode('edit');
+    setFormMode('edit', id);
     clearLaporanHistory();
     fillFormWithData(row);
     setRecordedAt(null);
 
     const form = document.getElementById('form-tambah-laporan');
     form.action = (window.BASE_URL || '') + '/laporan/update';
-
-    document.getElementById('formLaporanIcon').textContent = 'edit';
-    document.getElementById('formLaporanTitle').textContent = 'Edit Laporan';
-    document.getElementById('formLaporanDesc').textContent = 'Perbarui data laporan #' + id;
 
     openModal('modal-form-laporan');
 }
@@ -133,12 +133,8 @@ function openDetailModal(id) {
     if (!row) { alert('Data laporan tidak ditemukan.'); return; }
 
     fillFormWithData(row);
-    setFormMode('view');
+    setFormMode('view', id);
     setRecordedAt(row.created_at || null);
-
-    document.getElementById('formLaporanIcon').textContent = 'visibility';
-    document.getElementById('formLaporanTitle').textContent = 'Detail Laporan';
-    document.getElementById('formLaporanDesc').textContent = 'Laporan #' + id + ' (hanya lihat)';
 
     openModal('modal-form-laporan');
     loadLaporanHistory(id);
@@ -547,7 +543,13 @@ function toDateInputValue(rawDate) {
     return `${yyyy}-${mm}-${dd}`;
 }
 
-function setFormMode(mode) {
+function setFormMode(mode, id) {
+    // Header (ikon/judul/deskripsi) ikut berubah sesuai mode.
+    const config = FORM_MODES[mode] || FORM_MODES.create;
+    document.getElementById('formLaporanIcon').textContent  = config.icon;
+    document.getElementById('formLaporanTitle').textContent = config.title;
+    document.getElementById('formLaporanDesc').textContent  = config.desc(id);
+
     const form = document.getElementById('form-tambah-laporan');
     const isView = mode === 'view';
 
@@ -732,6 +734,59 @@ function initMonthPicker() {
 let _suratCurrentId = null;
 let _suratIsReprint = false;
 
+// Konfigurasi header modal surat per mode:
+//   form    → form isian surat (sebelum TTE diterbitkan)
+//   preview → dokumen surat jadi ber-TTE, siap dicetak
+// Ini satu-satunya sumber teks/ikon header surat — jangan set ulang di tempat lain.
+const SURAT_MODES = {
+    form: {
+        icon: 'edit_note',
+        title: 'Form Surat Kerusakan',
+        desc: 'Isi form di bawah untuk menerbitkan QR Code TTE dan surat kerusakan',
+        badge: null,
+    },
+    preview: {
+        icon: 'description',
+        title: 'Surat Kerusakan Resmi (TTE)',
+        desc: 'Dokumen surat pengantar kerusakan ber-TTE yang siap dicetak',
+        badge: 'Surat Terbit (TTE)',
+    },
+};
+
+/**
+ * Atur tampilan modal surat sesuai mode ('form' atau 'preview'):
+ * header, badge, section yang tampil, dan status tombol cetak.
+ */
+function setSuratMode(mode) {
+    const config = SURAT_MODES[mode] || SURAT_MODES.form;
+    const isPreview = mode === 'preview';
+
+    const setText = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+    };
+    setText('suratModalHeaderIcon', config.icon);
+    setText('suratModalHeaderTitle', config.title);
+    setText('suratModalHeaderDesc', config.desc);
+
+    const badge = document.getElementById('suratReprintBadge');
+    if (badge) {
+        badge.textContent = config.badge || '';
+        badge.style.display = config.badge ? 'flex' : 'none';
+    }
+
+    const approval = document.getElementById('suratApprovalCheck');
+    if (approval) approval.checked = true;
+
+    const btnCetak = document.getElementById('suratBtnCetak');
+    if (btnCetak) btnCetak.disabled = false;
+
+    const formSection = document.getElementById('suratFormSection');
+    const previewSection = document.getElementById('suratDocumentPreviewSection');
+    if (formSection) formSection.style.display = isPreview ? 'none' : 'block';
+    if (previewSection) previewSection.style.display = isPreview ? 'block' : 'none';
+}
+
 function openSuratModal(id, isReprint = false) {
     const row = findLaporanById(id);
     if (!row) { alert('Data laporan tidak ditemukan.'); return; }
@@ -801,32 +856,7 @@ function openSuratModal(id, isReprint = false) {
     });
 
     // Sesuaikan header modal & tampilan section
-    const headerIcon = document.getElementById('suratModalHeaderIcon');
-    const headerTitle = document.getElementById('suratModalHeaderTitle');
-    const headerDesc  = document.getElementById('suratModalHeaderDesc');
-    const formSection = document.getElementById('suratFormSection');
-    const previewSection = document.getElementById('suratDocumentPreviewSection');
-
-    if (shouldShowPreview) {
-        if (headerIcon)  headerIcon.textContent  = 'description';
-        if (headerTitle) headerTitle.textContent  = 'Surat Kerusakan Resmi (TTE)';
-        if (headerDesc)  headerDesc.textContent   = 'Dokumen surat pengantar kerusakan ber-TTE yang siap dicetak';
-        document.getElementById('suratReprintBadge').style.display = 'flex';
-        document.getElementById('suratReprintBadge').textContent = 'Surat Terbit (TTE)';
-        document.getElementById('suratApprovalCheck').checked = true;
-        if (document.getElementById('suratBtnCetak')) document.getElementById('suratBtnCetak').disabled = false;
-        if (formSection) formSection.style.display = 'none';
-        if (previewSection) previewSection.style.display = 'block';
-    } else {
-        if (headerIcon)  headerIcon.textContent  = 'edit_note';
-        if (headerTitle) headerTitle.textContent  = 'Form Surat Kerusakan';
-        if (headerDesc)  headerDesc.textContent   = 'Isi form di bawah untuk menerbitkan QR Code TTE dan surat kerusakan';
-        document.getElementById('suratReprintBadge').style.display = 'none';
-        document.getElementById('suratApprovalCheck').checked = true;
-        if (document.getElementById('suratBtnCetak')) document.getElementById('suratBtnCetak').disabled = false;
-        if (formSection) formSection.style.display = 'block';
-        if (previewSection) previewSection.style.display = 'none';
-    }
+    setSuratMode(shouldShowPreview ? 'preview' : 'form');
 
     openModal('modal-surat-kerusakan');
 }
@@ -846,18 +876,6 @@ function updateSuratPaperView({ id, nomorVal, tglSuratVal, row, namaVal, jabVal,
     if (document.getElementById('pvSuratTtdCode')) document.getElementById('pvSuratTtdCode').textContent = ttdCode;
     if (document.getElementById('pvSuratNamaPelapor')) document.getElementById('pvSuratNamaPelapor').textContent = namaVal || 'Petugas Unit IT';
     if (document.getElementById('pvSuratJabatan')) document.getElementById('pvSuratJabatan').textContent = jabVal || 'Penanggung Jawab / Staf IT';
-}
-
-function switchToFormMode() {
-    const formSection = document.getElementById('suratFormSection');
-    const previewSection = document.getElementById('suratDocumentPreviewSection');
-    const headerTitle = document.getElementById('suratModalHeaderTitle');
-    const headerDesc = document.getElementById('suratModalHeaderDesc');
-
-    if (formSection) formSection.style.display = 'block';
-    if (previewSection) previewSection.style.display = 'none';
-    if (headerTitle) headerTitle.textContent = 'Form Surat Kerusakan';
-    if (headerDesc) headerDesc.textContent = 'Isi form di bawah sebelum mencetak surat pengantar kerusakan';
 }
 
 function closeSuratModal() {

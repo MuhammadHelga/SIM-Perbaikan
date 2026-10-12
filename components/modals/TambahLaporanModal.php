@@ -3,6 +3,10 @@
  * components/modals/TambahLaporanModal.php
  * Partial — dipakai untuk 3 mode: tambah, edit, dan lihat (read-only).
  * Mode diatur lewat JS: openTambahModal(), openEditModal(id), openDetailModal(id).
+ *
+ * CATATAN: judul, deskripsi, dan ikon header (formLaporanTitle/Desc/Icon) diatur
+ * oleh setFormMode() di public/assets/js/laporan.js lewat konstanta FORM_MODES.
+ * Teks di bawah hanya nilai awal sebelum modal dibuka — ubah teksnya di sana.
  */
 ?>
 <div class="modal-overlay" id="modal-form-laporan">

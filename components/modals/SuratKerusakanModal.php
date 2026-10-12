@@ -8,6 +8,10 @@
  *   - TTD digital berupa QR/barcode (dibuat di client via JS)
  *   - Checklist persetujuan TTD digital
  *   - Tombol Cetak muncul setelah centang
+ *
+ * CATATAN: ikon/judul/deskripsi header surat diatur oleh setSuratMode() di
+ * public/assets/js/laporan.js lewat konstanta SURAT_MODES (mode 'form' & 'preview').
+ * Nilai di bawah adalah default sebelum JS berjalan — ubah teksnya di sana.
  */
 ?>
 <!-- ===== OVERLAY SURAT KERUSAKAN ===== -->
@@ -17,11 +21,11 @@
         <!-- Header -->
         <div class="surat-modal-header">
             <div class="surat-modal-header__icon">
-                <span class="material-symbols-outlined" id="suratModalHeaderIcon">description</span>
+                <span class="material-symbols-outlined" id="suratModalHeaderIcon">edit_note</span>
             </div>
             <div class="surat-modal-header__text">
                 <h2 id="suratModalHeaderTitle">Form Surat Kerusakan</h2>
-                <p id="suratModalHeaderDesc">Isi form di bawah sebelum mencetak surat pengantar kerusakan</p>
+                <p id="suratModalHeaderDesc">Isi form di bawah untuk menerbitkan QR Code TTE dan surat kerusakan</p>
             </div>
             <!-- Badge reprint (hidden by default) -->
             <div id="suratReprintBadge" class="surat-reprint-badge" style="display:none;"></div>
