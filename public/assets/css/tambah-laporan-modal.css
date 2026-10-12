@@ -135,6 +135,141 @@
     background-size: 18px;
 }
 
+/* ===== Custom searchable select (Unit & Jenis Barang) ===== */
+.cs {
+    position: relative;
+    width: 100%;
+}
+
+.cs__trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 12px 10px 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #ffffff;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: #334155;
+    text-align: left;
+    cursor: pointer;
+}
+
+.cs__trigger:focus-visible {
+    border-color: #1e40af;
+    box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+    outline: none;
+}
+
+.cs__value {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.cs__value.is-placeholder {
+    color: #94a3b8;
+}
+
+.cs__chevron {
+    flex: none;
+    font-size: 20px;
+    color: #64748b;
+    transition: transform 0.15s ease;
+}
+
+.cs.is-open .cs__chevron {
+    transform: rotate(180deg);
+}
+
+.cs.is-disabled .cs__trigger {
+    background: #f1f5f9;
+    color: #94a3b8;
+    cursor: not-allowed;
+}
+
+.cs.is-disabled .cs__chevron {
+    color: #cbd5e1;
+}
+
+.cs__panel {
+    position: fixed;
+    z-index: 200;
+    display: none;
+    padding: 8px;
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 12px 32px rgba(20, 30, 70, 0.16);
+}
+
+.cs__panel.is-open {
+    display: block;
+}
+
+.cs__search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 6px;
+    padding: 6px 8px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+.cs__search-wrap .material-symbols-outlined {
+    font-size: 18px;
+    color: #94a3b8;
+}
+
+.cs__search {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+.cs__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    /* ± 6 baris lalu scroll */
+    max-height: 224px;
+    overflow-y: auto;
+}
+
+.cs__option {
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #334155;
+    cursor: pointer;
+}
+
+.cs__option:hover,
+.cs__option.is-highlight {
+    background: #f1f5f9;
+}
+
+.cs__option.is-selected {
+    background: #00288e;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.cs__empty {
+    display: none;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    color: #94a3b8;
+}
+
 .form-body textarea {
     padding: 10px 12px;
     resize: vertical;

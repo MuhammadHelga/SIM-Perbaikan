@@ -75,7 +75,7 @@
                     <label for="jenis_barang">Jenis Barang</label>
                     <div class="input-icon-wrapper">
                         <span class="material-symbols-outlined field-icon">inventory_2</span>
-                        <select id="jenis_barang" name="barang_id" required>
+                        <select id="jenis_barang" name="barang_id" required disabled>
                             <option value="" disabled selected>Pilih Jenis Barang</option>
                             <?php foreach (($barangList ?? []) as $barang): ?>
                                 <option value="<?= (int)$barang['id'] ?>"><?= htmlspecialchars($barang['nama_barang']) ?></option>
