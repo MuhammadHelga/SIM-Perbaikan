@@ -57,6 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // Dropdown custom (dengan kotak pencarian) untuk Unit & Jenis Barang.
     initCustomSelect('unit');
     initCustomSelect('jenis_barang');
+    initCustomSelect('no_seri');
     initCustomSelect('jenis_poli', { searchable: false });
     initCustomSelect('status', { searchable: false });
     initCustomSelect('prioritas', { searchable: false });
@@ -142,6 +143,7 @@ function initCustomSelect(selectId, options) {
 
     const panel = document.createElement('div');
     panel.className = 'cs__panel';
+    panel.dataset.csPanelFor = selectId;
 
     const list = document.createElement('ul');
     list.className = 'cs__list';
@@ -151,10 +153,11 @@ function initCustomSelect(selectId, options) {
     empty.className = 'cs__empty';
     empty.textContent = 'Tidak ada hasil';
 
-    // Kotak pencarian hanya untuk daftar panjang; list pendek (Status/Prioritas) tanpa search.
+    // Kotak pencarian opsional; otomatis disembunyikan bila opsi sedikit (lihat buildList).
     let search = null;
+    let searchWrap = null;
     if (searchable) {
-        const searchWrap = document.createElement('div');
+        searchWrap = document.createElement('div');
         searchWrap.className = 'cs__search-wrap';
         const searchIcon = document.createElement('span');
         searchIcon.className = 'material-symbols-outlined';
@@ -214,6 +217,10 @@ function initCustomSelect(selectId, options) {
             });
             list.appendChild(li);
         });
+        // Sembunyikan kotak cari bila opsinya sedikit (muat tanpa scroll/search).
+        if (searchWrap) {
+            searchWrap.style.display = list.querySelectorAll('.cs__option').length > 6 ? '' : 'none';
+        }
         highlight = -1;
     }
 
@@ -358,7 +365,7 @@ function refreshCustomSelect(selectId) {
 }
 
 function refreshAllCustomSelects() {
-    ['unit', 'jenis_barang', 'jenis_poli', 'status', 'prioritas'].forEach(refreshCustomSelect);
+    ['unit', 'jenis_barang', 'no_seri', 'jenis_poli', 'status', 'prioritas'].forEach(refreshCustomSelect);
 }
 
 function closeAllCustomSelects() {
@@ -689,6 +696,7 @@ function refreshBarangOptions(options) {
 
     clearSerialGroup();
     refreshCustomSelect('jenis_barang');
+    refreshCustomSelect('no_seri');
 }
 
 function clearSerialGroup() {
@@ -735,6 +743,7 @@ function syncSerialOptions() {
 
     // Wajib pilih serial bila ada aset; laporan lama tanpa aset tidak dipaksa.
     noSeri.required = asets.length > 0;
+    refreshCustomSelect('no_seri');
 }
 
 function clearTipeGroup() {
