@@ -4,7 +4,13 @@ $barangList   = $barangList ?? [];
 $asetList     = $asetList ?? [];
 $totalRuangan = count($ruanganList);
 $totalBarang  = count($barangList);
-$totalAset    = count($asetList);
+$totalAset    = 0;
+foreach ($asetList as $a) {
+    if ((int) ($a['aktif'] ?? 1) === 1) {
+        $totalAset++;
+    }
+}
+$totalAsetNonaktif = count($asetList) - $totalAset;
 ?>
 <!DOCTYPE html>
 <html lang="id" data-theme="<?= ($_COOKIE['theme'] ?? 'light') === 'dark' ? 'dark' : 'light' ?>">
@@ -56,7 +62,7 @@ $totalAset    = count($asetList);
             <div class="card border-purple">
                 <div class="card-body">
                     <span class="card-subtitle">TOTAL ASET</span>
-                    <div class="card-value text-purple"><?= $totalAset ?> <small>Unit Fisik</small></div>
+                    <div class="card-value text-purple"><?= $totalAset ?> <small>Unit Fisik aktif<?= $totalAsetNonaktif > 0 ? ' · ' . $totalAsetNonaktif . ' nonaktif' : '' ?></small></div>
                 </div>
                 <div class="card-icon bg-purple">
                     <span class="material-symbols-outlined">devices</span>
@@ -210,9 +216,15 @@ $totalAset    = count($asetList);
                     <div class="icon-badge bg-purple"><span class="material-symbols-outlined">devices</span></div>
                     <h3>Daftar Aset Barang</h3>
                 </div>
-                <button class="btn btn-primary" onclick="openAsetModal()">
-                    <span class="material-symbols-outlined">add_circle</span> Tambah Aset
-                </button>
+                <div class="table-header__actions">
+                    <label class="toggle-nonaktif" title="Tampilkan aset yang sudah dinonaktifkan">
+                        <input type="checkbox" id="toggleNonaktifAset">
+                        <span>Tampilkan nonaktif</span>
+                    </label>
+                    <button class="btn btn-primary" onclick="openAsetModal()">
+                        <span class="material-symbols-outlined">add_circle</span> Tambah Aset
+                    </button>
+                </div>
             </div>
             <div class="unit-head-wrap" id="asetHeadWrap">
                 <table class="data-table">
@@ -251,27 +263,49 @@ $totalAset    = count($asetList);
                             <tr><td class="text-center" colspan="6">Belum ada aset. Tambahkan aset fisik (ruangan + barang + serial) agar pilihan di form laporan otomatis tersaring.</td></tr>
                         <?php endif; ?>
                         <?php foreach ($asetList as $i => $a): ?>
-                            <tr>
+                            <?php
+                                $isAktif  = (int) ($a['aktif'] ?? 1) === 1;
+                                $serial   = (string) ($a['serial_number'] ?? '');
+                                $tipe     = (string) ($a['tipe'] ?? '');
+                                $labelAks = $serial !== '' ? $serial : ($tipe !== '' ? $tipe : '#' . (int) $a['id']);
+                            ?>
+                            <tr class="aset-row<?= $isAktif ? '' : ' is-inactive' ?>">
                                 <td><?= $i + 1 ?></td>
                                 <td><?= htmlspecialchars($a['nama_ruangan']) ?></td>
                                 <td><?= htmlspecialchars($a['nama_barang']) ?></td>
-                                <td><?= htmlspecialchars($a['serial_number']) ?></td>
-                                <td><?= $a['tipe'] !== null && $a['tipe'] !== '' ? htmlspecialchars($a['tipe']) : '-' ?></td>
+                                <td>
+                                    <?= $serial !== '' ? htmlspecialchars($serial) : '-' ?>
+                                    <?php if (!$isAktif): ?>
+                                        <span class="aset-status aset-status--nonaktif">Nonaktif</span>
+                                    <?php endif; ?>
+                                </td>
+                                <td><?= $tipe !== '' ? htmlspecialchars($tipe) : '-' ?></td>
                                 <td class="action-buttons">
                                     <button type="button" class="icon-action text-warning" title="Edit"
                                         data-id="<?= (int)$a['id'] ?>"
                                         data-id-ruangan="<?= (int)$a['id_ruangan'] ?>"
                                         data-id-barang="<?= (int)$a['id_barang'] ?>"
-                                        data-serial="<?= htmlspecialchars($a['serial_number'], ENT_QUOTES) ?>"
-                                        data-tipe="<?= htmlspecialchars($a['tipe'] ?? '', ENT_QUOTES) ?>"
-                                        data-keterangan="<?= htmlspecialchars($a['keterangan'] ?? '', ENT_QUOTES) ?>"
+                                        data-serial="<?= htmlspecialchars($serial, ENT_QUOTES) ?>"
+                                        data-tipe="<?= htmlspecialchars($tipe, ENT_QUOTES) ?>"
+                                        data-keterangan="<?= htmlspecialchars((string)($a['keterangan'] ?? ''), ENT_QUOTES) ?>"
                                         onclick="openAsetEdit(this)">
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
-                                    <button type="button" class="icon-action text-danger" title="Hapus"
-                                        onclick="confirmAsetDelete(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($a['serial_number'], ENT_QUOTES) ?>')">
-                                        <span class="material-symbols-outlined">delete</span>
-                                    </button>
+                                    <?php if ($isAktif): ?>
+                                        <button type="button" class="icon-action text-danger" title="Nonaktifkan"
+                                            onclick="confirmAsetDelete(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($labelAks, ENT_QUOTES) ?>')">
+                                            <span class="material-symbols-outlined">block</span>
+                                        </button>
+                                    <?php else: ?>
+                                        <button type="button" class="icon-action text-success" title="Aktifkan kembali"
+                                            onclick="confirmAsetRestore(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($labelAks, ENT_QUOTES) ?>')">
+                                            <span class="material-symbols-outlined">restart_alt</span>
+                                        </button>
+                                        <button type="button" class="icon-action text-danger" title="Hapus permanen"
+                                            onclick="confirmAsetPurge(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($labelAks, ENT_QUOTES) ?>')">
+                                            <span class="material-symbols-outlined">delete_forever</span>
+                                        </button>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -374,12 +408,12 @@ $totalAset    = count($asetList);
                 </div>
 
                 <div class="form-group">
-                    <label for="aset-serial">Serial Number</label>
+                    <label for="aset-serial">Serial Number <span class="form-label-optional">(opsional)</span></label>
                     <div class="input-icon-wrapper">
                         <span class="material-symbols-outlined field-icon">tag</span>
-                        <input type="text" id="aset-serial" name="serial_number" placeholder="Contoh: SN-1234" maxlength="50" required>
+                        <input type="text" id="aset-serial" name="serial_number" placeholder="Contoh: SN-1234" maxlength="50" autocomplete="off">
                     </div>
-                    <small class="form-hint">Harus unik; dipakai sebagai pilihan di form laporan.</small>
+                    <small class="form-hint">Unik bila diisi; kosongkan jika unit tidak punya nomor seri.</small>
                 </div>
 
                 <div class="form-group">

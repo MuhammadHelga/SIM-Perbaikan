@@ -335,6 +335,20 @@ function getAsetData() {
     try { return JSON.parse(el.textContent); } catch (e) { return []; }
 }
 
+// Aset boleh tanpa serial (NULL). Label pakai serial, fallback ke tipe lalu "Aset #id";
+// value unik agar tetap bisa dipilih di dropdown.
+function asetSerialLabel(aset) {
+    const sn = aset && aset.serial_number != null ? String(aset.serial_number).trim() : '';
+    if (sn !== '') return sn;
+    const tipe = aset && aset.tipe != null ? String(aset.tipe).trim() : '';
+    return tipe !== '' ? tipe : ('Aset #' + aset.id);
+}
+
+function asetSerialValue(aset) {
+    const sn = aset && aset.serial_number != null ? String(aset.serial_number).trim() : '';
+    return sn !== '' ? sn : ('#' + aset.id);
+}
+
 function refreshBarangOptions() {
     const select = document.getElementById('jenis_barang');
     const unit = document.getElementById('unit');
@@ -425,7 +439,7 @@ function syncSerialOptions() {
         Number(a.id_ruangan) === unitId && Number(a.id_barang) === barangId
     );
     asets.forEach(a => {
-        const opt = new Option(a.serial_number, a.serial_number);
+        const opt = new Option(asetSerialLabel(a), asetSerialValue(a));
         opt.dataset.id_aset = String(a.id);
         opt.dataset.tipe = a.tipe || '';
         noSeri.add(opt);
@@ -498,11 +512,11 @@ function restoreSerialFromRow(row) {
         : null;
 
     if (aset) {
-        const opt = new Option(aset.serial_number, aset.serial_number);
+        const opt = new Option(asetSerialLabel(aset), asetSerialValue(aset));
         opt.dataset.id_aset = String(aset.id);
         opt.dataset.tipe = aset.tipe || '';
         noSeri.add(opt);
-        noSeri.value = aset.serial_number;
+        noSeri.value = asetSerialValue(aset);
         if (asetId) asetId.value = String(aset.id);
         if (tipe) {
             tipe.value = aset.tipe || '';

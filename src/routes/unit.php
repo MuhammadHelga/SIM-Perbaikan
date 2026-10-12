@@ -104,9 +104,10 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
             $tipe       = trim((string) ($_POST['tipe'] ?? ''));
             $keterangan = trim((string) ($_POST['keterangan'] ?? ''));
 
-            if ($idRuangan <= 0 || $idBarang <= 0 || $serial === '') {
-                flash('error', 'Ruangan, barang, dan serial number wajib diisi.');
+            if ($idRuangan <= 0 || $idBarang <= 0) {
+                flash('error', 'Ruangan dan jenis barang wajib diisi.');
             } else {
+                $serial = $serial === '' ? null : $serial;
                 $tipe = $tipe === '' ? null : mb_substr($tipe, 0, 80);
                 $keterangan = $keterangan === '' ? null : mb_substr($keterangan, 0, 200);
 
@@ -132,6 +133,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         $handleAsetSimpan();
     });
 
+    // Nonaktifkan aset (soft-delete): laporan yang pernah memakainya tetap utuh.
     $router->any('/unit/aset/hapus/{id:\d+}', function (array $params) use ($conn, $basePath) {
         requireRole($basePath, ['admin']);
 
@@ -143,7 +145,51 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         require_once __DIR__ . '/../controllers/asetBarangController.php';
         (new asetBarangController($conn))->destroy((int) $params['id']);
 
-        flash('success', 'Aset barang berhasil dihapus. Laporan yang pernah memakainya tetap utuh.');
+        flash('success', 'Aset barang dinonaktifkan. Laporan yang pernah memakainya tetap utuh.');
+        redirect($basePath . '/unit');
+    });
+
+    // Aktifkan kembali aset yang nonaktif.
+    $router->any('/unit/aset/aktifkan/{id:\d+}', function (array $params) use ($conn, $basePath) {
+        requireRole($basePath, ['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+            flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
+            redirect($basePath . '/unit');
+        }
+
+        require_once __DIR__ . '/../controllers/asetBarangController.php';
+        (new asetBarangController($conn))->restore((int) $params['id']);
+
+        flash('success', 'Aset barang diaktifkan kembali.');
+        redirect($basePath . '/unit');
+    });
+
+    // Hapus permanen: hanya bila aset tidak dirujuk laporan mana pun.
+    $router->any('/unit/aset/hapus-permanen/{id:\d+}', function (array $params) use ($conn, $basePath) {
+        requireRole($basePath, ['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+            flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
+            redirect($basePath . '/unit');
+        }
+
+        $id = (int) $params['id'];
+
+        $stmt = $conn->prepare('SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE id_aset = ?');
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $dipakai = (int) $stmt->get_result()->fetch_assoc()['j'];
+
+        if ($dipakai > 0) {
+            flash('error', "Tidak bisa dihapus permanen: masih dipakai oleh {$dipakai} laporan.");
+            redirect($basePath . '/unit');
+        }
+
+        require_once __DIR__ . '/../controllers/asetBarangController.php';
+        (new asetBarangController($conn))->destroyPermanent($id);
+
+        flash('success', 'Aset barang dihapus permanen.');
         redirect($basePath . '/unit');
     });
 
@@ -156,7 +202,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
         $ruanganList = (new ruanganController($conn))->index()->fetch_all(MYSQLI_ASSOC);
         $barangList  = (new barangController($conn))->index()->fetch_all(MYSQLI_ASSOC);
-        $asetList    = (new asetBarangController($conn))->index();
+        $asetList    = (new asetBarangController($conn))->indexAll();
 
         require __DIR__ . '/../views/unit_barang/screens/UnitBarangView.php';
     });

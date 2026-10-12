@@ -188,7 +188,7 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
     }
 
     // Fallback: serial ketik manual (dipakai bila tidak memilih aset).
-    if ($noSeri === '') {
+    if ($noSeri === '' || $noSeri === null) {
         $noSeri = $noSeriManual;
     }
     if ($asetTipe !== null && $asetTipe !== '') {
@@ -228,12 +228,15 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
     if (mb_strlen($uraian) > 500) {
         $errors[] = 'Uraian kegiatan maksimal 500 karakter.';
     }
-    if (mb_strlen($noSeri) > 50) {
+    if (mb_strlen((string) $noSeri) > 50) {
         $errors[] = 'No seri maksimal 50 karakter.';
     }
     if (mb_strlen($tipe) > 80) {
         $errors[] = 'Tipe barang maksimal 80 karakter.';
     }
+
+    // Serial kosong disimpan sebagai NULL (bukan string kosong).
+    $noSeri = ($noSeri === null || trim((string) $noSeri) === '') ? null : trim((string) $noSeri);
 
     if (!in_array($status, $statusList, true)) {
         $errors[] = 'Status penanganan tidak valid.';

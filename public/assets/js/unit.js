@@ -17,6 +17,15 @@ document.addEventListener('DOMContentLoaded', function () {
     initUnitTableSync('ruanganScroll', 'ruanganHeadWrap');
     initUnitTableSync('barangScroll',  'barangHeadWrap');
     initUnitTableSync('asetScroll',    'asetHeadWrap');
+
+    // Toggle "Tampilkan nonaktif" pada tabel aset (baris nonaktif disembunyikan CSS).
+    const toggleNonaktif = document.getElementById('toggleNonaktifAset');
+    const asetScroll     = document.getElementById('asetScroll');
+    if (toggleNonaktif && asetScroll) {
+        toggleNonaktif.addEventListener('change', function () {
+            asetScroll.classList.toggle('show-inactive', toggleNonaktif.checked);
+        });
+    }
 });
 
 function initUnitTableSync(scrollId, headId) {
@@ -151,15 +160,41 @@ function openAsetEdit(btn) {
     openModal('modal-aset');
 }
 
-function confirmAsetDelete(id, serial) {
+function confirmAsetDelete(id, label) {
     openConfirmModal({
-        icon: 'delete',
-        title: 'Hapus Aset Barang',
-        text: 'Yakin hapus aset "' + serial + '"? Laporan yang pernah memakainya tetap utuh.',
-        confirmLabel: 'Ya, Hapus',
+        icon: 'block',
+        title: 'Nonaktifkan Aset Barang',
+        text: 'Nonaktifkan aset "' + label + '"? Aset tidak muncul lagi di pilihan form laporan, tetapi riwayatnya tetap utuh.',
+        confirmLabel: 'Ya, Nonaktifkan',
         variant: 'red',
         onConfirm: function () {
             postAction((window.BASE_URL || '') + '/unit/aset/hapus/' + id);
+        }
+    });
+}
+
+function confirmAsetRestore(id, label) {
+    openConfirmModal({
+        icon: 'restart_alt',
+        title: 'Aktifkan Aset Barang',
+        text: 'Aktifkan kembali aset "' + label + '"? Aset akan muncul lagi di pilihan form laporan.',
+        confirmLabel: 'Ya, Aktifkan',
+        variant: 'green',
+        onConfirm: function () {
+            postAction((window.BASE_URL || '') + '/unit/aset/aktifkan/' + id);
+        }
+    });
+}
+
+function confirmAsetPurge(id, label) {
+    openConfirmModal({
+        icon: 'delete_forever',
+        title: 'Hapus Permanen',
+        text: 'Hapus permanen aset "' + label + '"? Tindakan ini tidak bisa dibatalkan. Aset yang masih dipakai laporan tidak bisa dihapus.',
+        confirmLabel: 'Ya, Hapus Permanen',
+        variant: 'red',
+        onConfirm: function () {
+            postAction((window.BASE_URL || '') + '/unit/aset/hapus-permanen/' + id);
         }
     });
 }

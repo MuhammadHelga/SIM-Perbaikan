@@ -256,6 +256,59 @@ body {
 .icon-action.text-warning:hover { background: #fdf2e1; }
 .icon-action.text-danger { color: #ba1a1a; }
 .icon-action.text-danger:hover { background: #ffdad6; }
+.icon-action.text-success { color: #15803d; }
+.icon-action.text-success:hover { background: #dcfce7; }
+
+/* Aksi kanan header tabel (toggle + tombol tambah) */
+.table-header__actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+/* Toggle "Tampilkan nonaktif" */
+.toggle-nonaktif {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #475569;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+.toggle-nonaktif input {
+    width: 16px;
+    height: 16px;
+    accent-color: #7c3aed;
+    cursor: pointer;
+}
+
+/* Baris aset nonaktif: disembunyikan kecuali toggle "Tampilkan nonaktif" aktif */
+.aset-row.is-inactive {
+    display: none;
+    opacity: 0.7;
+}
+
+#asetScroll.show-inactive .aset-row.is-inactive {
+    display: table-row;
+}
+
+.aset-status {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 1px 8px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    vertical-align: middle;
+}
+
+.aset-status--nonaktif {
+    background: #fee2e2;
+    color: #b91c1c;
+}
 
 /* Tombol Batal di modal (kelas btn-outline dipakai bareng modal laporan) */
 .btn-outline {
