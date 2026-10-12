@@ -18,22 +18,36 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         $id    = (int) $params['id'];
         $kolom = $jenis === 'ruangan' ? 'id_ruangan' : 'id_barang';
 
+        // Hitung pemakaian dari laporan DAN aset. Aset tidak lagi ikut terhapus
+        // otomatis (FK kini RESTRICT), jadi pemakaiannya harus dicek di sini juga.
         $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE $kolom = ?");
         $stmt->bind_param('i', $id);
         $stmt->execute();
-        $dipakai = (int) $stmt->get_result()->fetch_assoc()['j'];
+        $dipakaiLaporan = (int) $stmt->get_result()->fetch_assoc()['j'];
 
-        if ($dipakai > 0) {
-            flash('error', "Tidak bisa dihapus: masih dipakai oleh {$dipakai} laporan.");
+        $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM aset_barang WHERE $kolom = ?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $dipakaiAset = (int) $stmt->get_result()->fetch_assoc()['j'];
+
+        if ($dipakaiLaporan > 0 || $dipakaiAset > 0) {
+            $bagian = [];
+            if ($dipakaiAset > 0)    { $bagian[] = "{$dipakaiAset} aset"; }
+            if ($dipakaiLaporan > 0) { $bagian[] = "{$dipakaiLaporan} laporan"; }
+            flash('error', 'Tidak bisa dihapus: masih dipakai oleh ' . implode(' dan ', $bagian) . '.');
         } else {
-            if ($jenis === 'ruangan') {
-                require_once __DIR__ . '/../controllers/ruanganController.php';
-                (new ruanganController($conn))->destroy($id);
-            } else {
-                require_once __DIR__ . '/../controllers/barangController.php';
-                (new barangController($conn))->destroy($id);
+            try {
+                if ($jenis === 'ruangan') {
+                    require_once __DIR__ . '/../controllers/ruanganController.php';
+                    (new ruanganController($conn))->destroy($id);
+                } else {
+                    require_once __DIR__ . '/../controllers/barangController.php';
+                    (new barangController($conn))->destroy($id);
+                }
+                flash('success', 'Data berhasil dihapus.');
+            } catch (mysqli_sql_exception $e) {
+                flash('error', 'Gagal menghapus: data masih terhubung dengan data lain.');
             }
-            flash('success', 'Data berhasil dihapus.');
         }
 
         redirect($basePath . '/unit');
