@@ -7,7 +7,21 @@ document.addEventListener('DOMContentLoaded', function () {
     initNavIndicator();
     initSidebarPet();
     initSubmitGuard();
+    initStickyScrollShadows();
 });
+
+/* Tandai container tabel yang sedang di-scroll horizontal, supaya kolom aksi
+   sticky menampilkan bayangan pemisah HANYA saat memang ada konten ter-scroll. */
+function initStickyScrollShadows() {
+    const selector = '.table-scroll, .table-responsive, .jr-table-scroll, .table-head-wrap, .unit-head-wrap';
+    document.querySelectorAll(selector).forEach(function (el) {
+        const update = function () {
+            el.classList.toggle('is-scrolled-x', el.scrollLeft > 0);
+        };
+        el.addEventListener('scroll', update, { passive: true });
+        update();
+    });
+}
 
 function initSidebarPet() {
     const scene = document.querySelector('.sidebar-pet-scene');

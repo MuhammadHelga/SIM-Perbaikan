@@ -431,7 +431,7 @@ main.page-wrap {
 .data-table col.col-uraian { width: 13%; }
 .data-table col.col-hasil { width: 7%; }
 .data-table col.col-tgl-kirim { width: 230px; }
-.data-table col.col-aksi { width: 105px; }
+.data-table col.col-aksi { width: 150px; }
 
 .data-table thead th {
   background: #e0e4ff;
@@ -454,7 +454,35 @@ main.page-wrap {
 }
 
 .col-aksi {
-  width: 105px;
+  width: 150px;
+}
+
+/* Kolom Aksi menempel di kanan: lebar cukup untuk 3 tombol (3×30 + 2×10 gap
+   + padding) dan tetap terlihat saat tabel di-scroll horizontal. Bayangan
+   pemisah hanya muncul saat container benar-benar di-scroll. */
+.data-table td.col-aksi {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background: #ffffff;
+}
+
+.data-table tbody tr:hover td.col-aksi {
+  background: #fafbfd;
+}
+
+.data-table thead th.col-aksi {
+  position: sticky;
+  right: 0;
+  z-index: 3;
+}
+
+.table-scroll.is-scrolled-x .data-table td.col-aksi {
+  box-shadow: inset 1px 0 0 #e2e8f0, -8px 0 10px -8px rgba(15, 23, 42, 0.2);
+}
+
+.table-head-wrap.is-scrolled-x .data-table thead th.col-aksi {
+  box-shadow: 0 2px 5px -3px rgba(15, 23, 42, 0.35), -8px 0 10px -8px rgba(15, 23, 42, 0.2);
 }
 
 .table-footer {
