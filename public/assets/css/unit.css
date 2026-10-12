@@ -218,6 +218,8 @@ body {
     color: #334155;
 }
 
+.text-center { text-align: center !important; }
+
 .text-right { text-align: right !important; }
 
 .action-buttons {

@@ -248,7 +248,7 @@ $totalAset    = count($asetList);
                     </colgroup>
                     <tbody>
                         <?php if (!$asetList): ?>
-                            <tr><td colspan="6">Belum ada aset. Tambahkan aset fisik (ruangan + barang + serial) agar pilihan di form laporan otomatis tersaring.</td></tr>
+                            <tr><td class="text-center" colspan="6">Belum ada aset. Tambahkan aset fisik (ruangan + barang + serial) agar pilihan di form laporan otomatis tersaring.</td></tr>
                         <?php endif; ?>
                         <?php foreach ($asetList as $i => $a): ?>
                             <tr>
