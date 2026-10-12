@@ -286,11 +286,11 @@ $totalAset    = count($asetList);
         <div class="form-card">
             <div class="form-header">
                 <div class="header-icon">
-                    <span class="material-symbols-outlined" id="unitModalIcon">meeting_room</span>
+                    <span class="material-symbols-outlined" id="unitModalIcon"><!-- diisi JS --></span>
                 </div>
                 <div class="header-text">
-                    <h2 id="unitModalTitle">Tambah Unit</h2>
-                    <p id="unitModalDesc">Tambah data unit/ruangan baru</p>
+                    <h2 id="unitModalTitle"><!-- diisi JS --></h2>
+                    <p id="unitModalDesc"><!-- diisi JS --></p>
                 </div>
                 <button type="button" class="modal-close" onclick="closeModal('modal-unit')" aria-label="Tutup">
                     <span class="material-symbols-outlined">close</span>
@@ -332,11 +332,11 @@ $totalAset    = count($asetList);
         <div class="form-card">
             <div class="form-header">
                 <div class="header-icon">
-                    <span class="material-symbols-outlined" id="asetModalIcon">devices</span>
+                    <span class="material-symbols-outlined" id="asetModalIcon"><!-- diisi JS --></span>
                 </div>
                 <div class="header-text">
-                    <h2 id="asetModalTitle">Tambah Aset Barang</h2>
-                    <p id="asetModalDesc">Daftarkan unit fisik barang di suatu ruangan</p>
+                    <h2 id="asetModalTitle"><!-- diisi JS --></h2>
+                    <p id="asetModalDesc"><!-- diisi JS --></p>
                 </div>
                 <button type="button" class="modal-close" onclick="closeModal('modal-aset')" aria-label="Tutup">
                     <span class="material-symbols-outlined">close</span>
@@ -412,13 +412,13 @@ $totalAset    = count($asetList);
     <div class="modal-overlay" id="modal-konfirmasi">
         <div class="confirm-card">
             <div class="confirm-card__icon">
-                <span class="material-symbols-outlined" id="confirmIcon">delete</span>
+                <span class="material-symbols-outlined" id="confirmIcon"><!-- diisi JS --></span>
             </div>
-            <h3 class="confirm-card__title" id="confirmTitle">Konfirmasi</h3>
-            <p class="confirm-card__text" id="confirmText">Apakah kamu yakin?</p>
+            <h3 class="confirm-card__title" id="confirmTitle"><!-- diisi JS --></h3>
+            <p class="confirm-card__text" id="confirmText"><!-- diisi JS --></p>
             <div class="confirm-card__actions">
                 <button type="button" class="confirm-btn confirm-btn--cancel" onclick="closeModal('modal-konfirmasi')">Batal</button>
-                <button type="button" class="confirm-btn confirm-btn--danger" id="confirmActionBtn">Ya, Hapus</button>
+                <button type="button" class="confirm-btn confirm-btn--danger" id="confirmActionBtn"><!-- diisi JS --></button>
             </div>
         </div>
     </div>

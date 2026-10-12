@@ -427,13 +427,13 @@ if ($search !== '') {
     <div class="modal-overlay" id="modal-konfirmasi">
         <div class="confirm-card">
             <div class="confirm-card__icon">
-                <span class="material-symbols-outlined" id="confirmIcon">local_shipping</span>
+                <span class="material-symbols-outlined" id="confirmIcon"><!-- diisi JS --></span>
             </div>
-            <h3 class="confirm-card__title" id="confirmTitle">Konfirmasi</h3>
-            <p class="confirm-card__text" id="confirmText">Apakah kamu yakin?</p>
+            <h3 class="confirm-card__title" id="confirmTitle"><!-- diisi JS --></h3>
+            <p class="confirm-card__text" id="confirmText"><!-- diisi JS --></p>
             <div class="confirm-card__actions">
                 <button type="button" class="confirm-btn confirm-btn--cancel" onclick="closeModal('modal-konfirmasi')">Batal</button>
-                <button type="button" class="confirm-btn confirm-btn--primary" id="confirmActionBtn">Ya, Lanjutkan</button>
+                <button type="button" class="confirm-btn confirm-btn--primary" id="confirmActionBtn"><!-- diisi JS --></button>
             </div>
         </div>
     </div>

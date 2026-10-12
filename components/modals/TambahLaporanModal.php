@@ -13,11 +13,11 @@
     <div class="form-card">
         <div class="form-header">
             <div class="header-icon">
-                <span class="material-symbols-outlined" id="formLaporanIcon">note_add</span>
+                <span class="material-symbols-outlined" id="formLaporanIcon"><!-- diisi JS --></span>
             </div>
             <div class="header-text">
-                <h2 id="formLaporanTitle">Tambah Laporan Baru</h2>
-                <p id="formLaporanDesc">Input catatan kerusakan perangkat fasilitas rumah sakit</p>
+                <h2 id="formLaporanTitle"><!-- diisi JS --></h2>
+                <p id="formLaporanDesc"><!-- diisi JS --></p>
             </div>
             <button type="button" class="modal-close" onclick="closeModal('modal-form-laporan')" aria-label="Tutup">
                 <span class="material-symbols-outlined">close</span>

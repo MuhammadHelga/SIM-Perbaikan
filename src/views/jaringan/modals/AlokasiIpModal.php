@@ -8,7 +8,7 @@
     <div class="alokasi-card">
         <div class="alokasi-card__head">
             <div>
-                <h2 id="alokasiTitle">Alokasi &amp; Edit Host IP Komputer Unit</h2>
+                <h2 id="alokasiTitle"><!-- diisi JS --></h2>
                 <p>Form konfigurasi pemetaan alamat IP workstation rumah sakit</p>
             </div>
             <span class="jr-chip jr-chip--head">

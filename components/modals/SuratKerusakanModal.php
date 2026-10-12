@@ -21,11 +21,11 @@
         <!-- Header -->
         <div class="surat-modal-header">
             <div class="surat-modal-header__icon">
-                <span class="material-symbols-outlined" id="suratModalHeaderIcon">edit_note</span>
+                <span class="material-symbols-outlined" id="suratModalHeaderIcon"><!-- diisi JS --></span>
             </div>
             <div class="surat-modal-header__text">
-                <h2 id="suratModalHeaderTitle">Form Surat Kerusakan</h2>
-                <p id="suratModalHeaderDesc">Isi form di bawah untuk menerbitkan QR Code TTE dan surat kerusakan</p>
+                <h2 id="suratModalHeaderTitle"><!-- diisi JS --></h2>
+                <p id="suratModalHeaderDesc"><!-- diisi JS --></p>
             </div>
             <!-- Badge reprint (hidden by default) -->
             <div id="suratReprintBadge" class="surat-reprint-badge" style="display:none;"></div>
