@@ -229,8 +229,11 @@ function initCustomSelect(selectId) {
         const val = select.value;
         const opt = Array.from(select.options).find(o => o.value === val && !(o.disabled && isPlaceholderValue(o.value)));
         const hasValue = Boolean(opt) && !isPlaceholderValue(val);
+        // Placeholder dibaca live agar pesannya bisa diganti dinamis (mis. saat ruangan tanpa aset).
+        const phOpt = Array.from(select.options).find(o => o.disabled && isPlaceholderValue(o.value));
+        const ph = phOpt ? phOpt.textContent.trim() : placeholderText;
 
-        valueLabel.textContent = hasValue ? opt.textContent.trim() : placeholderText;
+        valueLabel.textContent = hasValue ? opt.textContent.trim() : ph;
         valueLabel.classList.toggle('is-placeholder', !hasValue);
 
         Array.from(list.querySelectorAll('.cs__option')).forEach(function (li) {
@@ -525,7 +528,7 @@ function fillFormWithData(row) {
     }
     jenisPoli.value = jenisPoliValue;
 
-    refreshBarangOptions();
+    refreshBarangOptions({ preserveValue: row.barang });
     const jenisBarang = document.getElementById('jenis_barang');
     const rowBarangName = String(row.barang || '').trim();
     if (rowBarangName && !hasOptionByText(jenisBarang, rowBarangName)) {
@@ -608,7 +611,10 @@ function asetSerialValue(aset) {
     return sn !== '' ? sn : ('#' + aset.id);
 }
 
-function refreshBarangOptions() {
+function refreshBarangOptions(options) {
+    options = options || {};
+    const preserveValue = options.preserveValue != null ? String(options.preserveValue).trim() : '';
+
     const select = document.getElementById('jenis_barang');
     const unit = document.getElementById('unit');
     const hint = document.getElementById('barang-filter-hint');
@@ -617,13 +623,12 @@ function refreshBarangOptions() {
     if (!select._fullOptions) select._fullOptions = Array.from(select.options);
 
     const unitId = Number(unit.value || 0);
-    // Jenis barang baru bisa dipilih setelah Unit/Ruangan dipilih.
-    select.disabled = !unitId;
     const asets = unitId ? getAsetData().filter(a => Number(a.id_ruangan) === unitId) : [];
     const byBarang = new Map();
     asets.forEach(a => {
         if (!byBarang.has(String(a.id_barang))) byBarang.set(String(a.id_barang), a.nama_barang);
     });
+    const hasAssets = byBarang.size > 0;
 
     select.replaceChildren();
     const placeholder = new Option('Pilih Jenis Barang', '');
@@ -631,26 +636,30 @@ function refreshBarangOptions() {
     placeholder.selected = true;
     select.add(placeholder);
 
-    let mode = 'all';
-    if (byBarang.size > 0) {
-        mode = 'filtered';
-        byBarang.forEach((name, idBarang) => {
-            const opt = new Option(name, idBarang);
-            select.add(opt);
-        });
+    if (hasAssets) {
+        // Hanya jenis barang yang terdaftar sebagai aset di ruangan ini.
+        byBarang.forEach((name, idBarang) => select.add(new Option(name, idBarang)));
+        select.disabled = false;
+    } else if (preserveValue !== '') {
+        // Mode edit laporan lama: pertahankan jenis barang yang sudah tersimpan.
+        const match = select._fullOptions.find(
+            o => o.textContent.trim().toLowerCase() === preserveValue.toLowerCase()
+        );
+        select.add(new Option(preserveValue, match ? match.value : '', false, true));
+        select.disabled = false;
     } else {
-        select._fullOptions.forEach(opt => {
-            if (opt.value === '' && opt.disabled) return;
-            select.add(new Option(opt.textContent, opt.value));
-        });
+        // Ruangan tanpa aset (mode tambah): kunci dropdown, minta tambah aset dulu.
+        placeholder.textContent = unitId ? 'Belum ada aset di ruangan ini' : 'Pilih Jenis Barang';
+        select.disabled = true;
     }
 
     if (hint) {
-        if (mode === 'filtered') {
-            hint.textContent = 'Hanya menampilkan barang yang terdaftar sebagai aset di ruangan ini.';
+        if (hasAssets) {
+            hint.textContent = 'Hanya menampilkan jenis barang yang terdaftar di ruangan ini.';
             hint.style.display = 'block';
-        } else if (unitId) {
-            hint.textContent = 'Belum ada aset terdaftar untuk ruangan ini. Menampilkan semua jenis barang.';
+        } else if (unitId && preserveValue === '') {
+            hint.innerHTML = 'Ruangan ini belum punya aset terdaftar. Tambahkan asetnya dulu di '
+                + '<a href="' + (window.BASE_URL || '') + '/unit">menu Unit &amp; Barang</a>.';
             hint.style.display = 'block';
         } else {
             hint.style.display = 'none';
@@ -663,11 +672,9 @@ function refreshBarangOptions() {
 
 function clearSerialGroup() {
     const noSeri = document.getElementById('no_seri');
-    const manual = document.getElementById('no_seri_manual');
     const tipe = document.getElementById('tipe_barang');
     const asetId = document.getElementById('aset_id');
-    if (noSeri) { noSeri.style.display = ''; resetNoSeriSelect(noSeri); }
-    if (manual) { manual.style.display = 'none'; manual.value = ''; }
+    if (noSeri) resetNoSeriSelect(noSeri);
     if (tipe) { tipe.value = ''; tipe.readOnly = false; tipe.classList.remove('is-readonly'); }
     if (asetId) asetId.value = '';
 }
@@ -678,9 +685,6 @@ function resetNoSeriSelect(noSeri) {
     placeholder.disabled = true;
     placeholder.selected = true;
     noSeri.add(placeholder);
-    const manualOpt = new Option('\u2795 Ketik manual\u2026', '');
-    manualOpt.className = 'no-seri-manual-option';
-    noSeri.add(manualOpt);
 }
 
 function syncSerialOptions() {
@@ -691,6 +695,7 @@ function syncSerialOptions() {
 
     resetNoSeriSelect(noSeri);
     clearTipeGroup();
+    noSeri.required = false;
 
     if (!unit || !barang) return;
     const unitId = Number(unit.value || 0);
@@ -706,43 +711,26 @@ function syncSerialOptions() {
         opt.dataset.tipe = a.tipe || '';
         noSeri.add(opt);
     });
+
+    // Wajib pilih serial bila ada aset; laporan lama tanpa aset tidak dipaksa.
+    noSeri.required = asets.length > 0;
 }
 
 function clearTipeGroup() {
-    const noSeri = document.getElementById('no_seri');
-    const manual = document.getElementById('no_seri_manual');
     const tipe = document.getElementById('tipe_barang');
     const asetId = document.getElementById('aset_id');
-    if (noSeri) noSeri.style.display = '';
-    if (manual) { manual.style.display = 'none'; manual.value = ''; }
     if (tipe) { tipe.value = ''; tipe.readOnly = false; tipe.classList.remove('is-readonly'); }
     if (asetId) asetId.value = '';
 }
 
 function onNoSeriChange() {
     const select = document.getElementById('no_seri');
-    const manual = document.getElementById('no_seri_manual');
     const tipe = document.getElementById('tipe_barang');
     const asetId = document.getElementById('aset_id');
-    if (!select || !manual || !tipe || !asetId) return;
+    if (!select || !tipe || !asetId) return;
 
     const option = select.options[select.selectedIndex];
-    const isManualOption = option && option.classList.contains('no-seri-manual-option');
     const isAsetOption = option && option.dataset && option.dataset.id_aset;
-
-    if (isManualOption) {
-        asetId.value = '';
-        select.style.display = 'none';
-        manual.style.display = 'block';
-        tipe.readOnly = false;
-        tipe.classList.remove('is-readonly');
-        manual.focus();
-        return;
-    }
-
-    select.style.display = '';
-    manual.style.display = 'none';
-    manual.value = '';
 
     if (isAsetOption) {
         asetId.value = option.dataset.id_aset;
@@ -758,13 +746,11 @@ function onNoSeriChange() {
 
 function restoreSerialFromRow(row) {
     const noSeri = document.getElementById('no_seri');
-    const manual = document.getElementById('no_seri_manual');
     const tipe = document.getElementById('tipe_barang');
     const asetId = document.getElementById('aset_id');
     if (!noSeri) return;
 
     resetNoSeriSelect(noSeri);
-    noSeri.style.display = '';
 
     // Prioritaskan tautan lewat id_aset agar serial apa pun (termasuk "-") tetap
     // terpulihkan, tanpa bergantung pada teks serial.
@@ -785,23 +771,21 @@ function restoreSerialFromRow(row) {
             tipe.readOnly = true;
             tipe.classList.add('is-readonly');
         }
-        if (manual) { manual.style.display = 'none'; manual.value = ''; }
         return;
     }
 
-    // Fallback: serial manual lama. "-" tetap dianggap nilai sah (bukan kosong).
+    // Laporan lama (sebelum wajib memilih aset): tampilkan serial yang tersimpan.
     const serial = row.serial_number != null ? String(row.serial_number).trim() : '';
-    if (serial) {
+    if (serial !== '') {
         noSeri.add(new Option(serial, serial));
         noSeri.value = serial;
     }
     if (asetId) asetId.value = '';
     if (tipe) {
-        tipe.value = serial ? (row.tipe_barang || '') : '';
+        tipe.value = serial !== '' ? (row.tipe_barang || '') : '';
         tipe.readOnly = false;
         tipe.classList.remove('is-readonly');
     }
-    if (manual) { manual.style.display = 'none'; manual.value = ''; }
 }
 
 function hasOptionByText(select, text) {

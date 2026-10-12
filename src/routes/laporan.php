@@ -386,7 +386,9 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
             $existingJenisPoli = mb_strtoupper(trim((string) ($existing['urusan'] ?? '')), 'UTF-8') === 'POLI'
                 ? ($existing['jenis_poli'] ?? null)
                 : null;
-            [$data, $errors] = validateLaporanInput($conn, $input, $existingJenisPoli);
+            // Laporan lama (sebelum wajib aset) tetap boleh disimpan tanpa id_aset.
+            $allowNoAset = empty($existing['id_aset']);
+            [$data, $errors] = validateLaporanInput($conn, $input, $existingJenisPoli, $allowNoAset);
 
             if ($errors) {
                 flash('error', implode(' ', $errors));

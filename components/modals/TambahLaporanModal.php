@@ -107,12 +107,10 @@
                         <span class="material-symbols-outlined field-icon">tag</span>
                         <select id="no_seri" name="no_seri">
                             <option value="" disabled selected>Pilih No Seri</option>
-                            <option value="" class="no-seri-manual-option">&#10133; Ketik manual&hellip;</option>
                         </select>
-                        <input type="text" id="no_seri_manual" name="no_seri_manual" placeholder="Contoh: SN-1234" maxlength="50" autocomplete="off" style="display:none;">
                         <input type="hidden" id="aset_id" name="aset_id" value="">
                     </div>
-                    <small class="form-hint">Serial bisa dipilih dari aset ruangan atau manual.</small>
+                    <small class="form-hint">Wajib pilih unit aset yang rusak; serial diambil dari aset ruangan.</small>
                 </div>
 
                 <div class="form-group">

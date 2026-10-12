@@ -131,7 +131,7 @@ function idExists(mysqli $conn, string $table, int $id): bool
  *
  * @return array{0: array<string,mixed>, 1: string[]} [data bersih, daftar error]
  */
-function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenisPoli = null): array
+function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenisPoli = null, bool $allowNoAset = false): array
 {
     $statusList    = ['Pending', 'Proses', 'Selesai'];
     $prioritasList = ['Rendah', 'Sedang', 'Tinggi'];
@@ -145,7 +145,6 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
     $waktuKejadian = parseLocalDateTime($waktuKejadianInput);
     $asetId       = (int) ($input['aset_id'] ?? 0);
     $noSeri       = trim((string) ($input['no_seri'] ?? ''));
-    $noSeriManual = trim((string) ($input['no_seri_manual'] ?? ''));
     $tipe         = trim((string) ($input['tipe_barang'] ?? ''));
     $rincian      = trim((string) ($input['rincian_kerusakan'] ?? ''));
     $uraian       = trim((string) ($input['uraian_kegiatan'] ?? ''));
@@ -167,6 +166,8 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
 
     // Bila aset dipilih dari daftar: pastikan cocok dengan unit & barang, lalu
     // isi serial & tipe dari aset (tidak percaya nilai kiriman untuk kedua itu).
+    // Selain itu, unit aset WAJIB dipilih — kecuali laporan lama tanpa id_aset
+    // ($allowNoAset) yang sedang diedit ulang.
     $asetTipe = null;
     if ($asetId > 0) {
         $stmt = $conn->prepare(
@@ -185,12 +186,10 @@ function validateLaporanInput(mysqli $conn, array $input, ?string $existingJenis
             $noSeri   = $asetRow['serial_number'];
             $asetTipe = $asetRow['tipe'];
         }
+    } elseif (!$allowNoAset) {
+        $errors[] = 'Pilih unit aset yang rusak.';
     }
 
-    // Fallback: serial ketik manual (dipakai bila tidak memilih aset).
-    if ($noSeri === '' || $noSeri === null) {
-        $noSeri = $noSeriManual;
-    }
     if ($asetTipe !== null && $asetTipe !== '') {
         $tipe = $asetTipe;
     }
