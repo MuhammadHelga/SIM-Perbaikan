@@ -337,33 +337,6 @@ body {
 .jr-col-aksi { 
     width: 90px; 
 }
-
-/* Kolom Aksi menempel kanan agar selalu terlihat saat tabel di-scroll */
-.jr-table td.jr-col-aksi {
-    position: sticky;
-    right: 0;
-    z-index: 1;
-    background: #ffffff;
-}
-
-.jr-table tbody tr:hover td.jr-col-aksi {
-    background: #fafbff;
-}
-
-.jr-table thead th.jr-col-aksi {
-    position: sticky;
-    right: 0;
-    z-index: 3;
-}
-
-/* Bayangan pemisah hanya saat container benar-benar di-scroll */
-.jr-table-scroll.is-scrolled-x .jr-table td.jr-col-aksi {
-    box-shadow: inset 1px 0 0 #e2e8f0, -8px 0 10px -8px rgba(15, 23, 42, 0.2);
-}
-
-.jr-table-scroll.is-scrolled-x .jr-table thead th.jr-col-aksi {
-    box-shadow: 0 2px 5px -3px rgba(15, 23, 42, 0.35), -8px 0 10px -8px rgba(15, 23, 42, 0.2);
-}
 .jr-empty { 
     text-align: center; 
     padding: 40px; 

@@ -296,58 +296,6 @@ html.theme-transition .alokasi-card {
   background: var(--surface-2);
 }
 
-/* Kolom Aksi sticky (laporan) — warna gelap */
-[data-theme='dark'] .data-table td.col-aksi {
-  background: var(--surface);
-}
-
-[data-theme='dark'] .data-table tbody tr:hover td.col-aksi {
-  background: var(--surface-2);
-}
-
-[data-theme='dark'] .table-scroll.is-scrolled-x .data-table td.col-aksi {
-  box-shadow: inset 1px 0 0 var(--border), -8px 0 10px -8px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme='dark'] .table-head-wrap.is-scrolled-x .data-table thead th.col-aksi {
-  box-shadow: 0 2px 5px -3px rgba(0, 0, 0, 0.7), -8px 0 10px -8px rgba(0, 0, 0, 0.6);
-}
-
-/* Kolom Aksi sticky (unit/subnet) — warna gelap */
-[data-theme='dark'] .data-table td.action-buttons {
-  background: var(--surface);
-}
-
-[data-theme='dark'] .data-table tbody tr:hover td.action-buttons {
-  background: var(--surface-2);
-}
-
-[data-theme='dark'] .table-responsive.is-scrolled-x .data-table td.action-buttons {
-  box-shadow: inset 1px 0 0 var(--border), -8px 0 10px -8px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme='dark'] .unit-head-wrap.is-scrolled-x .data-table th:last-child,
-[data-theme='dark'] .table-responsive.is-scrolled-x .data-table th.text-right {
-  box-shadow: 0 2px 5px -3px rgba(0, 0, 0, 0.7), -8px 0 10px -8px rgba(0, 0, 0, 0.6);
-}
-
-/* Kolom Aksi sticky (jaringan) — warna gelap */
-[data-theme='dark'] .jr-table td.jr-col-aksi {
-  background: var(--surface);
-}
-
-[data-theme='dark'] .jr-table tbody tr:hover td.jr-col-aksi {
-  background: var(--surface-2);
-}
-
-[data-theme='dark'] .jr-table-scroll.is-scrolled-x .jr-table td.jr-col-aksi {
-  box-shadow: inset 1px 0 0 var(--border), -8px 0 10px -8px rgba(0, 0, 0, 0.6);
-}
-
-[data-theme='dark'] .jr-table-scroll.is-scrolled-x .jr-table thead th.jr-col-aksi {
-  box-shadow: 0 2px 5px -3px rgba(0, 0, 0, 0.7), -8px 0 10px -8px rgba(0, 0, 0, 0.6);
-}
-
 [data-theme='dark'] .row-total {
   background-color: var(--surface);
   color: #e2e8f0;

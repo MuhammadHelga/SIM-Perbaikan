@@ -228,36 +228,6 @@ body {
     gap: 12px;
 }
 
-/* Kolom Aksi menempel kanan agar selalu terlihat saat tabel di-scroll */
-.data-table td.action-buttons {
-    position: sticky;
-    right: 0;
-    z-index: 1;
-    background: #ffffff;
-}
-
-.data-table tbody tr:hover td.action-buttons {
-    background: #f8fafc;
-}
-
-/* Header kolom Aksi (unit: th terakhir di head-wrap; subnet: th.text-right) */
-.unit-head-wrap .data-table th:last-child,
-.data-table th.text-right {
-    position: sticky;
-    right: 0;
-    z-index: 2;
-}
-
-/* Bayangan pemisah hanya saat container benar-benar di-scroll */
-.table-responsive.is-scrolled-x .data-table td.action-buttons {
-    box-shadow: inset 1px 0 0 #e2e8f0, -8px 0 10px -8px rgba(15, 23, 42, 0.2);
-}
-
-.unit-head-wrap.is-scrolled-x .data-table th:last-child,
-.table-responsive.is-scrolled-x .data-table th.text-right {
-    box-shadow: 0 2px 5px -3px rgba(15, 23, 42, 0.35), -8px 0 10px -8px rgba(15, 23, 42, 0.2);
-}
-
 .icon-action {
     display: inline-flex;
     align-items: center;
