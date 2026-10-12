@@ -12,7 +12,19 @@ class Ruangan
     public function getAll()
     {
         $stmt = $this->conn->prepare(
-            "SELECT * FROM ruangan ORDER BY nama_ruangan ASC"
+            "SELECT * FROM ruangan ORDER BY aktif DESC, nama_ruangan ASC"
+        );
+
+        $stmt->execute();
+
+        return $stmt->get_result();
+    }
+
+    /** Hanya ruangan aktif — dipakai untuk dropdown form. */
+    public function getActive()
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM ruangan WHERE aktif = 1 ORDER BY nama_ruangan ASC"
         );
 
         $stmt->execute();
@@ -56,6 +68,19 @@ class Ruangan
         );
 
         $stmt->bind_param("ssi", $kode, $nama_ruangan, $id);
+
+        return $stmt->execute();
+    }
+
+    /** Aktifkan (1) / nonaktifkan (0) — pengganti hapus permanen. */
+    public function setAktif($id, int $aktif): bool
+    {
+        $aktif = $aktif ? 1 : 0;
+        $stmt = $this->conn->prepare(
+            "UPDATE ruangan SET aktif = ? WHERE id = ?"
+        );
+
+        $stmt->bind_param("ii", $aktif, $id);
 
         return $stmt->execute();
     }

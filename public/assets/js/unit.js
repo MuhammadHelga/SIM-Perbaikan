@@ -18,15 +18,20 @@ document.addEventListener('DOMContentLoaded', function () {
     initUnitTableSync('barangScroll',  'barangHeadWrap');
     initUnitTableSync('asetScroll',    'asetHeadWrap');
 
-    // Toggle "Tampilkan nonaktif" pada tabel aset (baris nonaktif disembunyikan CSS).
-    const toggleNonaktif = document.getElementById('toggleNonaktifAset');
-    const asetScroll     = document.getElementById('asetScroll');
-    if (toggleNonaktif && asetScroll) {
-        toggleNonaktif.addEventListener('change', function () {
-            asetScroll.classList.toggle('show-inactive', toggleNonaktif.checked);
-        });
-    }
+    // Toggle "Tampilkan nonaktif" per tabel (baris nonaktif disembunyikan CSS).
+    bindNonaktifToggle('toggleNonaktifRuangan', 'ruanganScroll');
+    bindNonaktifToggle('toggleNonaktifBarang',  'barangScroll');
+    bindNonaktifToggle('toggleNonaktifAset',    'asetScroll');
 });
+
+function bindNonaktifToggle(toggleId, scrollId) {
+    const toggle = document.getElementById(toggleId);
+    const scroll = document.getElementById(scrollId);
+    if (!toggle || !scroll) return;
+    toggle.addEventListener('change', function () {
+        scroll.classList.toggle('show-inactive', toggle.checked);
+    });
+}
 
 function initUnitTableSync(scrollId, headId) {
     const scroll  = document.getElementById(scrollId);
@@ -86,13 +91,39 @@ function openUnitEdit(btn) {
 
 function confirmUnitDelete(jenis, id, nama) {
     openConfirmModal({
-        icon: 'delete',
-        title: 'Hapus ' + (UNIT_LABEL[jenis] || 'Data'),
-        text: 'Yakin hapus "' + nama + '"? Data yang masih dipakai laporan tidak akan terhapus.',
-        confirmLabel: 'Ya, Hapus',
+        icon: 'block',
+        title: 'Nonaktifkan ' + (UNIT_LABEL[jenis] || 'Data'),
+        text: 'Nonaktifkan "' + nama + '"? Data dapat diaktifkan kembali kapan saja. Data yang masih dipakai aset/laporan tidak bisa dinonaktifkan.',
+        confirmLabel: 'Ya, Nonaktifkan',
         variant: 'red',
         onConfirm: function () {
             postAction((window.BASE_URL || '') + '/unit/' + jenis + '/hapus/' + id);
+        }
+    });
+}
+
+function confirmUnitRestore(jenis, id, nama) {
+    openConfirmModal({
+        icon: 'restart_alt',
+        title: 'Aktifkan ' + (UNIT_LABEL[jenis] || 'Data'),
+        text: 'Aktifkan kembali "' + nama + '"?',
+        confirmLabel: 'Ya, Aktifkan',
+        variant: 'green',
+        onConfirm: function () {
+            postAction((window.BASE_URL || '') + '/unit/' + jenis + '/aktifkan/' + id);
+        }
+    });
+}
+
+function confirmUnitPurge(jenis, id, nama) {
+    openConfirmModal({
+        icon: 'delete_forever',
+        title: 'Hapus Permanen',
+        text: 'Hapus permanen "' + nama + '"? Tindakan ini tidak bisa dibatalkan. Data yang masih dipakai aset/laporan tidak bisa dihapus.',
+        confirmLabel: 'Ya, Hapus Permanen',
+        variant: 'red',
+        onConfirm: function () {
+            postAction((window.BASE_URL || '') + '/unit/' + jenis + '/hapus-permanen/' + id);
         }
     });
 }

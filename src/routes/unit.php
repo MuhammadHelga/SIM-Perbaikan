@@ -5,8 +5,34 @@
  */
 
 return function (Router $router, mysqli $conn, string $basePath, AuthService $authService): void {
-    // Aksi dinamis (wajib POST + CSRF): /unit/ruangan/hapus/{id}, /unit/barang/hapus/{id}
-    $router->any('/unit/{jenis:ruangan|barang}/hapus/{id:\d+}', function (array $params) use ($conn, $basePath) {
+    // Hitung pemakaian ruangan/barang: dari laporan DAN aset. Aset tidak lagi
+    // ikut terhapus otomatis (FK RESTRICT), jadi pemakaiannya dicek di sini juga.
+    $pemakaianUnit = function (string $jenis, int $id) use ($conn): array {
+        $kolom = $jenis === 'ruangan' ? 'id_ruangan' : 'id_barang';
+
+        $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE $kolom = ?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $laporan = (int) $stmt->get_result()->fetch_assoc()['j'];
+
+        $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM aset_barang WHERE $kolom = ?");
+        $stmt->bind_param('i', $id);
+        $stmt->execute();
+        $aset = (int) $stmt->get_result()->fetch_assoc()['j'];
+
+        return ['aset' => $aset, 'laporan' => $laporan];
+    };
+
+    $pesanPemakaian = function (array $pakai): string {
+        $bagian = [];
+        if ($pakai['aset'] > 0)    { $bagian[] = "{$pakai['aset']} aset"; }
+        if ($pakai['laporan'] > 0) { $bagian[] = "{$pakai['laporan']} laporan"; }
+        return implode(' dan ', $bagian);
+    };
+
+    // Nonaktifkan ruangan/barang (soft-delete). Hanya bila tidak sedang dipakai
+    // aset/laporan, supaya tidak meninggalkan referensi menggantung.
+    $router->any('/unit/{jenis:ruangan|barang}/hapus/{id:\d+}', function (array $params) use ($conn, $basePath, $pemakaianUnit, $pesanPemakaian) {
         requireRole($basePath, ['admin']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
@@ -16,25 +42,10 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
         $jenis = $params['jenis'];
         $id    = (int) $params['id'];
-        $kolom = $jenis === 'ruangan' ? 'id_ruangan' : 'id_barang';
+        $pakai = $pemakaianUnit($jenis, $id);
 
-        // Hitung pemakaian dari laporan DAN aset. Aset tidak lagi ikut terhapus
-        // otomatis (FK kini RESTRICT), jadi pemakaiannya harus dicek di sini juga.
-        $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM laporan_kerusakan WHERE $kolom = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $dipakaiLaporan = (int) $stmt->get_result()->fetch_assoc()['j'];
-
-        $stmt = $conn->prepare("SELECT COUNT(*) AS j FROM aset_barang WHERE $kolom = ?");
-        $stmt->bind_param('i', $id);
-        $stmt->execute();
-        $dipakaiAset = (int) $stmt->get_result()->fetch_assoc()['j'];
-
-        if ($dipakaiLaporan > 0 || $dipakaiAset > 0) {
-            $bagian = [];
-            if ($dipakaiAset > 0)    { $bagian[] = "{$dipakaiAset} aset"; }
-            if ($dipakaiLaporan > 0) { $bagian[] = "{$dipakaiLaporan} laporan"; }
-            flash('error', 'Tidak bisa dihapus: masih dipakai oleh ' . implode(' dan ', $bagian) . '.');
+        if ($pakai['aset'] > 0 || $pakai['laporan'] > 0) {
+            flash('error', 'Tidak bisa dinonaktifkan: masih dipakai oleh ' . $pesanPemakaian($pakai) . '.');
         } else {
             try {
                 if ($jenis === 'ruangan') {
@@ -44,10 +55,66 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
                     require_once __DIR__ . '/../controllers/barangController.php';
                     (new barangController($conn))->destroy($id);
                 }
-                flash('success', 'Data berhasil dihapus.');
+                flash('success', 'Data berhasil dinonaktifkan.');
             } catch (mysqli_sql_exception $e) {
-                flash('error', 'Gagal menghapus: data masih terhubung dengan data lain.');
+                flash('error', 'Gagal menonaktifkan: data masih terhubung dengan data lain.');
             }
+        }
+
+        redirect($basePath . '/unit');
+    });
+
+    // Aktifkan kembali ruangan/barang yang nonaktif.
+    $router->any('/unit/{jenis:ruangan|barang}/aktifkan/{id:\d+}', function (array $params) use ($conn, $basePath) {
+        requireRole($basePath, ['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+            flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
+            redirect($basePath . '/unit');
+        }
+
+        $id = (int) $params['id'];
+        if ($params['jenis'] === 'ruangan') {
+            require_once __DIR__ . '/../controllers/ruanganController.php';
+            (new ruanganController($conn))->restore($id);
+        } else {
+            require_once __DIR__ . '/../controllers/barangController.php';
+            (new barangController($conn))->restore($id);
+        }
+
+        flash('success', 'Data diaktifkan kembali.');
+        redirect($basePath . '/unit');
+    });
+
+    // Hapus permanen: hanya bila tidak dipakai aset/laporan mana pun.
+    $router->any('/unit/{jenis:ruangan|barang}/hapus-permanen/{id:\d+}', function (array $params) use ($conn, $basePath, $pemakaianUnit, $pesanPemakaian) {
+        requireRole($basePath, ['admin']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+            flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
+            redirect($basePath . '/unit');
+        }
+
+        $jenis = $params['jenis'];
+        $id    = (int) $params['id'];
+        $pakai = $pemakaianUnit($jenis, $id);
+
+        if ($pakai['aset'] > 0 || $pakai['laporan'] > 0) {
+            flash('error', 'Tidak bisa dihapus permanen: masih dipakai oleh ' . $pesanPemakaian($pakai) . '.');
+            redirect($basePath . '/unit');
+        }
+
+        try {
+            if ($jenis === 'ruangan') {
+                require_once __DIR__ . '/../controllers/ruanganController.php';
+                (new ruanganController($conn))->destroyPermanent($id);
+            } else {
+                require_once __DIR__ . '/../controllers/barangController.php';
+                (new barangController($conn))->destroyPermanent($id);
+            }
+            flash('success', 'Data dihapus permanen.');
+        } catch (mysqli_sql_exception $e) {
+            flash('error', 'Gagal menghapus permanen: data masih terhubung dengan data lain.');
         }
 
         redirect($basePath . '/unit');
@@ -214,9 +281,19 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         require_once __DIR__ . '/../controllers/barangController.php';
         require_once __DIR__ . '/../controllers/asetBarangController.php';
 
-        $ruanganList = (new ruanganController($conn))->index()->fetch_all(MYSQLI_ASSOC);
-        $barangList  = (new barangController($conn))->index()->fetch_all(MYSQLI_ASSOC);
+        $ruanganList = (new ruanganController($conn))->indexAll()->fetch_all(MYSQLI_ASSOC);
+        $barangList  = (new barangController($conn))->indexAll()->fetch_all(MYSQLI_ASSOC);
         $asetList    = (new asetBarangController($conn))->indexAll();
+
+        // Dropdown pada form aset hanya menampilkan ruangan/barang yang aktif.
+        $ruanganAktifList = array_values(array_filter(
+            $ruanganList,
+            static fn(array $r): bool => (int) ($r['aktif'] ?? 1) === 1
+        ));
+        $barangAktifList = array_values(array_filter(
+            $barangList,
+            static fn(array $b): bool => (int) ($b['aktif'] ?? 1) === 1
+        ));
 
         require __DIR__ . '/../views/unit_barang/screens/UnitBarangView.php';
     });

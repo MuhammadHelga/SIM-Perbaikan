@@ -13,7 +13,19 @@ class Barang
     public function getAll()
     {
         $stmt = $this->conn->prepare(
-            "SELECT * FROM barang ORDER BY nama_barang ASC"
+            "SELECT * FROM barang ORDER BY aktif DESC, nama_barang ASC"
+        );
+
+        $stmt->execute();
+
+        return $stmt->get_result();
+    }
+
+    /** Hanya barang aktif — dipakai untuk dropdown form. */
+    public function getActive()
+    {
+        $stmt = $this->conn->prepare(
+            "SELECT * FROM barang WHERE aktif = 1 ORDER BY nama_barang ASC"
         );
 
         $stmt->execute();
@@ -102,6 +114,19 @@ class Barang
         );
 
         $stmt->bind_param("ssi", $kode, $nama_barang, $id);
+
+        return $stmt->execute();
+    }
+
+    /** Aktifkan (1) / nonaktifkan (0) — pengganti hapus permanen. */
+    public function setAktif($id, int $aktif): bool
+    {
+        $aktif = $aktif ? 1 : 0;
+        $stmt = $this->conn->prepare(
+            "UPDATE barang SET aktif = ? WHERE id = ?"
+        );
+
+        $stmt->bind_param("ii", $aktif, $id);
 
         return $stmt->execute();
     }

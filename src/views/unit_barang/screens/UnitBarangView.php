@@ -2,9 +2,22 @@
 $ruanganList  = $ruanganList ?? [];
 $barangList   = $barangList ?? [];
 $asetList     = $asetList ?? [];
-$totalRuangan = count($ruanganList);
-$totalBarang  = count($barangList);
-$totalAset    = 0;
+$ruanganAktifList = $ruanganAktifList ?? $ruanganList;
+$barangAktifList  = $barangAktifList ?? $barangList;
+
+$totalRuangan = 0;
+foreach ($ruanganList as $r) {
+    if ((int) ($r['aktif'] ?? 1) === 1) {
+        $totalRuangan++;
+    }
+}
+$totalBarang = 0;
+foreach ($barangList as $b) {
+    if ((int) ($b['aktif'] ?? 1) === 1) {
+        $totalBarang++;
+    }
+}
+$totalAset = 0;
 foreach ($asetList as $a) {
     if ((int) ($a['aktif'] ?? 1) === 1) {
         $totalAset++;
@@ -80,9 +93,15 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                         <div class="icon-badge bg-blue"><span class="material-symbols-outlined">meeting_room</span></div>
                         <h3>Daftar Unit/Ruangan</h3>
                     </div>
-                    <button class="btn btn-primary" onclick="openUnitModal('ruangan')">
-                        <span class="material-symbols-outlined">add_circle</span> Tambah Unit
-                    </button>
+                    <div class="table-header__actions">
+                        <label class="toggle-nonaktif" title="Tampilkan unit/ruangan yang sudah dinonaktifkan">
+                            <input type="checkbox" id="toggleNonaktifRuangan">
+                            <span>Tampilkan nonaktif</span>
+                        </label>
+                        <button class="btn btn-primary" onclick="openUnitModal('ruangan')">
+                            <span class="material-symbols-outlined">add_circle</span> Tambah Unit
+                        </button>
+                    </div>
                 </div>
                 <div class="unit-head-wrap" id="ruanganHeadWrap">
                     <table class="data-table">
@@ -114,11 +133,14 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                             <?php if (!$ruanganList): ?>
                                 <tr><td colspan="4">Belum ada data.</td></tr>
                             <?php endif; ?>
-                            <?php foreach ($ruanganList as $i => $r): ?>
-                                <tr>
+                            <?php foreach ($ruanganList as $i => $r): $isAktif = (int) ($r['aktif'] ?? 1) === 1; ?>
+                                <tr class="<?= $isAktif ? '' : 'row-inactive' ?>">
                                     <td><?= $i + 1 ?></td>
                                     <td><?= htmlspecialchars($r['kode_ruangan'] ?? '') !== '' ? htmlspecialchars($r['kode_ruangan']) : '-' ?></td>
-                                    <td><?= htmlspecialchars($r['nama_ruangan']) ?></td>
+                                    <td>
+                                        <?= htmlspecialchars($r['nama_ruangan']) ?>
+                                        <?php if (!$isAktif): ?><span class="aset-status aset-status--nonaktif">Nonaktif</span><?php endif; ?>
+                                    </td>
                                     <td class="action-buttons">
                                         <button type="button" class="icon-action text-warning" title="Edit"
                                             data-jenis="ruangan"
@@ -128,10 +150,21 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                                             onclick="openUnitEdit(this)">
                                             <span class="material-symbols-outlined">edit</span>
                                         </button>
-                                        <button type="button" class="icon-action text-danger" title="Hapus"
-                                            onclick="confirmUnitDelete('ruangan', <?= (int)$r['id'] ?>, '<?= htmlspecialchars($r['nama_ruangan'], ENT_QUOTES) ?>')">
-                                            <span class="material-symbols-outlined">delete</span>
-                                        </button>
+                                        <?php if ($isAktif): ?>
+                                            <button type="button" class="icon-action text-danger" title="Nonaktifkan"
+                                                onclick="confirmUnitDelete('ruangan', <?= (int)$r['id'] ?>, '<?= htmlspecialchars($r['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                <span class="material-symbols-outlined">block</span>
+                                            </button>
+                                        <?php else: ?>
+                                            <button type="button" class="icon-action text-success" title="Aktifkan kembali"
+                                                onclick="confirmUnitRestore('ruangan', <?= (int)$r['id'] ?>, '<?= htmlspecialchars($r['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                <span class="material-symbols-outlined">restart_alt</span>
+                                            </button>
+                                            <button type="button" class="icon-action text-danger" title="Hapus permanen"
+                                                onclick="confirmUnitPurge('ruangan', <?= (int)$r['id'] ?>, '<?= htmlspecialchars($r['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                <span class="material-symbols-outlined">delete_forever</span>
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -147,9 +180,15 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                         <div class="icon-badge bg-teal"><span class="material-symbols-outlined">inventory_2</span></div>
                         <h3>Daftar Barang</h3>
                     </div>
-                    <button class="btn btn-primary" onclick="openUnitModal('barang')">
-                        <span class="material-symbols-outlined">add_circle</span> Tambah Barang
-                    </button>
+                    <div class="table-header__actions">
+                        <label class="toggle-nonaktif" title="Tampilkan barang yang sudah dinonaktifkan">
+                            <input type="checkbox" id="toggleNonaktifBarang">
+                            <span>Tampilkan nonaktif</span>
+                        </label>
+                        <button class="btn btn-primary" onclick="openUnitModal('barang')">
+                            <span class="material-symbols-outlined">add_circle</span> Tambah Barang
+                        </button>
+                    </div>
                 </div>
                 <div class="unit-head-wrap" id="barangHeadWrap">
                     <table class="data-table">
@@ -181,11 +220,14 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                             <?php if (!$barangList): ?>
                                 <tr><td colspan="4">Belum ada data.</td></tr>
                             <?php endif; ?>
-                            <?php foreach ($barangList as $i => $b): ?>
-                                <tr>
+                            <?php foreach ($barangList as $i => $b): $isAktif = (int) ($b['aktif'] ?? 1) === 1; ?>
+                                <tr class="<?= $isAktif ? '' : 'row-inactive' ?>">
                                     <td><?= $i + 1 ?></td>
                                     <td><?= htmlspecialchars($b['kode_barang'] ?? '') !== '' ? htmlspecialchars($b['kode_barang']) : '-' ?></td>
-                                    <td><?= htmlspecialchars($b['nama_barang']) ?></td>
+                                    <td>
+                                        <?= htmlspecialchars($b['nama_barang']) ?>
+                                        <?php if (!$isAktif): ?><span class="aset-status aset-status--nonaktif">Nonaktif</span><?php endif; ?>
+                                    </td>
                                     <td class="action-buttons">
                                         <button type="button" class="icon-action text-warning" title="Edit"
                                             data-jenis="barang"
@@ -195,10 +237,21 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                                             onclick="openUnitEdit(this)">
                                             <span class="material-symbols-outlined">edit</span>
                                         </button>
-                                        <button type="button" class="icon-action text-danger" title="Hapus"
-                                            onclick="confirmUnitDelete('barang', <?= (int)$b['id'] ?>, '<?= htmlspecialchars($b['nama_barang'], ENT_QUOTES) ?>')">
-                                            <span class="material-symbols-outlined">delete</span>
-                                        </button>
+                                        <?php if ($isAktif): ?>
+                                            <button type="button" class="icon-action text-danger" title="Nonaktifkan"
+                                                onclick="confirmUnitDelete('barang', <?= (int)$b['id'] ?>, '<?= htmlspecialchars($b['nama_barang'], ENT_QUOTES) ?>')">
+                                                <span class="material-symbols-outlined">block</span>
+                                            </button>
+                                        <?php else: ?>
+                                            <button type="button" class="icon-action text-success" title="Aktifkan kembali"
+                                                onclick="confirmUnitRestore('barang', <?= (int)$b['id'] ?>, '<?= htmlspecialchars($b['nama_barang'], ENT_QUOTES) ?>')">
+                                                <span class="material-symbols-outlined">restart_alt</span>
+                                            </button>
+                                            <button type="button" class="icon-action text-danger" title="Hapus permanen"
+                                                onclick="confirmUnitPurge('barang', <?= (int)$b['id'] ?>, '<?= htmlspecialchars($b['nama_barang'], ENT_QUOTES) ?>')">
+                                                <span class="material-symbols-outlined">delete_forever</span>
+                                            </button>
+                                        <?php endif; ?>
                                     </td>
                                 </tr>
                             <?php endforeach; ?>
@@ -269,7 +322,7 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                                 $tipe     = (string) ($a['tipe'] ?? '');
                                 $labelAks = $serial !== '' ? $serial : ($tipe !== '' ? $tipe : '#' . (int) $a['id']);
                             ?>
-                            <tr class="aset-row<?= $isAktif ? '' : ' is-inactive' ?>">
+                            <tr class="<?= $isAktif ? '' : 'row-inactive' ?>">
                                 <td><?= $i + 1 ?></td>
                                 <td><?= htmlspecialchars($a['nama_ruangan']) ?></td>
                                 <td><?= htmlspecialchars($a['nama_barang']) ?></td>
@@ -387,7 +440,7 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                         <span class="material-symbols-outlined field-icon">meeting_room</span>
                         <select id="aset-ruangan" name="id_ruangan" required>
                             <option value="" disabled selected>Pilih Unit / Ruang</option>
-                            <?php foreach ($ruanganList as $r): ?>
+                            <?php foreach ($ruanganAktifList as $r): ?>
                                 <option value="<?= (int)$r['id'] ?>"><?= htmlspecialchars($r['nama_ruangan']) ?></option>
                             <?php endforeach; ?>
                         </select>
@@ -400,7 +453,7 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                         <span class="material-symbols-outlined field-icon">inventory_2</span>
                         <select id="aset-barang" name="id_barang" required>
                             <option value="" disabled selected>Pilih Jenis Barang</option>
-                            <?php foreach ($barangList as $b): ?>
+                            <?php foreach ($barangAktifList as $b): ?>
                                 <option value="<?= (int)$b['id'] ?>"><?= htmlspecialchars($b['nama_barang']) ?></option>
                             <?php endforeach; ?>
                         </select>

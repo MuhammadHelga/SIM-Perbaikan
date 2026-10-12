@@ -285,13 +285,15 @@ body {
     cursor: pointer;
 }
 
-/* Baris aset nonaktif: disembunyikan kecuali toggle "Tampilkan nonaktif" aktif */
-.aset-row.is-inactive {
+/* Baris nonaktif (ruangan/barang/aset): disembunyikan kecuali toggle "Tampilkan nonaktif" aktif */
+.row-inactive {
     display: none;
     opacity: 0.7;
 }
 
-#asetScroll.show-inactive .aset-row.is-inactive {
+#ruanganScroll.show-inactive .row-inactive,
+#barangScroll.show-inactive .row-inactive,
+#asetScroll.show-inactive .row-inactive {
     display: table-row;
 }
 

@@ -553,6 +553,7 @@ class LaporanKerusakan
         $stmt = $this->conn->prepare(
             "SELECT id, nama_barang
              FROM barang
+             WHERE aktif = 1
              ORDER BY nama_barang ASC"
         );
 
@@ -567,6 +568,7 @@ class LaporanKerusakan
         $stmt = $this->conn->prepare(
             "SELECT id, nama_ruangan
              FROM ruangan
+             WHERE aktif = 1
              ORDER BY nama_ruangan ASC"
         );
 
