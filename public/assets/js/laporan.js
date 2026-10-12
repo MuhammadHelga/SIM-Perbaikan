@@ -57,6 +57,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Dropdown custom (dengan kotak pencarian) untuk Unit & Jenis Barang.
     initCustomSelect('unit');
     initCustomSelect('jenis_barang');
+    initCustomSelect('jenis_poli', { searchable: false });
+    initCustomSelect('status', { searchable: false });
+    initCustomSelect('prioritas', { searchable: false });
     document.addEventListener('click', function () {
         closeAllCustomSelects();
     });
@@ -106,7 +109,10 @@ function closeModal(id) {
 
 const CUSTOM_SELECTS = {};
 
-function initCustomSelect(selectId) {
+function initCustomSelect(selectId, options) {
+    options = options || {};
+    const searchable = options.searchable !== false;
+
     const select = document.getElementById(selectId);
     if (!select || select.dataset.csReady === '1') return;
     select.dataset.csReady = '1';
@@ -137,18 +143,6 @@ function initCustomSelect(selectId) {
     const panel = document.createElement('div');
     panel.className = 'cs__panel';
 
-    const searchWrap = document.createElement('div');
-    searchWrap.className = 'cs__search-wrap';
-    const searchIcon = document.createElement('span');
-    searchIcon.className = 'material-symbols-outlined';
-    searchIcon.textContent = 'search';
-    const search = document.createElement('input');
-    search.type = 'text';
-    search.className = 'cs__search';
-    search.placeholder = 'Cari...';
-    search.autocomplete = 'off';
-    searchWrap.append(searchIcon, search);
-
     const list = document.createElement('ul');
     list.className = 'cs__list';
     list.setAttribute('role', 'listbox');
@@ -157,7 +151,24 @@ function initCustomSelect(selectId) {
     empty.className = 'cs__empty';
     empty.textContent = 'Tidak ada hasil';
 
-    panel.append(searchWrap, list, empty);
+    // Kotak pencarian hanya untuk daftar panjang; list pendek (Status/Prioritas) tanpa search.
+    let search = null;
+    if (searchable) {
+        const searchWrap = document.createElement('div');
+        searchWrap.className = 'cs__search-wrap';
+        const searchIcon = document.createElement('span');
+        searchIcon.className = 'material-symbols-outlined';
+        searchIcon.textContent = 'search';
+        search = document.createElement('input');
+        search.type = 'text';
+        search.className = 'cs__search';
+        search.placeholder = 'Cari...';
+        search.autocomplete = 'off';
+        searchWrap.append(searchIcon, search);
+        panel.appendChild(searchWrap);
+    }
+
+    panel.append(list, empty);
     root.append(trigger);
 
     select.style.display = 'none';
@@ -207,7 +218,7 @@ function initCustomSelect(selectId) {
     }
 
     function applyFilter() {
-        const q = search.value.trim().toLowerCase();
+        const q = searchable ? search.value.trim().toLowerCase() : '';
         let shown = 0;
         Array.from(list.querySelectorAll('.cs__option')).forEach(function (li) {
             const match = q === '' || li.textContent.toLowerCase().includes(q);
@@ -274,7 +285,7 @@ function initCustomSelect(selectId) {
     function open() {
         if (select.disabled) return;
         closeAllCustomSelects();
-        search.value = '';
+        if (search) search.value = '';
         applyFilter();
         isOpen = true;
         root.classList.add('is-open');
@@ -283,7 +294,7 @@ function initCustomSelect(selectId) {
         positionPanel();
         window.addEventListener('scroll', onReposition, true);
         window.addEventListener('resize', onReposition);
-        search.focus();
+        if (search) search.focus();
     }
 
     function close() {
@@ -300,24 +311,34 @@ function initCustomSelect(selectId) {
         isOpen ? close() : open();
     });
     panel.addEventListener('click', function (e) { e.stopPropagation(); });
-    search.addEventListener('input', applyFilter);
-    search.addEventListener('keydown', function (e) {
+
+    function onKeydown(e) {
         if (e.key === 'Escape') {
+            if (!isOpen) return;
             e.stopPropagation();
             close();
             trigger.focus();
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
+            if (!isOpen) { open(); return; }
             setHighlight(highlight < 0 ? 0 : highlight + 1);
         } else if (e.key === 'ArrowUp') {
             e.preventDefault();
+            if (!isOpen) { open(); return; }
             setHighlight(highlight < 0 ? visibleOptions().length - 1 : highlight - 1);
         } else if (e.key === 'Enter') {
+            if (!isOpen) return; // biarkan tombol trigger membuka (klik default)
             e.preventDefault();
             const opts = visibleOptions();
             if (opts.length) opts[highlight < 0 ? 0 : highlight].click();
         }
-    });
+    }
+
+    if (search) {
+        search.addEventListener('input', applyFilter);
+        search.addEventListener('keydown', onKeydown);
+    }
+    trigger.addEventListener('keydown', onKeydown);
 
     buildList();
     sync();
@@ -337,8 +358,7 @@ function refreshCustomSelect(selectId) {
 }
 
 function refreshAllCustomSelects() {
-    refreshCustomSelect('unit');
-    refreshCustomSelect('jenis_barang');
+    ['unit', 'jenis_barang', 'jenis_poli', 'status', 'prioritas'].forEach(refreshCustomSelect);
 }
 
 function closeAllCustomSelects() {
@@ -576,6 +596,7 @@ function updateJenisPoliVisibility() {
     jenisPoli.disabled = !isPoli;
     jenisPoli.required = Boolean(isPoli);
     if (!isPoli) jenisPoli.value = '';
+    refreshCustomSelect('jenis_poli');
 }
 
 function formatUnitLocation(row) {
