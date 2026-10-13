@@ -265,7 +265,7 @@ if ($search !== '') {
                     <thead>
                         <tr>
                             <th class="col-tgl">Tanggal</th>
-                            <th class="col-urusan">Urusan/Ruangan</th>
+                            <th class="col-urusan">Urusan/<wbr>Ruangan</th>
                             <th class="col-barang">Barang</th>
                             <th class="col-tipe">Tipe</th>
                             <th class="col-sn">Serial Number</th>

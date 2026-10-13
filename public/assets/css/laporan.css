@@ -440,7 +440,8 @@ main.page-wrap {
   text-align: left;
   padding: 12px 16px;
   font-weight: 600;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.25;
   box-sizing: border-box;
 }
 
