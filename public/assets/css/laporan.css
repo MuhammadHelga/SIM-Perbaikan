@@ -1398,20 +1398,29 @@ main.page-wrap {
 
 .surat-paper-ttd-row {
   display: flex;
-  justify-content: flex-end;
-  gap: 40px;
-  margin-top: 16px;
+  justify-content: space-between;
+  padding: 0 16px;
+  gap: 30px;
+  margin-top: 18px;
 }
 
 .surat-paper-ttd-box {
   text-align: center;
-  min-width: 170px;
+  min-width: 180px;
 }
 
 .surat-paper-ttd-box .ttd-lbl {
   font-weight: 600;
   font-size: 10.5pt;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+}
+
+.surat-paper-ttd-box .ttd-jabatan-str {
+  font-size: 10pt;
+  color: #334155;
+  margin-bottom: 8px;
+  min-height: 20px;
+  font-weight: 500;
 }
 
 .surat-paper-ttd-box .qr-preview-img-box {
@@ -1428,28 +1437,8 @@ main.page-wrap {
   height: 110px;
 }
 
-.surat-paper-ttd-box .stempel-box {
-  height: 100px;
-  border: 1px dashed #cbd5e1;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9pt;
-  color: #94a3b8;
-  font-style: italic;
-}
-
-.surat-paper-ttd-box .ttd-code-str {
-  font-family: monospace;
-  font-weight: bold;
-  font-size: 8pt;
-  color: #334155;
-  margin-top: 4px;
-}
-
 .surat-paper-ttd-box .ttd-name-str {
-  margin-top: 6px;
+  margin-top: 8px;
   font-size: 10pt;
   border-top: 1px solid #64748b;
   padding-top: 4px;

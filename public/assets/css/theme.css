@@ -645,12 +645,17 @@ html.theme-transition .alokasi-card {
   border-color: var(--border);
 }
 
-[data-theme='dark'] .surat-paper-ttd-box .ttd-code-str {
+[data-theme='dark'] .surat-paper-ttd-box .ttd-lbl {
   color: var(--text);
 }
 
-[data-theme='dark'] .surat-ttd-code {
-  color: #93c5fd;
+[data-theme='dark'] .surat-paper-ttd-box .ttd-jabatan-str {
+  color: var(--text-muted);
+}
+
+[data-theme='dark'] .surat-paper-ttd-box .ttd-name-str {
+  color: var(--text);
+  border-color: var(--border);
 }
 
 [data-theme='dark'] .surat-approval-box {

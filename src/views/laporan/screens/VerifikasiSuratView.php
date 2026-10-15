@@ -427,7 +427,10 @@ $base = BASE_URL;
                 <tr>
                     <td class="label-col">Pemaraf</td>
                     <td class="colon-col">:</td>
-                    <td class="val-col">1. <?= htmlspecialchars($namaPelapor) ?> <span class="badge-disetujui">*Disetujui</span></td>
+                    <td class="val-col">
+                        1. <?= htmlspecialchars($namaPelapor) ?> (<?= htmlspecialchars($jabatanPelapor) ?>) <span class="badge-disetujui">*Disetujui</span><br>
+                        2. Budi Hartono, S.Kep. , Ners. (Kabag. Fasilitas dan Keselamatan) <span class="badge-disetujui">*Disetujui</span>
+                    </td>
                 </tr>
                 <tr>
                     <td class="label-col">Status Surat</td>

@@ -159,23 +159,26 @@
                     <!-- TTD & QR Code Row -->
                     <div class="surat-paper-ttd-row">
                         <div class="surat-paper-ttd-box">
-                            <div class="ttd-lbl">Pelapor / TTE</div>
+                            <div class="ttd-lbl">Mengetahui,</div>
+                            <div class="ttd-jabatan-str" id="pvSuratJabatan">Penanggung Jawab / Staf IT</div>
                             <div class="qr-preview-img-box">
                                 <img id="pvSuratQrImg" src="" alt="QR Code TTE Berlogo" />
                             </div>
-                            <div class="ttd-code-str" id="pvSuratTtdCode">—</div>
-                            <div class="ttd-name-str"><strong id="pvSuratNamaPelapor">—</strong><br><small id="pvSuratJabatan">—</small></div>
+                            <div class="ttd-name-str"><strong id="pvSuratNamaPelapor">—</strong></div>
                         </div>
                         <div class="surat-paper-ttd-box">
-                            <div class="ttd-lbl">Mengetahui,</div>
-                            <div class="stempel-box">Stempel &amp; Paraf</div>
-                            <div class="ttd-name-str">___________________<br><small>Kepala Unit / Pejabat</small></div>
+                            <div class="ttd-lbl">Menyetujui,</div>
+                            <div class="ttd-jabatan-str">Kabag. Fasilitas dan Keselamatan</div>
+                            <div class="qr-preview-img-box">
+                                <img id="pvSuratQrImgKabag" src="" alt="QR Code TTE Berlogo" />
+                            </div>
+                            <div class="ttd-name-str"><strong>Budi Hartono, S.Kep. , Ners.</strong></div>
                         </div>
                     </div>
 
                     <!-- Footer Note -->
                     <div class="surat-paper-footer">
-                        ★ Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.
+                        * Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.
                     </div>
                 </div>
             </div>

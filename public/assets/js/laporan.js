@@ -1132,6 +1132,8 @@ function openSuratModal(id, isReprint = false) {
         window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function(dataUrl) {
             const pvQrImg = document.getElementById('pvSuratQrImg');
             if (pvQrImg) pvQrImg.src = dataUrl;
+            const pvQrImgKabag = document.getElementById('pvSuratQrImgKabag');
+            if (pvQrImgKabag) pvQrImgKabag.src = dataUrl;
         });
     }
 
@@ -1200,17 +1202,24 @@ function buildTtdCode(id, token) {
  * 4. Kirim POST /laporan/surat/{id} untuk simpan & update status
  */
 function cetakSurat() {
-    let namaPelapor = document.getElementById('suratNamaPelapor').value.trim();
-    let jabatan     = document.getElementById('suratJabatan').value.trim();
-    let tglSurat    = document.getElementById('suratTglSurat').value;
-    const nomor       = document.getElementById('suratNomor').value.trim();
-    const keterangan  = document.getElementById('suratKeterangan').value.trim();
-    const ttdCode     = document.getElementById('suratTtdCode').textContent;
+    let namaPelapor = document.getElementById('suratNamaPelapor') ? document.getElementById('suratNamaPelapor').value.trim() : '';
+    let jabatan     = document.getElementById('suratJabatan') ? document.getElementById('suratJabatan').value.trim() : '';
+    let tglSurat    = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
+    const nomor       = document.getElementById('suratNomor') ? document.getElementById('suratNomor').value.trim() : '';
+    const keterangan  = document.getElementById('suratKeterangan') ? document.getElementById('suratKeterangan').value.trim() : '';
+    const ttdCode     = document.getElementById('suratTtdCode') ? document.getElementById('suratTtdCode').textContent : '';
     const isReprint   = _suratIsReprint;
 
-    if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); document.getElementById('suratNamaPelapor').focus(); return; }
-    if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); document.getElementById('suratJabatan').focus(); return; }
-    if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); document.getElementById('suratTglSurat').focus(); return; }
+    if (!namaPelapor && document.getElementById('pvSuratNamaPelapor')) {
+        namaPelapor = document.getElementById('pvSuratNamaPelapor').textContent.trim();
+    }
+    if (!jabatan && document.getElementById('pvSuratJabatan')) {
+        jabatan = document.getElementById('pvSuratJabatan').textContent.trim();
+    }
+
+    if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); if (document.getElementById('suratNamaPelapor')) document.getElementById('suratNamaPelapor').focus(); return; }
+    if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); if (document.getElementById('suratJabatan')) document.getElementById('suratJabatan').focus(); return; }
+    if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); if (document.getElementById('suratTglSurat')) document.getElementById('suratTglSurat').focus(); return; }
     namaPelapor = namaPelapor || 'Petugas Unit IT';
     jabatan     = jabatan || 'Penanggung Jawab / Staf IT';
     tglSurat    = tglSurat || new Date().toISOString().slice(0, 10);
@@ -1275,14 +1284,14 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   table.detail td:first-child { width: 38%; font-weight: 600; }
   table.detail td:nth-child(2) { width: 4%; }
   .keterangan-box { border: 1px solid #aaa; border-radius: 4px; padding: 10px 14px; margin-bottom: 18px; font-size: 11.5pt; min-height: 48px; font-style: italic; color: #333; }
-  .ttd-section { display: flex; justify-content: flex-end; margin-top: 20px; gap: 60px; align-items: flex-start; }
+  .ttd-section { display: flex; justify-content: space-between; margin-top: 24px; padding: 0 16px; align-items: flex-start; }
   .ttd-block { text-align: center; min-width: 180px; }
-  .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 6px; }
-  .ttd-block .qr-wrap { border: 1px solid #ccc; border-radius: 8px; padding: 8px; display: inline-block; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-  .ttd-block .qr-wrap img { display: block; width: 130px; height: 130px; }
-  .ttd-block .ttd-code { font-family: monospace; font-size: 8.5pt; color: #333; margin-top: 6px; font-weight: bold; word-break: break-all; }
-  .ttd-block .ttd-name { margin-top: 6px; font-size: 10.5pt; border-top: 1px solid #555; padding-top: 4px; min-width: 160px; }
-  .footer-note { margin-top: 28px; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 4px; }
+  .ttd-block .ttd-jabatan { font-size: 10pt; color: #222; margin-bottom: 8px; min-height: 20px; }
+  .ttd-block .qr-wrap { border: 1px solid #ccc; border-radius: 8px; padding: 6px; display: inline-block; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .ttd-block .qr-wrap img { display: block; width: 115px; height: 115px; }
+  .ttd-block .ttd-name { margin-top: 8px; font-size: 10.5pt; border-top: 1px solid #555; padding-top: 4px; min-width: 160px; font-weight: bold; }
+  .footer-note { margin-top: 28px; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px; }
   @media print {
     body { padding: 0; }
     @page { size: A4 portrait; margin: 15mm 20mm; }
@@ -1329,23 +1338,25 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 
 <div class="ttd-section">
   <div class="ttd-block">
-    <div class="ttd-title">Pelapor / TTE</div>
+    <div class="ttd-title">Mengetahui,</div>
+    <div class="ttd-jabatan">${esc(jabatan)}</div>
     <div class="qr-wrap">
-      <img src="${qrImg}" alt="QR Code TTD" />
+      <img src="${qrImg}" alt="QR Code TTD Petugas IT" />
     </div>
-    <div class="ttd-code">${esc(ttdCode)}</div>
-    <div class="ttd-name"><strong>${esc(namaPelapor)}</strong><br><small>${esc(jabatan)}</small></div>
+    <div class="ttd-name">${esc(namaPelapor)}</div>
   </div>
   <div class="ttd-block">
-    <div class="ttd-title">Mengetahui,</div>
-    <div style="height: 120px; border: 1px dashed #ccc; border-radius:4px; margin-bottom:4px; display:flex; align-items:center; justify-content:center; color:#999; font-size:9pt; font-style:italic;">Stempel &amp; Paraf</div>
-    <div class="ttd-name">___________________<br><small>Kepala Unit / Pejabat</small></div>
+    <div class="ttd-title">Menyetujui,</div>
+    <div class="ttd-jabatan">Kabag. Fasilitas dan Keselamatan</div>
+    <div class="qr-wrap">
+      <img src="${qrImg}" alt="QR Code TTD Kabag" />
+    </div>
+    <div class="ttd-name">Budi Hartono, S.Kep. , Ners.</div>
   </div>
 </div>
 
 <div class="footer-note">
   <span>★ Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.</span>
-  <span>Kode: <strong>${esc(ttdCode)}</strong></span>
 </div>
 
 </body>
