@@ -119,7 +119,7 @@ function initCustomSelect(selectId, options) {
     select.dataset.csReady = '1';
 
     const wrapper = select.closest('.input-icon-wrapper') || select.parentElement;
-    const placeholderOpt  = Array.from(select.options).find(o => o.disabled && o.value === '');
+    const placeholderOpt = Array.from(select.options).find(o => o.disabled && o.value === '');
     const placeholderText = (placeholderOpt ? placeholderOpt.textContent : 'Pilih...').trim();
 
     const root = document.createElement('div');
@@ -269,7 +269,7 @@ function initCustomSelect(selectId, options) {
         const r = trigger.getBoundingClientRect();
         const gap = 6;
         panel.style.width = r.width + 'px';
-        panel.style.left  = r.left + 'px';
+        panel.style.left = r.left + 'px';
 
         const spaceBelow = window.innerHeight - r.bottom - gap;
         const spaceAbove = r.top - gap;
@@ -277,11 +277,11 @@ function initCustomSelect(selectId, options) {
 
         panel.classList.toggle('cs__panel--up', openUp);
         if (openUp) {
-            panel.style.top    = 'auto';
+            panel.style.top = 'auto';
             panel.style.bottom = (window.innerHeight - r.top + gap) + 'px';
         } else {
             panel.style.bottom = 'auto';
-            panel.style.top    = (r.bottom + gap) + 'px';
+            panel.style.top = (r.bottom + gap) + 'px';
         }
     }
 
@@ -351,7 +351,7 @@ function initCustomSelect(selectId, options) {
     sync();
 
     root._csRebuild = buildList;
-    root._csSync    = sync;
+    root._csSync = sync;
 
     CUSTOM_SELECTS[selectId] = { close: close };
 }
@@ -377,9 +377,9 @@ function closeAllCustomSelects() {
 // Konfigurasi header modal laporan per mode (tambah/edit/lihat).
 // Ini satu-satunya sumber teks judul, deskripsi, dan ikon — jangan set ulang di open*Modal().
 const FORM_MODES = {
-    create: { icon: 'note_add',   title: 'Tambah Laporan Baru', desc: () => 'Input catatan kerusakan perangkat fasilitas rumah sakit' },
-    edit:   { icon: 'edit',       title: 'Edit Laporan',        desc: (id) => 'Perbarui data laporan #' + id },
-    view:   { icon: 'visibility', title: 'Detail Laporan',      desc: (id) => 'Laporan #' + id + ' (hanya lihat)' },
+    create: { icon: 'note_add', title: 'Tambah Laporan Baru', desc: () => 'Input catatan kerusakan perangkat fasilitas rumah sakit' },
+    edit: { icon: 'edit', title: 'Edit Laporan', desc: (id) => 'Perbarui data laporan #' + id },
+    view: { icon: 'visibility', title: 'Detail Laporan', desc: (id) => 'Laporan #' + id + ' (hanya lihat)' },
 };
 
 function openTambahModal() {
@@ -836,9 +836,9 @@ function toDateInputValue(rawDate) {
 function setFormMode(mode, id) {
     // Header (ikon/judul/deskripsi) ikut berubah sesuai mode.
     const config = FORM_MODES[mode] || FORM_MODES.create;
-    document.getElementById('formLaporanIcon').textContent  = config.icon;
+    document.getElementById('formLaporanIcon').textContent = config.icon;
     document.getElementById('formLaporanTitle').textContent = config.title;
-    document.getElementById('formLaporanDesc').textContent  = config.desc(id);
+    document.getElementById('formLaporanDesc').textContent = config.desc(id);
 
     const form = document.getElementById('form-tambah-laporan');
     const isView = mode === 'view';
@@ -914,7 +914,7 @@ function openConfirmModal({ icon, title, text, confirmLabel, variant = 'primary'
 
     const oldBtn = document.getElementById('confirmActionBtn');
     oldBtn.textContent = confirmLabel || 'Ya, Lanjutkan';
-    
+
     let buttonClass = 'confirm-btn--primary';
 
     if (variant === 'green') {
@@ -936,11 +936,11 @@ function openConfirmModal({ icon, title, text, confirmLabel, variant = 'primary'
 }
 
 function initMonthPicker() {
-    const wrapper   = document.getElementById('periodePicker');
-    const trigger   = document.getElementById('periodeTrigger');
-    const panel     = document.getElementById('periodePanel');
+    const wrapper = document.getElementById('periodePicker');
+    const trigger = document.getElementById('periodeTrigger');
+    const panel = document.getElementById('periodePanel');
     const yearLabel = document.getElementById('periodeYearLabel');
-    const grid      = document.getElementById('periodeGrid');
+    const grid = document.getElementById('periodeGrid');
     const hiddenInput = document.getElementById('periodeValue');
     const prevYearBtn = document.getElementById('periodePrevYear');
     const nextYearBtn = document.getElementById('periodeNextYear');
@@ -948,10 +948,10 @@ function initMonthPicker() {
 
     if (!wrapper || !trigger || !panel || !grid || !hiddenInput) return;
 
-    const namaBulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
 
     const [selectedYearStr, selectedMonthStr] = hiddenInput.value.split('-');
-    let selectedYear  = parseInt(selectedYearStr, 10) || new Date().getFullYear();
+    let selectedYear = parseInt(selectedYearStr, 10) || new Date().getFullYear();
     let selectedMonth = parseInt(selectedMonthStr, 10) || (new Date().getMonth() + 1);
     let viewYear = selectedYear;
 
@@ -1102,15 +1102,15 @@ function openSuratModal(id, isReprint = false) {
     const tglSuratVal = row.tgl_surat || todayStr;
     document.getElementById('suratTglSurat').value = tglSuratVal;
 
-    const bulanRomawi = ['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII'];
+    const bulanRomawi = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII'];
     const bln = bulanRomawi[today.getMonth()];
     const thn = today.getFullYear();
-    const nomorVal = row.nomor_surat || `${String(id).padStart(3,'0')}/IT/${bln}/${thn}`;
+    const nomorVal = row.nomor_surat || `${String(id).padStart(3, '0')}/IT/${bln}/${thn}`;
     document.getElementById('suratNomor').value = nomorVal;
 
     // Tidak auto-fill nama/jabatan agar user isi manual
     const namaVal = (row.nama_pelapor && String(row.nama_pelapor).trim() !== '') ? row.nama_pelapor : '';
-    const jabVal  = row.jabatan_pelapor || '';
+    const jabVal = row.jabatan_pelapor || '';
 
     document.getElementById('suratNamaPelapor').value = namaVal;
     document.getElementById('suratJabatan').value = jabVal;
@@ -1129,7 +1129,7 @@ function openSuratModal(id, isReprint = false) {
     // Render QR Code TTE dengan logo RS Al-Huda
     const qrCanvas = document.getElementById('suratQrCanvas');
     if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
-        window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function(dataUrl) {
+        window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function (dataUrl) {
             const pvQrImg = document.getElementById('pvSuratQrImg');
             if (pvQrImg) pvQrImg.src = dataUrl;
             const pvQrImgKabag = document.getElementById('pvSuratQrImgKabag');
@@ -1203,12 +1203,12 @@ function buildTtdCode(id, token) {
  */
 function cetakSurat() {
     let namaPelapor = document.getElementById('suratNamaPelapor') ? document.getElementById('suratNamaPelapor').value.trim() : '';
-    let jabatan     = document.getElementById('suratJabatan') ? document.getElementById('suratJabatan').value.trim() : '';
-    let tglSurat    = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
-    const nomor       = document.getElementById('suratNomor') ? document.getElementById('suratNomor').value.trim() : '';
-    const keterangan  = document.getElementById('suratKeterangan') ? document.getElementById('suratKeterangan').value.trim() : '';
-    const ttdCode     = document.getElementById('suratTtdCode') ? document.getElementById('suratTtdCode').textContent : '';
-    const isReprint   = _suratIsReprint;
+    let jabatan = document.getElementById('suratJabatan') ? document.getElementById('suratJabatan').value.trim() : '';
+    let tglSurat = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
+    const nomor = document.getElementById('suratNomor') ? document.getElementById('suratNomor').value.trim() : '';
+    const keterangan = document.getElementById('suratKeterangan') ? document.getElementById('suratKeterangan').value.trim() : '';
+    const ttdCode = document.getElementById('suratTtdCode') ? document.getElementById('suratTtdCode').textContent : '';
+    const isReprint = _suratIsReprint;
 
     if (!namaPelapor && document.getElementById('pvSuratNamaPelapor')) {
         namaPelapor = document.getElementById('pvSuratNamaPelapor').textContent.trim();
@@ -1218,13 +1218,13 @@ function cetakSurat() {
     }
 
     if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); if (document.getElementById('suratNamaPelapor')) document.getElementById('suratNamaPelapor').focus(); return; }
-    if (!jabatan)     { alert('Jabatan/Bagian wajib diisi.'); if (document.getElementById('suratJabatan')) document.getElementById('suratJabatan').focus(); return; }
-    if (!tglSurat)    { alert('Tanggal Surat wajib diisi.'); if (document.getElementById('suratTglSurat')) document.getElementById('suratTglSurat').focus(); return; }
+    if (!jabatan) { alert('Jabatan/Bagian wajib diisi.'); if (document.getElementById('suratJabatan')) document.getElementById('suratJabatan').focus(); return; }
+    if (!tglSurat) { alert('Tanggal Surat wajib diisi.'); if (document.getElementById('suratTglSurat')) document.getElementById('suratTglSurat').focus(); return; }
     namaPelapor = namaPelapor || 'Petugas Unit IT';
-    jabatan     = jabatan || 'Penanggung Jawab / Staf IT';
-    tglSurat    = tglSurat || new Date().toISOString().slice(0, 10);
+    jabatan = jabatan || 'Penanggung Jawab / Staf IT';
+    tglSurat = tglSurat || new Date().toISOString().slice(0, 10);
 
-    const id  = _suratCurrentId;
+    const id = _suratCurrentId;
     const row = findLaporanById(id);
     if (!row) return;
 
@@ -1241,7 +1241,7 @@ function cetakSurat() {
     if (!pw) { alert('Pop-up diblokir browser. Izinkan pop-up untuk mencetak.'); return; }
     pw.document.write(html);
     pw.document.close();
-    pw.onload = function() {
+    pw.onload = function () {
         pw.focus();
         pw.print();
     };
@@ -1258,7 +1258,7 @@ function cetakSurat() {
 }
 
 function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id }) {
-    const esc = (s) => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
     return `<!DOCTYPE html>
@@ -1284,7 +1284,7 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   table.detail td:first-child { width: 38%; font-weight: 600; }
   table.detail td:nth-child(2) { width: 4%; }
   .keterangan-box { border: 1px solid #aaa; border-radius: 4px; padding: 10px 14px; margin-bottom: 18px; font-size: 11.5pt; min-height: 48px; font-style: italic; color: #333; }
-  .ttd-section { display: flex; justify-content: center; margin-top: 20px; gap: 60px; align-items: flex-start; }
+  .ttd-section { display: flex; justify-content: space-between; margin-top: 20px; gap: 60px; align-items: flex-start; }
   .ttd-block { text-align: center; min-width: 180px; }
   .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 4px; }
   .ttd-block .ttd-jabatan { font-size: 10pt; color: #222; margin-bottom: 8px; min-height: 20px; }
@@ -1355,7 +1355,7 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 </div>
 
 <div class="footer-note">
-  <span>★ Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.</span>
+  <span>* Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.</span>
 </div>
 
 </body>
@@ -1364,7 +1364,7 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 
 function formatTglIndo(tgl) {
     if (!tgl) return '—';
-    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    const bulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
     const d = new Date(tgl);
     if (isNaN(d.getTime())) return tgl;
     return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear();
@@ -1383,32 +1383,32 @@ function drawBarcode128(canvas, text) {
     // Code 128B patterns (nilai 0–106)
     // Setiap entry = 11 bit bar/space: 1=bar, 0=space
     const CODE128B_PATTERNS = [
-        [2,1,2,2,2,2],[2,2,2,1,2,2],[2,2,2,2,2,1],[1,2,1,2,2,3],[1,2,1,3,2,2],
-        [1,3,1,2,2,2],[1,2,2,2,1,3],[1,2,2,3,1,2],[1,3,2,2,1,2],[2,2,1,2,1,3],
-        [2,2,1,3,1,2],[2,3,1,2,1,2],[1,1,2,2,3,2],[1,2,2,1,3,2],[1,2,2,2,3,1],
-        [1,1,3,2,2,2],[1,2,3,1,2,2],[1,2,3,2,2,1],[2,2,3,2,1,1],[2,2,1,1,3,2],
-        [2,2,1,2,3,1],[2,1,3,2,1,2],[2,2,3,1,1,2],[3,1,2,1,3,1],[3,1,1,2,2,2],
-        [3,2,1,1,2,2],[3,2,1,2,2,1],[3,1,2,2,1,2],[3,2,2,1,1,2],[3,2,2,2,1,1],
-        [2,1,2,1,2,3],[2,1,2,3,2,1],[2,3,2,1,2,1],[1,1,1,3,2,3],[1,3,1,1,2,3],
-        [1,3,1,3,2,1],[1,1,2,3,1,3],[1,3,2,1,1,3],[1,3,2,3,1,1],[2,1,1,3,1,3],
-        [2,3,1,1,1,3],[2,3,1,3,1,1],[1,1,2,1,3,3],[1,1,2,3,3,1],[1,3,2,1,3,1],
-        [1,1,3,1,2,3],[1,1,3,3,2,1],[1,3,3,1,2,1],[3,1,3,1,2,1],[2,1,1,3,3,1],
-        [2,3,1,1,3,1],[2,1,3,1,1,3],[2,1,3,3,1,1],[2,1,3,1,3,1],[3,1,1,1,2,3],
-        [3,1,1,3,2,1],[3,3,1,1,2,1],[3,1,2,1,1,3],[3,1,2,3,1,1],[3,3,2,1,1,1],
-        [3,1,4,1,1,1],[2,2,1,4,1,1],[4,3,1,1,1,1],[1,1,1,2,2,4],[1,1,1,4,2,2],
-        [1,2,1,1,2,4],[1,2,1,4,2,1],[1,4,1,1,2,2],[1,4,1,2,2,1],[1,1,2,2,1,4],
-        [1,1,2,4,1,2],[1,2,2,1,1,4],[1,2,2,4,1,1],[1,4,2,1,1,2],[1,4,2,2,1,1],
-        [2,4,1,2,1,1],[2,2,1,1,1,4],[4,1,3,1,1,1],[2,4,1,1,1,2],[1,3,4,1,1,1],
-        [1,1,1,2,4,2],[1,2,1,1,4,2],[1,2,1,2,4,1],[1,1,4,2,1,2],[1,2,4,1,1,2],
-        [1,2,4,2,1,1],[4,1,1,2,1,2],[4,2,1,1,1,2],[4,2,1,2,1,1],[2,1,2,1,4,1],
-        [2,1,4,1,2,1],[4,1,2,1,2,1],[1,1,1,1,4,3],[1,1,1,3,4,1],[1,3,1,1,4,1],
-        [1,1,4,1,1,3],[1,1,4,3,1,1],[4,1,1,1,1,3],[4,1,1,3,1,1],[1,1,3,1,4,1],
-        [1,1,4,1,3,1],[3,1,1,1,4,1],[4,1,1,1,3,1],[2,1,1,4,1,2],[2,1,1,2,1,4],
-        [2,1,1,2,3,2],[2,3,3,1,1,1],[1,1,2,1,1,4]
+        [2, 1, 2, 2, 2, 2], [2, 2, 2, 1, 2, 2], [2, 2, 2, 2, 2, 1], [1, 2, 1, 2, 2, 3], [1, 2, 1, 3, 2, 2],
+        [1, 3, 1, 2, 2, 2], [1, 2, 2, 2, 1, 3], [1, 2, 2, 3, 1, 2], [1, 3, 2, 2, 1, 2], [2, 2, 1, 2, 1, 3],
+        [2, 2, 1, 3, 1, 2], [2, 3, 1, 2, 1, 2], [1, 1, 2, 2, 3, 2], [1, 2, 2, 1, 3, 2], [1, 2, 2, 2, 3, 1],
+        [1, 1, 3, 2, 2, 2], [1, 2, 3, 1, 2, 2], [1, 2, 3, 2, 2, 1], [2, 2, 3, 2, 1, 1], [2, 2, 1, 1, 3, 2],
+        [2, 2, 1, 2, 3, 1], [2, 1, 3, 2, 1, 2], [2, 2, 3, 1, 1, 2], [3, 1, 2, 1, 3, 1], [3, 1, 1, 2, 2, 2],
+        [3, 2, 1, 1, 2, 2], [3, 2, 1, 2, 2, 1], [3, 1, 2, 2, 1, 2], [3, 2, 2, 1, 1, 2], [3, 2, 2, 2, 1, 1],
+        [2, 1, 2, 1, 2, 3], [2, 1, 2, 3, 2, 1], [2, 3, 2, 1, 2, 1], [1, 1, 1, 3, 2, 3], [1, 3, 1, 1, 2, 3],
+        [1, 3, 1, 3, 2, 1], [1, 1, 2, 3, 1, 3], [1, 3, 2, 1, 1, 3], [1, 3, 2, 3, 1, 1], [2, 1, 1, 3, 1, 3],
+        [2, 3, 1, 1, 1, 3], [2, 3, 1, 3, 1, 1], [1, 1, 2, 1, 3, 3], [1, 1, 2, 3, 3, 1], [1, 3, 2, 1, 3, 1],
+        [1, 1, 3, 1, 2, 3], [1, 1, 3, 3, 2, 1], [1, 3, 3, 1, 2, 1], [3, 1, 3, 1, 2, 1], [2, 1, 1, 3, 3, 1],
+        [2, 3, 1, 1, 3, 1], [2, 1, 3, 1, 1, 3], [2, 1, 3, 3, 1, 1], [2, 1, 3, 1, 3, 1], [3, 1, 1, 1, 2, 3],
+        [3, 1, 1, 3, 2, 1], [3, 3, 1, 1, 2, 1], [3, 1, 2, 1, 1, 3], [3, 1, 2, 3, 1, 1], [3, 3, 2, 1, 1, 1],
+        [3, 1, 4, 1, 1, 1], [2, 2, 1, 4, 1, 1], [4, 3, 1, 1, 1, 1], [1, 1, 1, 2, 2, 4], [1, 1, 1, 4, 2, 2],
+        [1, 2, 1, 1, 2, 4], [1, 2, 1, 4, 2, 1], [1, 4, 1, 1, 2, 2], [1, 4, 1, 2, 2, 1], [1, 1, 2, 2, 1, 4],
+        [1, 1, 2, 4, 1, 2], [1, 2, 2, 1, 1, 4], [1, 2, 2, 4, 1, 1], [1, 4, 2, 1, 1, 2], [1, 4, 2, 2, 1, 1],
+        [2, 4, 1, 2, 1, 1], [2, 2, 1, 1, 1, 4], [4, 1, 3, 1, 1, 1], [2, 4, 1, 1, 1, 2], [1, 3, 4, 1, 1, 1],
+        [1, 1, 1, 2, 4, 2], [1, 2, 1, 1, 4, 2], [1, 2, 1, 2, 4, 1], [1, 1, 4, 2, 1, 2], [1, 2, 4, 1, 1, 2],
+        [1, 2, 4, 2, 1, 1], [4, 1, 1, 2, 1, 2], [4, 2, 1, 1, 1, 2], [4, 2, 1, 2, 1, 1], [2, 1, 2, 1, 4, 1],
+        [2, 1, 4, 1, 2, 1], [4, 1, 2, 1, 2, 1], [1, 1, 1, 1, 4, 3], [1, 1, 1, 3, 4, 1], [1, 3, 1, 1, 4, 1],
+        [1, 1, 4, 1, 1, 3], [1, 1, 4, 3, 1, 1], [4, 1, 1, 1, 1, 3], [4, 1, 1, 3, 1, 1], [1, 1, 3, 1, 4, 1],
+        [1, 1, 4, 1, 3, 1], [3, 1, 1, 1, 4, 1], [4, 1, 1, 1, 3, 1], [2, 1, 1, 4, 1, 2], [2, 1, 1, 2, 1, 4],
+        [2, 1, 1, 2, 3, 2], [2, 3, 3, 1, 1, 1], [1, 1, 2, 1, 1, 4]
     ];
 
     const START_B = 104;
-    const STOP    = 106;
+    const STOP = 106;
 
     // Encode chars
     const chars = text.split('').map(c => c.charCodeAt(0) - 32);
@@ -1421,7 +1421,7 @@ function drawBarcode128(canvas, text) {
     // Calculate total modules
     let totalModules = allCodes.reduce((s, code) => {
         const p = CODE128B_PATTERNS[code] || CODE128B_PATTERNS[0];
-        return s + p.reduce((a,b) => a+b, 0);
+        return s + p.reduce((a, b) => a + b, 0);
     }, 0) + 2; // 2 quiet zones
 
     const moduleW = W / (totalModules + 4);
