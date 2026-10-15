@@ -143,8 +143,7 @@
 
                     <!-- Tabel Detail -->
                     <table class="surat-paper-table">
-                        <tr><td style="width:36%; font-weight:600;">ID Laporan</td><td style="width:4%;">:</td><td>#<span id="pvSuratId">—</span></td></tr>
-                        <tr><td style="font-weight:600;">Jenis Barang</td><td>:</td><td><span id="pvSuratBarang">—</span></td></tr>
+                        <tr><td style="width:36%; font-weight:600;">Jenis Barang</td><td style="width:4%;">:</td><td><span id="pvSuratBarang">—</span></td></tr>
                         <tr><td style="font-weight:600;">Unit / Ruangan</td><td>:</td><td><span id="pvSuratRuangan">—</span></td></tr>
                         <tr><td style="font-weight:600;">No. Seri (SN)</td><td>:</td><td><span id="pvSuratSn">—</span></td></tr>
                         <tr><td style="font-weight:600;">Tanggal Laporan</td><td>:</td><td><span id="pvSuratTglLaporan">—</span></td></tr>
@@ -172,7 +171,7 @@
                             <div class="qr-preview-img-box">
                                 <img id="pvSuratQrImgKabag" src="" alt="QR Code TTE Berlogo" />
                             </div>
-                            <div class="ttd-name-str"><strong>Budi Hartono, S.Kep. , Ners.</strong></div>
+                            <div class="ttd-name-str"><strong>Budi Hartono, S.Kep., Ners.</strong></div>
                         </div>
                     </div>
 

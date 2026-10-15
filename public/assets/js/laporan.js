@@ -1327,7 +1327,6 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 </div>
 
 <table class="detail">
-  <tr><td>ID Laporan</td><td>:</td><td>#${esc(id)}</td></tr>
   <tr><td>Jenis Barang</td><td>:</td><td>${esc(row.barang)}</td></tr>
   <tr><td>Unit / Ruangan</td><td>:</td><td>${esc(formatUnitLocation(row))}</td></tr>
   <tr><td>No. Seri</td><td>:</td><td>${esc(row.serial_number) || '—'}</td></tr>
