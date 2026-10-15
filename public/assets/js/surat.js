@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 let _suratCurrentId = null;
 let _suratIsReprint = false;
+let _suratQrKabag = '';
 
 // Konfigurasi header modal surat per mode:
 //   form    → form isian surat (sebelum TTE diterbitkan)
@@ -150,13 +151,22 @@ function openSuratModal(id, isReprint = false) {
 
     // Render QR Code TTE dengan logo RS Al-Huda, lalu render pratinjau surat.
     // Pratinjau memakai buildSuratHtml() yang sama dengan cetak (satu sumber).
+    // QR pelapor = URL verifikasi biasa; QR Kabag = URL + &signer=kabag (hanya saat surat sudah di-ACC).
+    const isAcc = (row.acc_status || '') === 'diacc';
+    _suratQrKabag = '';
     const qrCanvas = document.getElementById('suratQrCanvas');
+    renderSuratPreview();
     if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
         window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function () {
             renderSuratPreview();
+            if (isAcc) {
+                window.drawQrWithLogo(qrCanvas, verifyUrl + '&signer=kabag', logoUrl, function () {
+                    _suratQrKabag = qrCanvas.toDataURL('image/png');
+                    renderSuratPreview();
+                });
+            }
         });
     }
-    renderSuratPreview();
 
     // Sesuaikan header modal & tampilan section
     setSuratMode(shouldShowPreview ? 'preview' : 'form');
@@ -215,9 +225,10 @@ function renderSuratPreview() {
     const keterangan  = fieldValue('suratKeterangan');
     const canvas      = document.getElementById('suratQrCanvas');
     const qrImg       = canvas ? canvas.toDataURL('image/png') : '';
+    const qrImgKabag  = _suratQrKabag;
 
     frame.srcdoc = buildSuratHtml({
-        nomor, tglFmt: formatTglIndo(tglSurat), namaPelapor, jabatan, keterangan, qrImg, row, id
+        nomor, tglFmt: formatTglIndo(tglSurat), namaPelapor, jabatan, keterangan, qrImg, qrImgKabag, row, id
     });
 }
 
@@ -252,6 +263,25 @@ function onSuratPelaporChange() {
 
     const opt = select.selectedOptions && select.selectedOptions[0];
     jabatanInput.value = (opt && opt.getAttribute('data-jabatan')) || '';
+}
+
+/**
+ * Konfirmasi & ACC surat oleh Kabag: aktifkan TTD + QR Kabag pada surat.
+ */
+function accSurat(id) {
+    const row = findLaporanById(id);
+    const nama = row ? (row.nama_pelapor || '') : '';
+    const jabatanKabag = (window.SURAT_SIGNER2 || {}).jabatan || 'Kabag. Fasilitas dan Keselamatan';
+    openConfirmModal({
+        icon: 'task_alt',
+        title: 'ACC Surat Kerusakan',
+        text: `Setujui surat pengantar kerusakan${nama ? ' milik ' + nama : ''}? Setelah di-ACC, surat akan menampilkan tanda tangan dan QR Code ${jabatanKabag}.`,
+        confirmLabel: 'ACC Sekarang',
+        variant: 'green',
+        onConfirm: () => {
+            postAction((window.BASE_URL || '') + '/laporan/acc/' + id);
+        }
+    });
 }
 
 
@@ -292,7 +322,7 @@ function cetakSurat() {
     const qrImg = canvas ? canvas.toDataURL('image/png') : '';
 
     const html = buildSuratHtml({
-        nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, row, id
+        nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, qrImgKabag: _suratQrKabag, row, id
     });
 
     const pw = window.open('', '_blank', 'width=900,height=700');
@@ -315,16 +345,21 @@ function cetakSurat() {
     closeSuratModal();
 }
 
-function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, row, id }) {
+function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, qrImgKabag, row, id }) {
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
-    // Penandatangan kedua (tetap) — sumber tunggal dari config/pengaturan.php
-    // (dikirim ke JS sebagai window.SURAT_SIGNER2 di LaporanView.php).
+    // Penandatangan kedua — label/jabatan dari config/pengaturan.php (fallback);
+    // nama mengikuti user Kabag yang meng-ACC surat.
     const signer2 = window.SURAT_SIGNER2 || {};
     const signer2Label   = signer2.label   || '';
     const signer2Jabatan = signer2.jabatan || '';
     const signer2Nama    = signer2.nama    || '';
+
+    // Kolom kanan (Kabag): QR + nama hanya bila surat sudah di-ACC.
+    const isAcc = (row.acc_status || '') === 'diacc';
+    const kabagJabatan = isAcc ? (row.jabatan_kabag || signer2Jabatan) : signer2Jabatan;
+    const kabagName    = isAcc ? (row.nama_kabag || signer2Nama) : '';
 
     return `<!DOCTYPE html>
 <html lang="id">
@@ -418,11 +453,11 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg
   <div class="ttd-block">
     <div class="ttd-date">Banyuwangi, ${esc(tglFmt)}</div>
     <div class="ttd-title">${esc(signer2Label)}</div>
-    <div class="ttd-jabatan">${esc(signer2Jabatan)}</div>
-    <div class="qr-wrap">
-      <img src="${qrImg}" alt="QR Code TTD Kabag" />
-    </div>
-    <div class="ttd-name">${esc(signer2Nama)}</div>
+    <div class="ttd-jabatan">${esc(kabagJabatan)}</div>
+    ${isAcc && qrImgKabag
+      ? `<div class="qr-wrap"><img src="${qrImgKabag}" alt="QR Code TTD Kabag" /></div>`
+      : `<div style="font-style:italic; color:#b45309; font-size:10pt; padding:12px 4px; min-height:115px; display:flex; align-items:center; justify-content:center; text-align:center;">Menunggu persetujuan ${esc(signer2Jabatan)}</div>`}
+    ${kabagName ? `<div class="ttd-name">${esc(kabagName)}</div>` : ''}
   </div>
 </div>
 
