@@ -11,11 +11,12 @@ $menus = [
     'unit_barang' => ['label' => 'Unit & Barang',    'icon' => 'settings',      'url' => BASE_URL . '/unit'],
     'jaringan'    => ['label' => 'Jaringan & IP',    'icon' => 'lan',         'url' => BASE_URL . '/jaringan'],
     'subnet'      => ['label' => 'Kelola Subnet',    'icon' => 'account_tree', 'url' => BASE_URL . '/subnet'],
+    'user'        => ['label' => 'Manajemen User',   'icon' => 'group',        'url' => BASE_URL . '/user'],
 ];
 
 // Menu khusus admin
 if ($role !== 'admin') {
-    unset($menus['unit_barang'], $menus['subnet']);
+    unset($menus['unit_barang'], $menus['subnet'], $menus['user']);
 }
 
 $flash = $_SESSION['flash'] ?? null;

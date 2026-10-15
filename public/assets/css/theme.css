@@ -569,8 +569,13 @@ html.theme-transition .alokasi-card {
   border-color: var(--primary);
 }
 
-[data-theme='dark'] .surat-input-wrap input {
+[data-theme='dark'] .surat-input-wrap input,
+[data-theme='dark'] .surat-input-wrap select {
   color: var(--text);
+}
+
+[data-theme='dark'] .surat-input-wrap input[readonly] {
+  color: var(--muted);
 }
 
 [data-theme='dark'] .surat-input-wrap input::placeholder,

@@ -19,6 +19,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         'unit',
         'jaringan',
         'subnet',
+        'user',
     ];
 
     foreach ($routeFiles as $routeFile) {

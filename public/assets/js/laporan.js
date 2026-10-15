@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     initCustomSelect('jenis_poli', { searchable: false });
     initCustomSelect('status', { searchable: false });
     initCustomSelect('prioritas', { searchable: false });
+    initCustomSelect('suratNamaPelapor', { forceSearch: true });
     document.addEventListener('click', function () {
         closeAllCustomSelects();
     });
@@ -113,6 +114,7 @@ const CUSTOM_SELECTS = {};
 function initCustomSelect(selectId, options) {
     options = options || {};
     const searchable = options.searchable !== false;
+    const forceSearch = Boolean(options.forceSearch);
 
     const select = document.getElementById(selectId);
     if (!select || select.dataset.csReady === '1') return;
@@ -217,9 +219,10 @@ function initCustomSelect(selectId, options) {
             });
             list.appendChild(li);
         });
-        // Sembunyikan kotak cari bila opsinya sedikit (muat tanpa scroll/search).
+        // Sembunyikan kotak cari bila opsinya sedikit (muat tanpa scroll/search),
+        // kecuali forceSearch aktif (mis. dropdown pelapor surat).
         if (searchWrap) {
-            searchWrap.style.display = list.querySelectorAll('.cs__option').length > 6 ? '' : 'none';
+            searchWrap.style.display = (forceSearch || list.querySelectorAll('.cs__option').length > 6) ? '' : 'none';
         }
         highlight = -1;
     }
@@ -1108,12 +1111,49 @@ function openSuratModal(id, isReprint = false) {
     const nomorVal = row.nomor_surat || `${String(id).padStart(3, '0')}/IT/${bln}/${thn}`;
     document.getElementById('suratNomor').value = nomorVal;
 
-    // Tidak auto-fill nama/jabatan agar user isi manual
+    // Pelapor: pilih dari dropdown user terdaftar; jabatan terkunci mengikuti data user
     const namaVal = (row.nama_pelapor && String(row.nama_pelapor).trim() !== '') ? row.nama_pelapor : '';
-    const jabVal = row.jabatan_pelapor || '';
+    let jabVal = row.jabatan_pelapor || '';
 
-    document.getElementById('suratNamaPelapor').value = namaVal;
-    document.getElementById('suratJabatan').value = jabVal;
+    const pelaporSelect = document.getElementById('suratNamaPelapor');
+    if (pelaporSelect) {
+        // Buang opsi "(tidak terdaftar)" sisa laporan sebelumnya agar tidak menumpuk.
+        Array.from(pelaporSelect.options).forEach(function (o) {
+            if (o.dataset.temp === '1') o.remove();
+        });
+
+        let matched = false;
+        for (const opt of pelaporSelect.options) {
+            if (opt.value !== '' && opt.value === namaVal) {
+                pelaporSelect.value = opt.value;
+                matched = true;
+                break;
+            }
+        }
+        // Nama tersimpan tapi sudah tidak ada di daftar user (mis. user dihapus):
+        // sisipkan opsi sementara agar nilai lama tetap tampil saat reprint.
+        if (!matched && namaVal !== '') {
+            const tmp = document.createElement('option');
+            tmp.value = namaVal;
+            tmp.textContent = namaVal + ' (tidak terdaftar)';
+            tmp.setAttribute('data-jabatan', jabVal);
+            tmp.dataset.temp = '1';
+            pelaporSelect.appendChild(tmp);
+            pelaporSelect.value = namaVal;
+            matched = true;
+        }
+        if (!matched) pelaporSelect.value = '';
+
+        const opt = pelaporSelect.selectedOptions && pelaporSelect.selectedOptions[0];
+        const jabFromUser = (opt && opt.getAttribute('data-jabatan')) || '';
+        document.getElementById('suratJabatan').value = jabFromUser || jabVal;
+        jabVal = document.getElementById('suratJabatan').value;
+
+        // Sinkronkan tampilan custom searchable select dengan nilai terbaru.
+        refreshCustomSelect('suratNamaPelapor');
+    } else {
+        document.getElementById('suratJabatan').value = jabVal;
+    }
     document.getElementById('suratKeterangan').value = row.keterangan_tambahan || '';
 
     // Kode TTD & URL verifikasi diturunkan dari verify_token tersimpan
@@ -1176,12 +1216,33 @@ function closeSuratModal() {
     closeModal('modal-surat-kerusakan');
     _suratCurrentId = null;
     _suratIsReprint = false;
+
+    // Reset pilihan pelapor ke placeholder + sinkronkan custom select.
+    const pelaporSelect = document.getElementById('suratNamaPelapor');
+    if (pelaporSelect) {
+        pelaporSelect.value = '';
+        refreshCustomSelect('suratNamaPelapor');
+    }
+    const jabatanInput = document.getElementById('suratJabatan');
+    if (jabatanInput) jabatanInput.value = '';
 }
 
 function onSuratApprovalChange() {
     const checked = document.getElementById('suratApprovalCheck').checked;
     const btnCetak = document.getElementById('suratBtnCetak');
     if (btnCetak) btnCetak.disabled = !checked;
+}
+
+/**
+ * Saat pelapor dipilih dari dropdown: jabatan terkunci mengikuti data user.
+ */
+function onSuratPelaporChange() {
+    const select = document.getElementById('suratNamaPelapor');
+    const jabatanInput = document.getElementById('suratJabatan');
+    if (!select || !jabatanInput) return;
+
+    const opt = select.selectedOptions && select.selectedOptions[0];
+    jabatanInput.value = (opt && opt.getAttribute('data-jabatan')) || '';
 }
 
 

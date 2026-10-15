@@ -260,6 +260,17 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
             require_once __DIR__ . '/../controllers/asetBarangController.php';
             return (new asetBarangController($conn))->index();
         })();
+        $userList    = (function () use ($conn): array {
+            require_once __DIR__ . '/../controllers/userController.php';
+            return array_map(static function (array $u): array {
+                return [
+                    'id'       => (int) $u['id'],
+                    'nama'     => (string) ($u['nama'] ?? ''),
+                    'username' => (string) ($u['username'] ?? ''),
+                    'jabatan'  => (string) ($u['jabatan'] ?? ''),
+                ];
+            }, (new userController($conn))->index());
+        })();
 
         require __DIR__ . '/../views/laporan/screens/LaporanView.php';
     });

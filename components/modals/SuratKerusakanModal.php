@@ -4,7 +4,7 @@
  * Modal surat pengantar kerusakan barang.
  * Dibuka oleh openSuratModal(id) di laporan.js.
  * Fitur:
- *   - Form isian surat (nama pelapor, jabatan, keterangan tambahan)
+ *   - Form isian surat (pelapor dari dropdown user, keterangan tambahan)
  *   - TTD digital berupa QR/barcode (dibuat di client via JS)
  *   - Checklist persetujuan TTD digital
  *   - Tombol Cetak muncul setelah centang
@@ -12,7 +12,11 @@
  * CATATAN: ikon/judul/deskripsi header surat diatur oleh setSuratMode() di
  * public/assets/js/laporan.js lewat konstanta SURAT_MODES (mode 'form' & 'preview').
  * Nilai di bawah adalah default sebelum JS berjalan — ubah teksnya di sana.
+ *
+ * $userList (opsional, disuntik route laporan): daftar user terdaftar untuk
+ * dropdown nama pelapor. Jabatan terkunci mengikuti data user terpilih.
  */
+$suratUserList = $userList ?? [];
 ?>
 <!-- ===== OVERLAY SURAT KERUSAKAN ===== -->
 <div class="modal-overlay" id="modal-surat-kerusakan">
@@ -52,14 +56,22 @@
                         <label for="suratNamaPelapor">Nama Pelapor <span class="req">*</span></label>
                         <div class="surat-input-wrap">
                             <span class="material-symbols-outlined">person</span>
-                            <input type="text" id="suratNamaPelapor" placeholder="Nama lengkap pelapor" autocomplete="off">
+                            <select id="suratNamaPelapor" onchange="onSuratPelaporChange()">
+                                <option value="" disabled>— Pilih pelapor —</option>
+                                <?php foreach ($suratUserList as $su): ?>
+                                    <option value="<?= htmlspecialchars($su['nama'], ENT_QUOTES) ?>"
+                                            data-jabatan="<?= htmlspecialchars($su['jabatan'] ?? '', ENT_QUOTES) ?>">
+                                        <?= htmlspecialchars($su['nama'] !== '' ? $su['nama'] : $su['username']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
                         </div>
                     </div>
                     <div class="surat-group">
                         <label for="suratJabatan">Jabatan / Bagian <span class="req">*</span></label>
                         <div class="surat-input-wrap">
                             <span class="material-symbols-outlined">badge</span>
-                            <input type="text" id="suratJabatan" placeholder="cth: Staf IT / Kepala Ruangan" autocomplete="off">
+                            <input type="text" id="suratJabatan" placeholder="Terisi otomatis dari data user" readonly>
                         </div>
                     </div>
                 </div>

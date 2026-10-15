@@ -9,6 +9,7 @@ $page         = $page ?? 1;
 $totalPages   = $totalPages ?? 1;
 $totalRows    = $totalRows ?? count($laporanList);
 $asetList     = $asetList ?? [];
+$userList     = $userList ?? [];
 
 $namaBulan = [
     1=>'Januari',
@@ -443,6 +444,7 @@ if ($search !== '') {
 <!-- Data JSON Aset dan Laporan untuk Frontend -->
 <script id="asetDataJson" type="application/json"><?= json_encode($asetList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script id="laporanDataJson" type="application/json"><?= json_encode($laporanList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
+<script id="userDataJson" type="application/json"><?= json_encode($userList, JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_APOS) ?></script>
 <script>
     window.BASE_URL = <?= json_encode(BASE_URL) ?>; 
     window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>; 
