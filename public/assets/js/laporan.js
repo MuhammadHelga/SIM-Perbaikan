@@ -1284,11 +1284,7 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   table.detail td:first-child { width: 38%; font-weight: 600; }
   table.detail td:nth-child(2) { width: 4%; }
   .keterangan-box { border: 1px solid #aaa; border-radius: 4px; padding: 10px 14px; margin-bottom: 18px; font-size: 11.5pt; min-height: 48px; font-style: italic; color: #333; }
-<<<<<<< HEAD
-  .ttd-section { display: flex; justify-content: space-between; margin-top: 24px; padding: 0 16px; align-items: flex-start; }
-=======
   .ttd-section { display: flex; justify-content: center; margin-top: 20px; gap: 60px; align-items: flex-start; }
->>>>>>> 0f18e8f (style(surat): baris TTD (Pelapor & Mengetahui) rata tengah)
   .ttd-block { text-align: center; min-width: 180px; }
   .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 4px; }
   .ttd-block .ttd-jabatan { font-size: 10pt; color: #222; margin-bottom: 8px; min-height: 20px; }
