@@ -101,7 +101,6 @@ $suratUserList = $userList ?? [];
 
             <!-- Hidden Canvas for QR Generator -->
             <canvas id="suratQrCanvas" width="360" height="360" style="display:none;"></canvas>
-            <span id="suratTtdCode" style="display:none;">—</span>
 
             <!-- Checklist Persetujuan -->
             <div class="surat-approval-box" id="suratApprovalBox">
@@ -128,6 +127,7 @@ $suratUserList = $userList ?? [];
         <!-- Body 2: Tampilan Surat Jadi (Dokumen Resmi Siap Cetak) -->
         <div class="surat-modal-body" id="suratDocumentPreviewSection" style="display: none;">
             <div class="surat-paper-wrapper">
+<<<<<<< HEAD
                 <div class="surat-paper-container">
                     <!-- Kop Surat -->
                     <div class="surat-paper-kop">
@@ -195,6 +195,9 @@ $suratUserList = $userList ?? [];
                         *Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.
                     </div>
                 </div>
+=======
+                <iframe id="suratPreviewFrame" class="surat-preview-frame" title="Pratinjau Surat Kerusakan"></iframe>
+>>>>>>> 357687e73fbd4432f74855589ef3b565eb0b9126
             </div>
 
             <!-- Tombol Aksi -->

@@ -84,8 +84,6 @@ html.theme-transition .surat-ttd-preview,
 html.theme-transition .surat-approval-box,
 html.theme-transition .surat-btn--outline,
 html.theme-transition .surat-paper-wrapper,
-html.theme-transition .surat-paper-container,
-html.theme-transition .surat-paper-keterangan,
 html.theme-transition .filter-input,
 html.theme-transition .form-control,
 html.theme-transition .theme-toggle,
@@ -627,53 +625,6 @@ html.theme-transition .alokasi-card {
 
 [data-theme='dark'] .surat-ttd-preview canvas {
   background: #fff;
-  border-color: var(--border);
-}
-
-[data-theme='dark'] .surat-paper-container {
-  background: var(--surface);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme='dark'] .surat-paper-kop {
-  border-bottom-color: var(--primary);
-}
-
-[data-theme='dark'] .surat-paper-kop-text h2 {
-  color: #93c5fd;
-}
-
-[data-theme='dark'] .surat-paper-kop-text p,
-[data-theme='dark'] .surat-paper-footer {
-  color: var(--muted);
-}
-
-[data-theme='dark'] .surat-paper-keterangan {
-  background: var(--surface-2);
-  border-color: var(--border);
-  color: var(--text);
-}
-
-[data-theme='dark'] .surat-paper-ttd-box .qr-preview-img-box {
-  background: #fff;
-  border-color: var(--border);
-}
-
-[data-theme='dark'] .surat-paper-ttd-box .ttd-date-str {
-  color: var(--text);
-}
-
-[data-theme='dark'] .surat-paper-ttd-box .ttd-lbl {
-  color: var(--text);
-}
-
-[data-theme='dark'] .surat-paper-ttd-box .ttd-jabatan-str {
-  color: var(--text-muted);
-}
-
-[data-theme='dark'] .surat-paper-ttd-box .ttd-name-str {
-  color: var(--text);
   border-color: var(--border);
 }
 

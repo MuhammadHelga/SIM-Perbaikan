@@ -463,6 +463,7 @@ $base = BASE_URL;
                     <td class="colon-col">:</td>
                     <td class="val-col">
                         1. <?= htmlspecialchars($namaPelapor) ?> (<?= htmlspecialchars($jabatanPelapor) ?>) <span class="badge-disetujui">*Disetujui</span><br>
+<<<<<<< HEAD
                         <?php if ($isAcc && $namaKabag !== ''): ?>
                         2. <?= htmlspecialchars($namaKabag) ?> (<?= htmlspecialchars($jabatanKabag) ?>) <span class="badge-disetujui">*Disetujui</span>
                         <?php elseif ($isAcc): ?>
@@ -470,6 +471,9 @@ $base = BASE_URL;
                         <?php else: ?>
                         2. Kabag. Fasilitas dan Keselamatan <span class="badge-pending">*Menunggu ACC</span>
                         <?php endif; ?>
+=======
+                        2. <?= htmlspecialchars(SURAT_SIGNER2_NAMA) ?> (<?= htmlspecialchars(SURAT_SIGNER2_JABATAN) ?>) <span class="badge-disetujui">*Disetujui</span>
+>>>>>>> 357687e73fbd4432f74855589ef3b565eb0b9126
                     </td>
                 </tr>
                 <tr>
