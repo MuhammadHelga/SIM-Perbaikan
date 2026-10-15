@@ -1189,6 +1189,34 @@ function openSuratModal(id, isReprint = false) {
 function renderSuratPreview() {
     const frame = document.getElementById('suratPreviewFrame');
     if (!frame) return;
+
+    // Sekali pasang: tinggi iframe mengikuti isi surat agar TIDAK ada scroll
+    // di dalam iframe (scroll tunggal ditangani oleh .surat-modal-body).
+    if (!frame.dataset.autosize) {
+        frame.dataset.autosize = '1';
+        frame.addEventListener('load', function () {
+            let doc;
+            try { doc = frame.contentDocument; } catch (e) { return; }
+            if (!doc || !doc.body) return;
+
+            const fit = function () {
+                frame.style.height = (doc.documentElement.scrollHeight + 2) + 'px';
+            };
+            fit();
+
+            // Isi bertambah setelah gambar (logo) selesai dimuat.
+            const logo = doc.querySelector('.kop-logo');
+            if (logo && !logo.complete) logo.addEventListener('load', fit);
+
+            if (window.ResizeObserver) {
+                if (frame._ro) frame._ro.disconnect();
+                frame._ro = new ResizeObserver(fit);
+                frame._ro.observe(doc.body);
+            }
+            setTimeout(fit, 200);
+        });
+    }
+
     const id = _suratCurrentId;
     const row = findLaporanById(id);
     if (!row) return;

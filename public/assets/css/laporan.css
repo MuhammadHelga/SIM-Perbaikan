@@ -1297,17 +1297,18 @@ main.page-wrap {
   background: #f1f5f9;
   padding: 16px;
   border-radius: 12px;
-  max-height: 65vh;
-  overflow-y: auto;
   margin-bottom: 16px;
 }
 
-/* Pratinjau surat: dirender dari buildSuratHtml() — sumber yang sama dengan cetak */
+/* Pratinjau surat: dirender dari buildSuratHtml() — sumber yang sama dengan cetak.
+   Tinggi menyesuaikan isi (diatur JS) agar tidak ada scroll di dalam iframe. */
 .surat-preview-frame {
   width: 100%;
-  height: 660px;
+  height: 70vh;   /* fallback; JS menyetel tinggi pas isi surat */
+  min-height: 300px;
   border: 1px solid #cbd5e1;
   border-radius: 8px;
   background: #ffffff;
   display: block;
+  overflow: hidden;
 }
