@@ -1166,28 +1166,15 @@ function openSuratModal(id, isReprint = false) {
     const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi?token=${encodeURIComponent(verifyToken)}`;
     const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
-    // Render QR Code TTE dengan logo RS Al-Huda
+    // Render QR Code TTE dengan logo RS Al-Huda, lalu render pratinjau surat.
+    // Pratinjau memakai buildSuratHtml() yang sama dengan cetak (satu sumber).
     const qrCanvas = document.getElementById('suratQrCanvas');
     if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
-        window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function (dataUrl) {
-            const pvQrImg = document.getElementById('pvSuratQrImg');
-            if (pvQrImg) pvQrImg.src = dataUrl;
-            const pvQrImgKabag = document.getElementById('pvSuratQrImgKabag');
-            if (pvQrImgKabag) pvQrImgKabag.src = dataUrl;
+        window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function () {
+            renderSuratPreview();
         });
     }
-
-    // Update elemen paper view (Surat Jadi)
-    updateSuratPaperView({
-        id,
-        nomorVal,
-        tglSuratVal,
-        row,
-        namaVal,
-        jabVal,
-        ketVal: document.getElementById('suratKeterangan').value.trim(),
-        ttdCode
-    });
+    renderSuratPreview();
 
     // Sesuaikan header modal & tampilan section
     setSuratMode(shouldShowPreview ? 'preview' : 'form');
@@ -1195,21 +1182,35 @@ function openSuratModal(id, isReprint = false) {
     openModal('modal-surat-kerusakan');
 }
 
-function updateSuratPaperView({ id, nomorVal, tglSuratVal, row, namaVal, jabVal, ketVal, ttdCode }) {
-    if (document.getElementById('pvSuratNomor')) document.getElementById('pvSuratNomor').textContent = nomorVal || '—';
-    if (document.getElementById('pvSuratTgl')) document.getElementById('pvSuratTgl').textContent = formatTglIndo(tglSuratVal);
-    if (document.getElementById('pvSuratId')) document.getElementById('pvSuratId').textContent = id;
-    if (document.getElementById('pvSuratBarang')) document.getElementById('pvSuratBarang').textContent = row.barang || '—';
-    if (document.getElementById('pvSuratRuangan')) document.getElementById('pvSuratRuangan').textContent = formatUnitLocation(row) || '—';
-    if (document.getElementById('pvSuratSn')) document.getElementById('pvSuratSn').textContent = row.serial_number || '—';
-    if (document.getElementById('pvSuratTglLaporan')) document.getElementById('pvSuratTglLaporan').textContent = formatTglIndo(row.tanggal);
-    if (document.getElementById('pvSuratStatus')) document.getElementById('pvSuratStatus').textContent = row.status_penanganan || 'Pending';
-    if (document.getElementById('pvSuratRincian')) document.getElementById('pvSuratRincian').textContent = row.kerusakan || '—';
-    if (document.getElementById('pvSuratUraian')) document.getElementById('pvSuratUraian').textContent = row.uraian || '—';
-    if (document.getElementById('pvSuratKeterangan')) document.getElementById('pvSuratKeterangan').textContent = ketVal || '(tidak ada keterangan tambahan)';
-    if (document.getElementById('pvSuratTtdCode')) document.getElementById('pvSuratTtdCode').textContent = ttdCode;
-    if (document.getElementById('pvSuratNamaPelapor')) document.getElementById('pvSuratNamaPelapor').textContent = namaVal || 'Petugas Unit IT';
-    if (document.getElementById('pvSuratJabatan')) document.getElementById('pvSuratJabatan').textContent = jabVal || 'Penanggung Jawab / Staf IT';
+/**
+ * Render pratinjau surat ke iframe memakai buildSuratHtml() — sumber yang SAMA
+ * dengan cetak, sehingga pratinjau & hasil cetak selalu identik.
+ */
+function renderSuratPreview() {
+    const frame = document.getElementById('suratPreviewFrame');
+    if (!frame) return;
+    const id = _suratCurrentId;
+    const row = findLaporanById(id);
+    if (!row) return;
+
+    const fieldValue = (elemId) => {
+        const el = document.getElementById(elemId);
+        return el ? el.value.trim() : '';
+    };
+
+    const verifyToken = String(row.verify_token || '');
+    const ttdCode     = buildTtdCode(id, verifyToken);
+    const nomor       = fieldValue('suratNomor');
+    const tglSurat    = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
+    const namaPelapor = fieldValue('suratNamaPelapor') || (row.nama_pelapor || '');
+    const jabatan     = fieldValue('suratJabatan') || (row.jabatan_pelapor || '');
+    const keterangan  = fieldValue('suratKeterangan');
+    const canvas      = document.getElementById('suratQrCanvas');
+    const qrImg       = canvas ? canvas.toDataURL('image/png') : '';
+
+    frame.srcdoc = buildSuratHtml({
+        nomor, tglFmt: formatTglIndo(tglSurat), namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id
+    });
 }
 
 function closeSuratModal() {
@@ -1271,12 +1272,9 @@ function cetakSurat() {
     const ttdCode = document.getElementById('suratTtdCode') ? document.getElementById('suratTtdCode').textContent : '';
     const isReprint = _suratIsReprint;
 
-    if (!namaPelapor && document.getElementById('pvSuratNamaPelapor')) {
-        namaPelapor = document.getElementById('pvSuratNamaPelapor').textContent.trim();
-    }
-    if (!jabatan && document.getElementById('pvSuratJabatan')) {
-        jabatan = document.getElementById('pvSuratJabatan').textContent.trim();
-    }
+    const suratRow = findLaporanById(_suratCurrentId);
+    if (!namaPelapor && suratRow) namaPelapor = suratRow.nama_pelapor || '';
+    if (!jabatan && suratRow) jabatan = suratRow.jabatan_pelapor || '';
 
     if (!namaPelapor) { alert('Nama Pelapor wajib diisi.'); if (document.getElementById('suratNamaPelapor')) document.getElementById('suratNamaPelapor').focus(); return; }
     if (!jabatan) { alert('Jabatan/Bagian wajib diisi.'); if (document.getElementById('suratJabatan')) document.getElementById('suratJabatan').focus(); return; }
@@ -1362,6 +1360,11 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   .ttd-block .qr-wrap img { display: block; width: 115px; height: 115px; }
   .ttd-block .ttd-name { margin-top: 8px; font-size: 10.5pt; border-top: 1px solid #555; padding-top: 4px; min-width: 160px; font-weight: bold; }
   .footer-note { margin-top: 28px; font-size: 9pt; color: #666; border-top: 1px solid #ddd; padding-top: 8px; }
+  /* Pratinjau di layar (iframe): padding lebih kecil agar tidak terlalu wrap. */
+  @media screen {
+    body { background: #fff; padding: 14px 18px; }
+    .ttd-block .qr-wrap img { width: 100px; height: 100px; }
+  }
   @media print {
     body { padding: 0; }
     @page { size: A4 portrait; margin: 15mm 20mm; }
