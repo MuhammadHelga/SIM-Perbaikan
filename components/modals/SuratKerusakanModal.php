@@ -101,7 +101,6 @@ $suratUserList = $userList ?? [];
 
             <!-- Hidden Canvas for QR Generator -->
             <canvas id="suratQrCanvas" width="360" height="360" style="display:none;"></canvas>
-            <span id="suratTtdCode" style="display:none;">—</span>
 
             <!-- Checklist Persetujuan -->
             <div class="surat-approval-box" id="suratApprovalBox">

@@ -1156,10 +1156,8 @@ function openSuratModal(id, isReprint = false) {
     }
     document.getElementById('suratKeterangan').value = row.keterangan_tambahan || '';
 
-    // Kode TTD & URL verifikasi diturunkan dari verify_token tersimpan
+    // URL verifikasi diturunkan dari verify_token tersimpan
     const verifyToken = String(row.verify_token || '');
-    const ttdCode = buildTtdCode(id, verifyToken);
-    document.getElementById('suratTtdCode').textContent = ttdCode;
 
     // URL verifikasi QR Code
     const host = window.location.origin;
@@ -1226,8 +1224,6 @@ function renderSuratPreview() {
         return el ? el.value.trim() : '';
     };
 
-    const verifyToken = String(row.verify_token || '');
-    const ttdCode     = buildTtdCode(id, verifyToken);
     const nomor       = fieldValue('suratNomor');
     const tglSurat    = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
     const namaPelapor = fieldValue('suratNamaPelapor') || (row.nama_pelapor || '');
@@ -1237,7 +1233,7 @@ function renderSuratPreview() {
     const qrImg       = canvas ? canvas.toDataURL('image/png') : '';
 
     frame.srcdoc = buildSuratHtml({
-        nomor, tglFmt: formatTglIndo(tglSurat), namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id
+        nomor, tglFmt: formatTglIndo(tglSurat), namaPelapor, jabatan, keterangan, qrImg, row, id
     });
 }
 
@@ -1277,14 +1273,6 @@ function onSuratPelaporChange() {
 
 
 /**
- * Bangun kode TTD yang ditampilkan dari verify_token yang tersimpan di server.
- */
-function buildTtdCode(id, token) {
-    const suffix = String(token || '').slice(0, 6).toUpperCase() || 'XXXXXX';
-    return `LPR${String(id).padStart(4, '0')}-TTE-${suffix}`;
-}
-
-/**
  * Cetak surat kerusakan:
  * 1. Validasi form
  * 2. Bangun HTML surat dengan QR Code Berlogo
@@ -1297,7 +1285,6 @@ function cetakSurat() {
     let tglSurat = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
     const nomor = document.getElementById('suratNomor') ? document.getElementById('suratNomor').value.trim() : '';
     const keterangan = document.getElementById('suratKeterangan') ? document.getElementById('suratKeterangan').value.trim() : '';
-    const ttdCode = document.getElementById('suratTtdCode') ? document.getElementById('suratTtdCode').textContent : '';
     const isReprint = _suratIsReprint;
 
     const suratRow = findLaporanById(_suratCurrentId);
@@ -1321,7 +1308,7 @@ function cetakSurat() {
     const qrImg = canvas ? canvas.toDataURL('image/png') : '';
 
     const html = buildSuratHtml({
-        nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id
+        nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, row, id
     });
 
     const pw = window.open('', '_blank', 'width=900,height=700');
@@ -1344,7 +1331,7 @@ function cetakSurat() {
     closeSuratModal();
 }
 
-function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id }) {
+function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, row, id }) {
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
