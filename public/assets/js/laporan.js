@@ -1286,8 +1286,10 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   .keterangan-box { border: 1px solid #aaa; border-radius: 4px; padding: 10px 14px; margin-bottom: 18px; font-size: 11.5pt; min-height: 48px; font-style: italic; color: #333; }
   .ttd-section { display: flex; justify-content: space-between; margin-top: 20px; gap: 60px; align-items: flex-start; }
   .ttd-block { text-align: center; min-width: 180px; }
-  .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 4px; }
-  .ttd-block .ttd-jabatan { font-size: 10pt; color: #222; margin-bottom: 8px; min-height: 20px; }
+  .ttd-block .ttd-date { font-size: 11pt; margin-bottom: 6px; text-align: start; }
+  .ttd-block .ttd-date-placeholder { font-size: 11pt; margin-bottom: 6px; visibility: hidden; text-align: start; }
+  .ttd-block .ttd-title { font-size: 11pt; font-weight: 600; margin-bottom: 4px; text-align: start; }
+  .ttd-block .ttd-jabatan { font-size: 10pt; color: #222; margin-bottom: 8px; min-height: 20px; text-align: start; }
   .ttd-block .qr-wrap { border: 1px solid #ccc; border-radius: 8px; padding: 6px; display: inline-block; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
   .ttd-block .qr-wrap img { display: block; width: 115px; height: 115px; }
   .ttd-block .ttd-name { margin-top: 8px; font-size: 10.5pt; border-top: 1px solid #555; padding-top: 4px; min-width: 160px; font-weight: bold; }
@@ -1315,8 +1317,6 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   <div class="nomor">Nomor: ${esc(nomor) || '—'}</div>
 </div>
 
-<div class="tgl-right">Tanggal: ${esc(tglFmt)}</div>
-
 <div class="pembuka">
   Yang bertanda tangan di bawah ini menyatakan bahwa barang/perangkat berikut telah mengalami kerusakan
   dan perlu ditangani/dikirim ke unit terkait untuk perbaikan lebih lanjut.
@@ -1337,6 +1337,7 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
 
 <div class="ttd-section">
   <div class="ttd-block">
+    <div class="ttd-date-placeholder">&nbsp;</div>
     <div class="ttd-title">Mengetahui,</div>
     <div class="ttd-jabatan">${esc(jabatan)}</div>
     <div class="qr-wrap">
@@ -1345,12 +1346,13 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
     <div class="ttd-name">${esc(namaPelapor)}</div>
   </div>
   <div class="ttd-block">
+    <div class="ttd-date">Banyuwangi, ${esc(tglFmt)}</div>
     <div class="ttd-title">Menyetujui,</div>
     <div class="ttd-jabatan">Kabag. Fasilitas dan Keselamatan</div>
     <div class="qr-wrap">
       <img src="${qrImg}" alt="QR Code TTD Kabag" />
     </div>
-    <div class="ttd-name">Budi Hartono, S.Kep. , Ners.</div>
+    <div class="ttd-name">Budi Hartono, S.Kep., Ners.</div>
   </div>
 </div>
 

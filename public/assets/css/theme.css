@@ -645,6 +645,10 @@ html.theme-transition .alokasi-card {
   border-color: var(--border);
 }
 
+[data-theme='dark'] .surat-paper-ttd-box .ttd-date-str {
+  color: var(--text);
+}
+
 [data-theme='dark'] .surat-paper-ttd-box .ttd-lbl {
   color: var(--text);
 }

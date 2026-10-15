@@ -134,8 +134,6 @@
                         <div class="surat-paper-nomor">Nomor: <span id="pvSuratNomor">—</span></div>
                     </div>
 
-                    <div class="surat-paper-tgl">Tanggal: <span id="pvSuratTgl">—</span></div>
-
                     <div class="surat-paper-pembuka">
                         Yang bertanda tangan di bawah ini menyatakan bahwa barang/perangkat berikut telah mengalami kerusakan
                         dan perlu ditangani/dikirim ke unit terkait untuk perbaikan lebih lanjut.
@@ -158,6 +156,7 @@
                     <!-- TTD & QR Code Row -->
                     <div class="surat-paper-ttd-row">
                         <div class="surat-paper-ttd-box">
+                            <div class="ttd-date-placeholder">&nbsp;</div>
                             <div class="ttd-lbl">Mengetahui,</div>
                             <div class="ttd-jabatan-str" id="pvSuratJabatan">Penanggung Jawab / Staf IT</div>
                             <div class="qr-preview-img-box">
@@ -166,6 +165,7 @@
                             <div class="ttd-name-str"><strong id="pvSuratNamaPelapor">—</strong></div>
                         </div>
                         <div class="surat-paper-ttd-box">
+                            <div class="ttd-date-str">Banyuwangi, <span id="pvSuratTgl">—</span></div>
                             <div class="ttd-lbl">Menyetujui,</div>
                             <div class="ttd-jabatan-str">Kabag. Fasilitas dan Keselamatan</div>
                             <div class="qr-preview-img-box">
