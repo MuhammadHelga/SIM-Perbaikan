@@ -1399,16 +1399,10 @@ main.page-wrap {
 
 .surat-paper-ttd-row {
   display: flex;
-<<<<<<< HEAD
   justify-content: space-between;
   padding: 0 16px;
   gap: 30px;
   margin-top: 18px;
-=======
-  justify-content: center;
-  gap: 40px;
-  margin-top: 16px;
->>>>>>> 0f18e8f (style(surat): baris TTD (Pelapor & Mengetahui) rata tengah)
 }
 
 .surat-paper-ttd-box {
