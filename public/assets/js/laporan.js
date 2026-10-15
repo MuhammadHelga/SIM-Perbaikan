@@ -1322,6 +1322,13 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
+    // Penandatangan kedua (tetap) — sumber tunggal dari config/pengaturan.php
+    // (dikirim ke JS sebagai window.SURAT_SIGNER2 di LaporanView.php).
+    const signer2 = window.SURAT_SIGNER2 || {};
+    const signer2Label   = signer2.label   || '';
+    const signer2Jabatan = signer2.jabatan || '';
+    const signer2Nama    = signer2.nama    || '';
+
     return `<!DOCTYPE html>
 <html lang="id">
 <head>
@@ -1408,12 +1415,12 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   </div>
   <div class="ttd-block">
     <div class="ttd-date">Banyuwangi, ${esc(tglFmt)}</div>
-    <div class="ttd-title">Menyetujui,</div>
-    <div class="ttd-jabatan">Kabag. Fasilitas dan Keselamatan</div>
+    <div class="ttd-title">${esc(signer2Label)}</div>
+    <div class="ttd-jabatan">${esc(signer2Jabatan)}</div>
     <div class="qr-wrap">
       <img src="${qrImg}" alt="QR Code TTD Kabag" />
     </div>
-    <div class="ttd-name">Budi Hartono, S.Kep., Ners.</div>
+    <div class="ttd-name">${esc(signer2Nama)}</div>
   </div>
 </div>
 

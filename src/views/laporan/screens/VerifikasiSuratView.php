@@ -429,7 +429,7 @@ $base = BASE_URL;
                     <td class="colon-col">:</td>
                     <td class="val-col">
                         1. <?= htmlspecialchars($namaPelapor) ?> (<?= htmlspecialchars($jabatanPelapor) ?>) <span class="badge-disetujui">*Disetujui</span><br>
-                        2. Budi Hartono, S.Kep. , Ners. (Kabag. Fasilitas dan Keselamatan) <span class="badge-disetujui">*Disetujui</span>
+                        2. <?= htmlspecialchars(SURAT_SIGNER2_NAMA) ?> (<?= htmlspecialchars(SURAT_SIGNER2_JABATAN) ?>) <span class="badge-disetujui">*Disetujui</span>
                     </td>
                 </tr>
                 <tr>

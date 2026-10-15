@@ -15,4 +15,7 @@
 
     // Kunci untuk menandatangani cookie "Ingat akun saya" (rahasia)
     define('APP_SECRET', 'd1efa12fe7bd8de02c54aeb0432a90b561c5f665aca2fb1dd0843af5e2b254e7');
+
+    // Pengaturan aplikasi (penandatangan surat, dll.)
+    require __DIR__ . '/pengaturan.php';
 ?>

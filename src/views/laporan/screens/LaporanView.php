@@ -449,6 +449,7 @@ if ($search !== '') {
     window.BASE_URL = <?= json_encode(BASE_URL) ?>; 
     window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>; 
     window.CURRENT_USER_NAME = <?= json_encode($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>;
+    window.SURAT_SIGNER2 = <?= json_encode(['label' => SURAT_SIGNER2_LABEL, 'jabatan' => SURAT_SIGNER2_JABATAN, 'nama' => SURAT_SIGNER2_NAMA], JSON_UNESCAPED_UNICODE) ?>;
 </script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/laporan.js') ?>"></script>
