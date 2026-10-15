@@ -177,7 +177,7 @@
 
                     <!-- Footer Note -->
                     <div class="surat-paper-footer">
-                        * Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.
+                        *Dokumen ini diterbitkan secara digital oleh SIM-Perbaikan RS Al-Huda. Scan QR Code untuk verifikasi keabsahan.
                     </div>
                 </div>
             </div>
