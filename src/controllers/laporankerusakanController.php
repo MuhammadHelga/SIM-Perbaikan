@@ -111,4 +111,11 @@ class laporankerusakanController
     {
         return $this->laporankerusakan->simpanSurat($id, $nama, $jabatan, $nomor, $tglSurat);
     }
+
+    // ===== ALUR ACC KABAG =====
+
+    public function acc(int $idLaporan, int $idUser): array
+    {
+        return $this->laporankerusakan->acc($idLaporan, $idUser);
+    }
 }

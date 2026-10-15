@@ -176,14 +176,17 @@ $suratUserList = $userList ?? [];
                             </div>
                             <div class="ttd-name-str"><strong id="pvSuratNamaPelapor">—</strong></div>
                         </div>
-                        <div class="surat-paper-ttd-box">
+                        <div class="surat-paper-ttd-box" id="pvSuratKabagBox">
                             <div class="ttd-date-str">Banyuwangi, <span id="pvSuratTgl">—</span></div>
                             <div class="ttd-lbl">Menyetujui,</div>
-                            <div class="ttd-jabatan-str">Kabag. Fasilitas dan Keselamatan</div>
-                            <div class="qr-preview-img-box">
-                                <img id="pvSuratQrImgKabag" src="" alt="QR Code TTE Berlogo" />
+                            <div class="ttd-jabatan-str" id="pvSuratJabatanKabag">Kabag. Fasilitas dan Keselamatan</div>
+                            <div class="qr-preview-img-box" id="pvSuratQrKabagBox">
+                                <img id="pvSuratQrImgKabag" src="" alt="QR Code TTE Kabag" />
                             </div>
-                            <div class="ttd-name-str"><strong>Budi Hartono, S.Kep., Ners.</strong></div>
+                            <div class="ttd-name-str" id="pvSuratNamaKabagWrap"><strong id="pvSuratNamaKabag">—</strong></div>
+                            <div id="pvSuratMenungguAcc" style="display:none; font-style:italic; color:#b45309; font-size:10pt; padding:8px 4px;">
+                                Menunggu persetujuan Kabag. Fasilitas dan Keselamatan
+                            </div>
                         </div>
                     </div>
 

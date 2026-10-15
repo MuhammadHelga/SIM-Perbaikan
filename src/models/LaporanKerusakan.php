@@ -54,6 +54,14 @@ class LaporanKerusakan
             }
         }
 
+        // Filter status ACC surat (untuk panel kabag).
+        $acc = (string) ($filters['acc'] ?? '');
+        if ($acc === 'menunggu' || $acc === 'diacc') {
+            $where   .= ' AND s.acc_status = ?';
+            $types   .= 's';
+            $params[] = $acc;
+        }
+
         return [$where, $types, $params];
     }
 
@@ -86,11 +94,17 @@ class LaporanKerusakan
                     s.jabatan_pelapor,
                     s.nomor_surat,
                     s.tgl_surat,
+                    s.acc_status,
+                    s.acc_oleh,
+                    s.tgl_acc,
+                    u.nama             AS nama_kabag,
+                    u.jabatan          AS jabatan_kabag,
                     CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
                 FROM laporan_kerusakan lk
                 INNER JOIN barang  b ON lk.id_barang  = b.id
                 INNER JOIN ruangan r ON lk.id_ruangan = r.id
-                LEFT JOIN surat_kerusakan s ON s.id_laporan = lk.id";
+                LEFT JOIN surat_kerusakan s ON s.id_laporan = lk.id
+                LEFT JOIN users u ON u.id = s.acc_oleh";
     }
 
     /**
@@ -154,7 +168,8 @@ class LaporanKerusakan
         $sql = "SELECT COUNT(*) AS j
                 FROM laporan_kerusakan lk
                 INNER JOIN barang  b ON lk.id_barang  = b.id
-                INNER JOIN ruangan r ON lk.id_ruangan = r.id"
+                INNER JOIN ruangan r ON lk.id_ruangan = r.id
+                LEFT JOIN surat_kerusakan s ON s.id_laporan = lk.id"
                 . $where;
 
         $stmt = $this->conn->prepare($sql);
@@ -213,11 +228,17 @@ class LaporanKerusakan
                 s.jabatan_pelapor,
                 s.nomor_surat,
                 s.tgl_surat,
+                s.acc_status,
+                s.acc_oleh,
+                s.tgl_acc,
+                u.nama             AS nama_kabag,
+                u.jabatan          AS jabatan_kabag,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
              FROM laporan_kerusakan lk
              INNER JOIN barang  b ON lk.id_barang  = b.id
              INNER JOIN ruangan r ON lk.id_ruangan = r.id
              LEFT JOIN surat_kerusakan s ON s.id_laporan = lk.id
+             LEFT JOIN users u ON u.id = s.acc_oleh
              WHERE lk.id = ?"
         );
 
@@ -276,11 +297,17 @@ class LaporanKerusakan
                 s.jabatan_pelapor,
                 s.nomor_surat,
                 s.tgl_surat,
+                s.acc_status,
+                s.acc_oleh,
+                s.tgl_acc,
+                u.nama             AS nama_kabag,
+                u.jabatan          AS jabatan_kabag,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
              FROM surat_kerusakan s
              INNER JOIN laporan_kerusakan lk ON lk.id = s.id_laporan
              INNER JOIN barang  b ON lk.id_barang  = b.id
              INNER JOIN ruangan r ON lk.id_ruangan = r.id
+             LEFT JOIN users u ON u.id = s.acc_oleh
              WHERE s.verify_uid = ?"
         );
 
@@ -545,6 +572,45 @@ class LaporanKerusakan
         $stmt->bind_param("ssssi", $nama, $jabatan, $nomor, $tglSurat, $id);
 
         return $stmt->execute();
+    }
+
+    /**
+     * ACC surat oleh kabag: tandai acc_status='diacc' + pencatat siapa & kapan.
+     * Pastikan laporan sudah punya baris surat dan belum pernah di-ACC.
+     *
+     * @return array{ok:bool, reason?:string}
+     */
+    public function acc(int $idLaporan, int $idUser): array
+    {
+        $this->ensureSurat($idLaporan);
+
+        $stmt = $this->conn->prepare(
+            "SELECT acc_status FROM surat_kerusakan WHERE id_laporan = ? LIMIT 1"
+        );
+        $stmt->bind_param("i", $idLaporan);
+        $stmt->execute();
+        $row = $stmt->get_result()->fetch_assoc();
+
+        if (!$row) {
+            return ['ok' => false, 'reason' => 'Surat tidak ditemukan.'];
+        }
+        if (($row['acc_status'] ?? '') === 'diacc') {
+            return ['ok' => false, 'reason' => 'Surat sudah pernah di-ACC.'];
+        }
+
+        $stmt = $this->conn->prepare(
+            "UPDATE surat_kerusakan
+             SET acc_status = 'diacc',
+                 acc_oleh = ?,
+                 tgl_acc = NOW()
+             WHERE id_laporan = ? AND acc_status = 'menunggu'"
+        );
+        $stmt->bind_param("ii", $idUser, $idLaporan);
+        $stmt->execute();
+
+        return $stmt->affected_rows > 0
+            ? ['ok' => true]
+            : ['ok' => false, 'reason' => 'Surat sudah pernah di-ACC.'];
     }
 
     // DATA BARANG UNTUK DROPDOWN

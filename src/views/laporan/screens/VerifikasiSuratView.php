@@ -44,6 +44,14 @@ $statusSurat = 'Published';
 if ($kirimStatus === 'dikirim') $statusSurat = 'Dikirim (Proses)';
 if ($kirimStatus === 'diterima') $statusSurat = 'Diterima Unit Perbaikan';
 
+// Status ACC kabag: QR kabag (…&signer=kabag) baru dicetak setelah ACC,
+// tapi token yang sama bisa dibuka langsung — tampilkan state sebenarnya.
+$accStatus   = (string) ($row['acc_status'] ?? '');
+$namaKabag   = (string) ($row['nama_kabag'] ?? '');
+$jabatanKabag = (string) ($row['jabatan_kabag'] ?? 'Kabag. Fasilitas dan Keselamatan');
+$isAcc       = $accStatus === 'diacc';
+$signerKabag = (($_GET['signer'] ?? '') === 'kabag');
+
 $base = BASE_URL;
 ?>
 <!DOCTYPE html>
@@ -253,6 +261,13 @@ $base = BASE_URL;
             margin-left: 6px;
         }
 
+        .badge-pending {
+            color: #b45309;
+            font-weight: 700;
+            font-size: 13px;
+            margin-left: 6px;
+        }
+
         /* Extra Details Box */
         .extra-box {
             background: #f8fafc;
@@ -326,6 +341,25 @@ $base = BASE_URL;
         }
 
         .status-badge-valid svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .status-badge-pending {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fef3c7;
+            color: #b45309;
+            font-weight: 700;
+            font-size: 12.5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #fde68a;
+        }
+
+        .status-badge-pending svg {
             width: 16px;
             height: 16px;
             fill: currentColor;
@@ -429,7 +463,13 @@ $base = BASE_URL;
                     <td class="colon-col">:</td>
                     <td class="val-col">
                         1. <?= htmlspecialchars($namaPelapor) ?> (<?= htmlspecialchars($jabatanPelapor) ?>) <span class="badge-disetujui">*Disetujui</span><br>
-                        2. Budi Hartono, S.Kep. , Ners. (Kabag. Fasilitas dan Keselamatan) <span class="badge-disetujui">*Disetujui</span>
+                        <?php if ($isAcc && $namaKabag !== ''): ?>
+                        2. <?= htmlspecialchars($namaKabag) ?> (<?= htmlspecialchars($jabatanKabag) ?>) <span class="badge-disetujui">*Disetujui</span>
+                        <?php elseif ($isAcc): ?>
+                        2. Kabag. Fasilitas dan Keselamatan <span class="badge-disetujui">*Disetujui</span>
+                        <?php else: ?>
+                        2. Kabag. Fasilitas dan Keselamatan <span class="badge-pending">*Menunggu ACC</span>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <tr>
@@ -475,12 +515,22 @@ $base = BASE_URL;
     <!-- Footer Status -->
     <div class="verify-footer">
         <div>Official Verification Page &bull; SIM-Perbaikan RS Al-Huda</div>
+        <?php if ($isAcc): ?>
         <div class="status-badge-valid">
             <svg viewBox="0 0 24 24">
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
             </svg>
             DOKUMEN VALID
         </div>
+        <?php else: ?>
+        <!-- QR kabag (&signer=kabag) discan / dokumen dibuka sebelum ACC. -->
+        <div class="status-badge-pending">
+            <svg viewBox="0 0 24 24">
+                <path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/>
+            </svg>
+            MENUNGGU PERSETUJUAN KABAG
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

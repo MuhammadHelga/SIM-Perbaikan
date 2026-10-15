@@ -53,7 +53,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
             $password = (string) ($_POST['password'] ?? '');
             $role     = (string) ($_POST['role'] ?? '');
 
-            if ($nama === '' || $username === '' || !in_array($role, ['admin', 'teknisi'], true)) {
+            if ($nama === '' || $username === '' || !in_array($role, ['admin', 'teknisi', 'kabag'], true)) {
                 flash('error', 'Nama, username, dan role wajib diisi dengan benar.');
             } elseif ($userController->usernameExists($username, $id)) {
                 flash('error', 'Username "' . $username . '" sudah dipakai user lain.');

@@ -19,6 +19,11 @@ if ($role !== 'admin') {
     unset($menus['unit_barang'], $menus['subnet'], $menus['user']);
 }
 
+// Kabag: khusus Dashboard + Laporan (read-only + ACC surat).
+if ($role === 'kabag') {
+    unset($menus['ruang'], $menus['jaringan'], $menus['unit_barang'], $menus['subnet'], $menus['user']);
+}
+
 $flash = $_SESSION['flash'] ?? null;
 unset($_SESSION['flash']);
 
@@ -72,6 +77,7 @@ try {
             <?php endforeach; ?>
         </nav>
 
+        <?php if ($role !== 'kabag'): ?>
         <div class="sidebar-pet-area">
             <div class="sidebar-pet-scene">
                 <span class="sidebar-pet__sparkle sidebar-pet__sparkle--one" aria-hidden="true">✦</span>
@@ -101,6 +107,7 @@ try {
                 <span class="sidebar-pet__ground" aria-hidden="true"></span>
             </div>
         </div>
+        <?php endif; ?>
 
         <div class="app-navbar__foot">
             <button type="button" class="theme-toggle" aria-label="Ganti tema">

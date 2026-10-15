@@ -435,6 +435,7 @@ body {
   align-items: center;
   gap: 8px;
   padding-top: 12px;
+  margin-top: auto; /* selalu di bawah, bahkan saat area pet disembunyikan */
   border-top: 1px solid var(--border, #e5e9f2);
 }
 

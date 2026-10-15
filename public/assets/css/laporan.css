@@ -430,6 +430,7 @@ main.page-wrap {
 .data-table col.col-kerusakan { width: 13%; }
 .data-table col.col-uraian { width: 13%; }
 .data-table col.col-hasil { width: 7%; }
+.data-table col.col-acc { width: 100px; }
 .data-table col.col-tgl-kirim { width: 230px; }
 .data-table col.col-aksi { width: 150px; }
 
@@ -610,6 +611,17 @@ main.page-wrap {
   color: #b45309;
 }
 
+/* Badge ACC di kolom "ACC Surat" — sedikit lebih ringkas dari badge status. */
+.badge--acc {
+  padding: 3px 10px;
+  font-size: 11.5px;
+}
+
+.acc-none {
+  color: #9aa3af;
+  font-weight: 600;
+}
+
 .pill-btn {
   display: inline-block;
   border: none;
@@ -641,6 +653,22 @@ main.page-wrap {
 .pill-btn--disabled {
   background: #c7cbd3;
   cursor: default;
+}
+
+.pill-btn--acc {
+  background: #15803d;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+}
+
+.pill-btn--acc .material-symbols-outlined {
+  font-size: 16px;
+}
+
+.pill-btn--acc:hover {
+  background: #166534;
 }
 
 .pill-stack {
@@ -688,6 +716,19 @@ main.page-wrap {
 .pill-text {
   font-size: 12.5px;
   color: var(--text-muted);
+}
+
+/* Chip netral untuk info non-aksi (mis. "Belum dikirim"). */
+.pill-text--muted {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px dashed #cbd5e1;
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .action-icons {

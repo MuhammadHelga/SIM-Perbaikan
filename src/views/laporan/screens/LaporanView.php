@@ -10,6 +10,9 @@ $totalPages   = $totalPages ?? 1;
 $totalRows    = $totalRows ?? count($laporanList);
 $asetList     = $asetList ?? [];
 $userList     = $userList ?? [];
+$accFilter    = $accFilter ?? '';
+$roleUser     = $_SESSION['role'] ?? '';
+$isKabag      = $roleUser === 'kabag';
 
 $namaBulan = [
     1=>'Januari',
@@ -40,11 +43,12 @@ $fmtTanggal = function ($tgl) {
 };
 
 // Chip "Filter Aktif" (masing-masing bisa dihapus lewat link)
-$chipUrl = function (array $overrides) use ($periode, $statusFilter, $search, $perPage) {
+$chipUrl = function (array $overrides) use ($periode, $statusFilter, $search, $perPage, $accFilter) {
     $params = [
         'periode'  => $periode,
         'status'   => $statusFilter,
         'search'   => $search,
+        'acc'      => $accFilter,
         'per_page' => $perPage,
     ];
     foreach ($overrides as $k => $v) {
@@ -57,11 +61,12 @@ $chipUrl = function (array $overrides) use ($periode, $statusFilter, $search, $p
 };
 
 // URL navigasi halaman (mempertahankan filter aktif).
-$pageUrl = function (int $target) use ($periode, $statusFilter, $search, $perPage) {
+$pageUrl = function (int $target) use ($periode, $statusFilter, $search, $perPage, $accFilter) {
     $params = [
         'periode'  => $periode,
         'status'   => $statusFilter,
         'search'   => $search,
+        'acc'      => $accFilter,
         'per_page' => $perPage,
         'page'     => $target,
     ];
@@ -76,6 +81,7 @@ $cetakQuery = http_build_query(array_filter([
     'periode' => $periode,
     'status'  => $statusFilter,
     'search'  => $search,
+    'acc'     => $accFilter,
 ], fn($v) => $v !== '' && $v !== null));
 $cetakUrl = BASE_URL . '/laporan/cetak' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
 
@@ -112,6 +118,12 @@ if ($statusFilter !== '') {
 }
 if ($search !== '') {
     $activeChips[] = ['label' => 'Cari: ' . $search, 'url' => $chipUrl(['search' => ''])];
+}
+if ($accFilter !== '') {
+    $activeChips[] = [
+        'label' => 'ACC: ' . ($accFilter === 'menunggu' ? 'Menunggu' : 'Sudah Diacc'),
+        'url'   => $chipUrl(['acc' => '']),
+    ];
 }
 ?>
 
@@ -210,6 +222,17 @@ if ($search !== '') {
                     </div>
                 </div>
 
+                <div class="filter-field">
+                    <label for="filterAcc">ACC Surat</label>
+                    <div class="filter-input filter-input--select">
+                        <select name="acc" id="filterAcc">
+                            <option value="" <?= $accFilter === '' ? 'selected' : '' ?>>Semua</option>
+                            <option value="menunggu" <?= $accFilter === 'menunggu' ? 'selected' : '' ?>>Menunggu ACC</option>
+                            <option value="diacc" <?= $accFilter === 'diacc' ? 'selected' : '' ?>>Sudah Diacc</option>
+                        </select>
+                    </div>
+                </div>
+
                 <div class="filter-field filter-field--grow">
                     <label for="search">Cari</label>
                     <div class="filter-input">
@@ -224,10 +247,12 @@ if ($search !== '') {
                         <span class="material-symbols-outlined">print</span>
                         Cetak Rekap Laporan
                     </a>
+                    <?php if (!$isKabag): ?>
                     <button type="button" class="btn btn-add" onclick="openTambahModal()">
                         <span class="material-symbols-outlined">add</span>
                         Tambah Laporan
                     </button>
+                    <?php endif; ?>
                 </div>
             </form>
 
@@ -260,6 +285,7 @@ if ($search !== '') {
                         <col class="col-kerusakan">
                         <col class="col-uraian">
                         <col class="col-hasil">
+                        <col class="col-acc">
                         <col class="col-tgl-kirim">
                         <col class="col-aksi">
                     </colgroup>
@@ -273,6 +299,7 @@ if ($search !== '') {
                             <th class="col-kerusakan">Kerusakan</th>
                             <th class="col-uraian">Uraian Kegiatan</th>
                             <th class="col-hasil">Hasil</th>
+                            <th class="col-acc">ACC Surat</th>
                             <th class="col-tgl-kirim">Tgl Kirim/Terima</th>
                             <th class="col-aksi">Aksi</th>
                         </tr>
@@ -291,12 +318,13 @@ if ($search !== '') {
                         <col class="col-kerusakan">
                         <col class="col-uraian">
                         <col class="col-hasil">
+                        <col class="col-acc">
                         <col class="col-tgl-kirim">
                         <col class="col-aksi">
                     </colgroup>
                     <tbody>
                     <?php if (!$laporanList): ?>
-                        <tr><td colspan="10" class="empty-row">Belum ada laporan.</td></tr>
+                        <tr><td colspan="11" class="empty-row">Belum ada laporan.</td></tr>
                     <?php endif; ?>
                     <?php foreach ($laporanList as $row): ?>
                         <tr>
@@ -318,12 +346,38 @@ if ($search !== '') {
                                 ?>
                                 <span class="badge <?= $badgeClass ?>"><?= htmlspecialchars($statusPenanganan) ?></span>
                             </td>
+                            <td class="col-acc">
+                                <?php $accStatus = $row['acc_status'] ?? null; ?>
+                                <?php if ($accStatus === 'diacc'): ?>
+                                    <span class="badge badge--green badge--acc" title="Surat sudah di-ACC Kabag. Fasilitas dan Keselamatan">Diacc &#10003;</span>
+                                <?php elseif ($accStatus === 'menunggu'): ?>
+                                    <span class="badge badge--orange badge--acc" title="Surat menunggu ACC Kabag. Fasilitas dan Keselamatan">Menunggu</span>
+                                <?php else: ?>
+                                    <span class="acc-none">—</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="col-tgl-kirim">
                                 <?php
                                     $statusPenangananKirim = $row['status_penanganan'] ?? 'Pending';
                                     $isSelesai = $statusPenangananKirim === 'Selesai';
                                 ?>
-                                <?php if ($row['kirim_status'] === 'belum'): ?>
+                                <?php if ($isKabag): ?>
+                                    <?php if ($row['kirim_status'] === 'belum'): ?>
+                                        <span class="pill-text pill-text--muted">Belum dikirim</span>
+                                    <?php else: ?>
+                                        <div class="pill-stack pill-stack--col">
+                                            <span class="pill-text pill-text--muted">
+                                                <?= $row['kirim_status'] === 'diterima' ? 'Diterima' : 'Dikirim' ?>:
+                                                <?= htmlspecialchars($fmtTanggal($row['kirim_status'] === 'diterima' ? ($row['tgl_terima'] ?? null) : ($row['tgl_kirim'] ?? null))) ?>
+                                            </span>
+                                            <?php if (!empty($row['nama_pelapor'])): ?>
+                                                <button type="button" class="pill-surat-btn" title="Lihat Surat" onclick="openSuratModal(<?= (int)$row['id'] ?>, true)">
+                                                    <span class="material-symbols-outlined">description</span> Lihat Surat
+                                                </button>
+                                            <?php endif; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                <?php elseif ($row['kirim_status'] === 'belum'): ?>
                                     <?php if ($isSelesai): ?>
                                         <span class="pill-btn pill-btn--disabled" title="Status sudah Selesai, tidak perlu dikirim">Kirim</span>
                                     <?php else: ?>
@@ -360,6 +414,13 @@ if ($search !== '') {
                                         <button type="button" class="icon-btn icon-btn--view" title="Lihat detail" onclick="openDetailModal(<?= (int)$row['id'] ?>)">
                                             <span class="material-symbols-outlined">visibility</span>
                                         </button>
+                                    <?php if ($isKabag): ?>
+                                        <?php if (($row['acc_status'] ?? '') === 'menunggu' && !empty($row['nama_pelapor'])): ?>
+                                        <button type="button" class="pill-btn pill-btn--acc" title="ACC surat pengantar kerusakan" onclick="accSurat(<?= (int)$row['id'] ?>)">
+                                            <span class="material-symbols-outlined">task_alt</span> ACC
+                                        </button>
+                                        <?php endif; ?>
+                                    <?php else: ?>
                                     <button type="button" class="icon-btn icon-btn--edit" title="Edit" onclick="openEditModal(<?= (int)$row['id'] ?>)">
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
@@ -367,6 +428,7 @@ if ($search !== '') {
                                     <button type="button" class="icon-btn icon-btn--delete" title="Hapus" onclick="confirmDelete(<?= (int)$row['id'] ?>)">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
+                                    <?php endif; ?>
                                     <?php endif; ?>
                                 </div>
                             </td>
@@ -449,6 +511,7 @@ if ($search !== '') {
     window.BASE_URL = <?= json_encode(BASE_URL) ?>; 
     window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>; 
     window.CURRENT_USER_NAME = <?= json_encode($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>;
+    window.CURRENT_ROLE = <?= json_encode($_SESSION['role'] ?? '') ?>;
 </script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/laporan.js') ?>"></script>

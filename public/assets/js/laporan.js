@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     const filterForm = document.getElementById('filterForm');
     if (filterForm) {
-        ['periode', 'filterStatus'].forEach(function (id) {
+        ['periode', 'filterStatus', 'filterAcc'].forEach(function (id) {
             const el = document.getElementById(id);
             if (el) el.addEventListener('change', () => filterForm.requestSubmit());
         });
@@ -1165,15 +1165,22 @@ function openSuratModal(id, isReprint = false) {
     const host = window.location.origin;
     const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi?token=${encodeURIComponent(verifyToken)}`;
     const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
+    const isAcc = (row.acc_status || '') === 'diacc';
 
-    // Render QR Code TTE dengan logo RS Al-Huda
+    // Render QR Code TTE dengan logo RS Al-Huda.
+    // QR pelapor = URL verifikasi biasa; QR kabag = URL + &signer=kabag
+    // (QR kabag hanya dirender setelah ACC — sebelumnya kolomnya "Menunggu ACC").
     const qrCanvas = document.getElementById('suratQrCanvas');
     if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
         window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function (dataUrl) {
             const pvQrImg = document.getElementById('pvSuratQrImg');
             if (pvQrImg) pvQrImg.src = dataUrl;
-            const pvQrImgKabag = document.getElementById('pvSuratQrImgKabag');
-            if (pvQrImgKabag) pvQrImgKabag.src = dataUrl;
+            if (isAcc) {
+                window.drawQrWithLogo(qrCanvas, verifyUrl + '&signer=kabag', logoUrl, function (dataUrlKabag) {
+                    const pvQrImgKabag = document.getElementById('pvSuratQrImgKabag');
+                    if (pvQrImgKabag) pvQrImgKabag.src = dataUrlKabag;
+                });
+            }
         });
     }
 
@@ -1210,6 +1217,27 @@ function updateSuratPaperView({ id, nomorVal, tglSuratVal, row, namaVal, jabVal,
     if (document.getElementById('pvSuratTtdCode')) document.getElementById('pvSuratTtdCode').textContent = ttdCode;
     if (document.getElementById('pvSuratNamaPelapor')) document.getElementById('pvSuratNamaPelapor').textContent = namaVal || 'Petugas Unit IT';
     if (document.getElementById('pvSuratJabatan')) document.getElementById('pvSuratJabatan').textContent = jabVal || 'Penanggung Jawab / Staf IT';
+
+    // Kolom kanan (Kabag): dinamis sesuai status ACC.
+    const isAcc = (row.acc_status || '') === 'diacc';
+    const menungguEl = document.getElementById('pvSuratMenungguAcc');
+    const qrKabagBox = document.getElementById('pvSuratQrKabagBox');
+    const namaKabagWrap = document.getElementById('pvSuratNamaKabagWrap');
+    const jabatanKabagEl = document.getElementById('pvSuratJabatanKabag');
+    const namaKabagEl = document.getElementById('pvSuratNamaKabag');
+
+    if (isAcc) {
+        if (menungguEl) menungguEl.style.display = 'none';
+        if (qrKabagBox) qrKabagBox.style.display = '';
+        if (namaKabagWrap) namaKabagWrap.style.display = '';
+        if (jabatanKabagEl) jabatanKabagEl.textContent = row.jabatan_kabag || 'Kabag. Fasilitas dan Keselamatan';
+        if (namaKabagEl) namaKabagEl.textContent = row.nama_kabag || '—';
+    } else {
+        if (menungguEl) menungguEl.style.display = '';
+        if (qrKabagBox) qrKabagBox.style.display = 'none';
+        if (namaKabagWrap) namaKabagWrap.style.display = 'none';
+        if (jabatanKabagEl) jabatanKabagEl.textContent = 'Kabag. Fasilitas dan Keselamatan';
+    }
 }
 
 function closeSuratModal() {
@@ -1225,6 +1253,24 @@ function closeSuratModal() {
     }
     const jabatanInput = document.getElementById('suratJabatan');
     if (jabatanInput) jabatanInput.value = '';
+}
+
+/**
+ * Konfirmasi & ACC surat (khusus role kabag).
+ */
+function accSurat(id) {
+    const row = findLaporanById(id);
+    const nama = row ? (row.nama_pelapor || '') : '';
+    openConfirmModal({
+        icon: 'task_alt',
+        title: 'ACC Surat Kerusakan',
+        text: `Setujui surat pengantar kerusakan${nama ? ' milik ' + nama : ''}? Setelah di-ACC, surat akan menampilkan tanda tangan dan QR Code Kabag. Fasilitas dan Keselamatan.`,
+        confirmLabel: 'ACC Sekarang',
+        variant: 'green',
+        onConfirm: () => {
+            postAction((window.BASE_URL || '') + '/laporan/acc/' + id);
+        }
+    });
 }
 
 function onSuratApprovalChange() {
@@ -1294,8 +1340,13 @@ function cetakSurat() {
     const canvas = document.getElementById('suratQrCanvas');
     const qrImg = canvas ? canvas.toDataURL('image/png') : '';
 
+    // QR kabag (URL + &signer=kabag) — hanya dicetak bila surat sudah di-ACC.
+    const isAcc = (row.acc_status || '') === 'diacc';
+    const pvQrKabag = document.getElementById('pvSuratQrImgKabag');
+    const qrImgKabag = isAcc && pvQrKabag && pvQrKabag.src ? pvQrKabag.src : '';
+
     const html = buildSuratHtml({
-        nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id
+        nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, qrImgKabag, row, id
     });
 
     const pw = window.open('', '_blank', 'width=900,height=700');
@@ -1318,9 +1369,16 @@ function cetakSurat() {
     closeSuratModal();
 }
 
-function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, row, id }) {
+function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCode, qrImg, qrImgKabag, row, id }) {
     const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
+
+    // Kolom kanan (Kabag): QR + nama hanya jika sudah di-ACC; jika belum, tampilkan teks "Menunggu ACC".
+    const isAcc = (row.acc_status || '') === 'diacc';
+    const kabagQrBlock = isAcc && qrImgKabag
+        ? `<div class="qr-wrap"><img src="${qrImgKabag}" alt="QR Code TTD Kabag" /></div>`
+        : `<div style="font-style:italic; color:#b45309; font-size:10pt; padding:12px 4px;">Menunggu persetujuan Kabag. Fasilitas dan Keselamatan</div>`;
+    const kabagName = isAcc ? esc(row.nama_kabag || '—') : '';
 
     return `<!DOCTYPE html>
 <html lang="id">
@@ -1409,11 +1467,9 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, ttdCo
   <div class="ttd-block">
     <div class="ttd-date">Banyuwangi, ${esc(tglFmt)}</div>
     <div class="ttd-title">Menyetujui,</div>
-    <div class="ttd-jabatan">Kabag. Fasilitas dan Keselamatan</div>
-    <div class="qr-wrap">
-      <img src="${qrImg}" alt="QR Code TTD Kabag" />
-    </div>
-    <div class="ttd-name">Budi Hartono, S.Kep., Ners.</div>
+    <div class="ttd-jabatan">${isAcc ? esc(row.jabatan_kabag || 'Kabag. Fasilitas dan Keselamatan') : 'Kabag. Fasilitas dan Keselamatan'}</div>
+    ${kabagQrBlock}
+    ${kabagName ? `<div class="ttd-name">${kabagName}</div>` : ''}
   </div>
 </div>
 

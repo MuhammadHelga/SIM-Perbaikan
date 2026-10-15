@@ -30,6 +30,7 @@ $totalTeknisi = count(array_filter($userList, static fn(array $u): bool => ($u['
         }
         .role-tag--admin { background: #fef3c7; color: #92400e; }
         .role-tag--teknisi { background: #dbeafe; color: #1e40af; }
+        .role-tag--kabag { background: #dcfce7; color: #15803d; }
     </style>
 </head>
 <body>
@@ -104,7 +105,7 @@ $totalTeknisi = count(array_filter($userList, static fn(array $u): bool => ($u['
                                 <td><?= htmlspecialchars($u['jabatan'] ?? '') !== '' ? htmlspecialchars($u['jabatan']) : '-' ?></td>
                                 <td><?= htmlspecialchars($u['username']) ?></td>
                                 <td>
-                                    <span class="role-tag role-tag--<?= $u['role'] === 'admin' ? 'admin' : 'teknisi' ?>">
+                                    <span class="role-tag role-tag--<?= in_array($u['role'], ['admin', 'teknisi', 'kabag'], true) ? $u['role'] : 'teknisi' ?>">
                                         <?= htmlspecialchars($u['role']) ?>
                                     </span>
                                 </td>
@@ -183,6 +184,7 @@ $totalTeknisi = count(array_filter($userList, static fn(array $u): bool => ($u['
                             <select id="user-role" name="role" required>
                                 <option value="teknisi">teknisi</option>
                                 <option value="admin">admin</option>
+                                <option value="kabag">kabag</option>
                             </select>
                         </div>
                     </div>

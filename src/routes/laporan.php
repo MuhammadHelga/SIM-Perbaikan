@@ -56,8 +56,9 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
     });
 
     // Aksi dinamis (wajib POST + CSRF): /laporan/kirim/{id}, /laporan/terima/{id}, /laporan/hapus/{id}
+    // Kabag tidak boleh mengubah laporan (khusus lihat + ACC surat).
     $router->any('/laporan/{action:kirim|terima|hapus}/{id:\d+}', function (array $params) use ($conn, $basePath) {
-        requireLogin($basePath);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($params['action'] === 'hapus') {
             requireRole($basePath, ['admin']);
@@ -134,7 +135,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
     // Mode 'kirim' = cetak pertama (sekalian tandai terkirim);
     // mode lain (mis. 'reprint') hanya menyimpan, tidak mengubah status.
     $router->any('/laporan/surat/{id:\d+}', function (array $params) use ($conn, $basePath) {
-        requireLogin($basePath);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
             flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
@@ -224,12 +225,63 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         redirect($basePath . '/laporan');
     });
 
+    // ACC surat oleh kabag (khusus role kabag): POST + CSRF.
+    $router->any('/laporan/acc/{id:\d+}', function (array $params) use ($conn, $basePath) {
+        requireRole($basePath, ['kabag']);
+
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
+            flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
+            redirect($basePath . '/laporan');
+        }
+
+        require_once __DIR__ . '/../controllers/laporankerusakanController.php';
+        $laporanController = new laporankerusakanController($conn);
+
+        $id  = (int) $params['id'];
+        $row = $laporanController->show($id);
+
+        if (!$row) {
+            flash('error', 'Laporan tidak ditemukan.');
+            redirect($basePath . '/laporan');
+        }
+
+        $conn->begin_transaction();
+        try {
+            $result = $laporanController->acc($id, (int) ($_SESSION['user_id'] ?? 0));
+            if (!$result['ok']) {
+                throw new RuntimeException($result['reason'] ?? 'ACC gagal.');
+            }
+            if (!$laporanController->recordHistory(
+                $id,
+                (int) ($_SESSION['user_id'] ?? 0) ?: null,
+                (string) ($_SESSION['nama'] ?? $_SESSION['username'] ?? 'Kabag'),
+                'Surat di-ACC kabag',
+                'Surat pengantar kerusakan disetujui oleh Kabag. Fasilitas dan Keselamatan.'
+            )) {
+                throw new RuntimeException('Gagal mencatat ACC.');
+            }
+            $conn->commit();
+            flash('success', 'Surat berhasil di-ACC.');
+        } catch (Throwable $e) {
+            $conn->rollback();
+            flash('error', $e->getMessage() !== '' ? $e->getMessage() : 'Gagal meng-ACC surat.');
+        }
+
+        redirect($basePath . '/laporan');
+    });
+
     $router->any('/laporan', function () use ($conn, $basePath) {
         requireLogin($basePath);
 
         $periode      = $_GET['periode'] ?? '';
         $statusFilter = $_GET['status'] ?? '';
         $search       = $_GET['search'] ?? '';
+        $accFilter    = $_GET['acc'] ?? '';
+
+        // Hanya filter ACC yang dikenal yang dipakai.
+        if (!in_array($accFilter, ['menunggu', 'diacc'], true)) {
+            $accFilter = '';
+        }
 
         // Abaikan periode yang tidak berformat YYYY-MM agar tidak jadi filter aneh.
         if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $periode) !== 1) {
@@ -243,6 +295,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
             'periode'  => $periode,
             'status'   => $statusFilter,
             'search'   => $search,
+            'acc'      => $accFilter,
             'per_page' => (int) ($_GET['per_page'] ?? 25),
             'page'     => (int) ($_GET['page'] ?? 1),
         ]);
@@ -282,15 +335,19 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         $periode      = $_GET['periode'] ?? '';
         $statusFilter = $_GET['status'] ?? '';
         $search       = $_GET['search'] ?? '';
+        $accFilter    = $_GET['acc'] ?? '';
 
         if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $periode) !== 1) {
             $periode = '';
+        }
+        if (!in_array($accFilter, ['menunggu', 'diacc'], true)) {
+            $accFilter = '';
         }
 
         require_once __DIR__ . '/../services/LaporanService.php';
         $service = new LaporanService($conn);
 
-        $filters = ['periode' => $periode, 'status' => $statusFilter, 'search' => $search];
+        $filters = ['periode' => $periode, 'status' => $statusFilter, 'search' => $search, 'acc' => $accFilter];
 
         $laporanList = $service->getAllFiltered($filters);
         $stats       = $service->getStats($periode);
@@ -299,7 +356,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
     });
 
     $router->any('/laporan/simpan', function () use ($conn, $basePath) {
-        requireLogin($basePath);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!csrfValid()) {
@@ -366,7 +423,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
     });
 
     $router->any('/laporan/update', function () use ($conn, $basePath) {
-        requireLogin($basePath);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!csrfValid()) {
