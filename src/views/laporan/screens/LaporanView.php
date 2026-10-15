@@ -452,5 +452,7 @@ if ($search !== '') {
     window.SURAT_SIGNER2 = <?= json_encode(['label' => SURAT_SIGNER2_LABEL, 'jabatan' => SURAT_SIGNER2_JABATAN, 'nama' => SURAT_SIGNER2_NAMA], JSON_UNESCAPED_UNICODE) ?>;
 </script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
+<script src="<?= BASE_URL ?>/assets/js/custom-select.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/custom-select.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/laporan.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/laporan.js') ?>"></script>
+<script src="<?= BASE_URL ?>/assets/js/surat.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/surat.js') ?>"></script>
 </html>
