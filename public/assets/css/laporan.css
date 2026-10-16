@@ -1259,12 +1259,15 @@ main.page-wrap {
   line-height: 1.55;
 }
 
-/* Modal actions */
-.surat-modal-actions {
+/* Footer aksi modal surat: tetap di bawah kartu, tidak ikut scroll body */
+.surat-modal-footer {
+  flex-shrink: 0;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding-top: 4px;
+  padding: 14px 24px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
 }
 
 .surat-btn {

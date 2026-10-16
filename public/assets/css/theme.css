@@ -559,6 +559,11 @@ html.theme-transition .alokasi-card {
   color: var(--text);
 }
 
+[data-theme='dark'] .surat-modal-footer {
+  background: var(--surface);
+  border-top-color: var(--border);
+}
+
 [data-theme='dark'] .surat-group label,
 [data-theme='dark'] .surat-ttd-label {
   color: var(--text);

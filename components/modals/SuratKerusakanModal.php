@@ -112,16 +112,6 @@ $suratUserList = $userList ?? [];
                     </div>
                 </label>
             </div>
-
-            <!-- Tombol aksi -->
-            <div class="surat-modal-actions">
-                <button type="button" class="surat-btn surat-btn--outline" onclick="closeSuratModal()">
-                    <span class="material-symbols-outlined" id="suratBtnBatalIcon">close</span> <span id="suratBtnBatalLabel">Batal</span>
-                </button>
-                <button type="button" class="surat-btn surat-btn--print" id="suratBtnCetak" disabled onclick="cetakSurat()">
-                    <span class="material-symbols-outlined">print</span> Cetak Surat
-                </button>
-            </div>
         </div>
 
         <!-- Body 2: Tampilan Surat Jadi (Dokumen Resmi Siap Cetak) -->
@@ -129,16 +119,16 @@ $suratUserList = $userList ?? [];
             <div class="surat-paper-wrapper">
                 <iframe id="suratPreviewFrame" class="surat-preview-frame" title="Pratinjau Surat Kerusakan"></iframe>
             </div>
+        </div>
 
-            <!-- Tombol Aksi -->
-            <div class="surat-modal-actions">
-                <button type="button" class="surat-btn surat-btn--outline" onclick="closeSuratModal()">
-                    <span class="material-symbols-outlined">close</span> Tutup
-                </button>
-                <button type="button" class="surat-btn surat-btn--print" onclick="cetakSurat()">
-                    <span class="material-symbols-outlined">print</span> Cetak Surat
-                </button>
-            </div>
+        <!-- Footer aksi: tetap di bawah kartu, tidak ikut tergulung -->
+        <div class="surat-modal-footer">
+            <button type="button" class="surat-btn surat-btn--outline" onclick="closeSuratModal()">
+                <span class="material-symbols-outlined">close</span> <span id="suratFooterCloseLabel">Batal</span>
+            </button>
+            <button type="button" class="surat-btn surat-btn--print" id="suratBtnCetak" disabled onclick="cetakSurat()">
+                <span class="material-symbols-outlined">print</span> Cetak Surat
+            </button>
         </div>
 
     </div>

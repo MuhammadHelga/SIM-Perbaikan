@@ -48,6 +48,8 @@ function setSuratMode(mode) {
     setText('suratModalHeaderIcon', config.icon);
     setText('suratModalHeaderTitle', config.title);
     setText('suratModalHeaderDesc', config.desc);
+    // Label tombol tutup footer: "Batal" (form) / "Tutup" (pratinjau).
+    setText('suratFooterCloseLabel', isPreview ? 'Tutup' : 'Batal');
 
     const badge = document.getElementById('suratReprintBadge');
     if (badge) {
