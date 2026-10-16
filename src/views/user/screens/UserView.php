@@ -53,7 +53,7 @@ $totalTeknisi = count(array_filter($userList, static fn(array $u): bool => ($u['
 
             <div class="card border-teal">
                 <div class="card-body">
-                    <span class="card-subtitle">TOTAL ADMIN</span>
+                    <span class="card-subtitle">TOTAL IT</span>
                     <div class="card-value text-teal"><?= $totalAdmin ?> <small>Akun</small></div>
                 </div>
                 <div class="card-icon bg-teal">
@@ -106,7 +106,7 @@ $totalTeknisi = count(array_filter($userList, static fn(array $u): bool => ($u['
                                 <td><?= htmlspecialchars($u['username']) ?></td>
                                 <td>
                                     <span class="role-tag role-tag--<?= in_array($u['role'], ['admin', 'teknisi', 'kabag'], true) ? $u['role'] : 'teknisi' ?>">
-                                        <?= htmlspecialchars($u['role']) ?>
+                                        <?= htmlspecialchars(['admin' => 'IT', 'teknisi' => 'Teknisi', 'kabag' => 'Kabag. Fasilitas dan Keselamatan'][$u['role']] ?? $u['role']) ?>
                                     </span>
                                 </td>
                                 <td class="action-buttons">
@@ -182,9 +182,9 @@ $totalTeknisi = count(array_filter($userList, static fn(array $u): bool => ($u['
                         <div class="input-icon-wrapper">
                             <span class="material-symbols-outlined field-icon">shield_person</span>
                             <select id="user-role" name="role" required>
-                                <option value="teknisi">teknisi</option>
-                                <option value="admin">admin</option>
-                                <option value="kabag">kabag</option>
+                                <option value="teknisi">Teknisi</option>
+                                <option value="admin">IT</option>
+                                <option value="kabag">Kabag. Fasilitas dan Keselamatan</option>
                             </select>
                         </div>
                     </div>

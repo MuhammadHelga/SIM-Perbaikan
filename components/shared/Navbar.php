@@ -14,9 +14,11 @@ $menus = [
     'user'        => ['label' => 'Manajemen User',   'icon' => 'group',        'url' => BASE_URL . '/user'],
 ];
 
-// Menu khusus admin
-if ($role !== 'admin') {
-    unset($menus['unit_barang'], $menus['subnet'], $menus['user']);
+// Teknisi: Dashboard, Laporan, Unit & Barang, Rekap Ruang saja.
+if ($role === 'teknisi') {
+    unset($menus['jaringan'], $menus['subnet'], $menus['user']);
+} elseif ($role !== 'admin') {
+    unset($menus['unit_barang'], $menus['jaringan'], $menus['subnet'], $menus['user']);
 }
 
 // Kabag: khusus Dashboard + Laporan (read-only + ACC surat).
@@ -61,7 +63,7 @@ try {
             <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
             <span class="app-navbar__user-text">
                 <?= htmlspecialchars($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>
-                <?php if ($role !== ''): ?><small>(<?= htmlspecialchars($role) ?>)</small><?php endif; ?>
+                <?php if ($role !== ''): ?><small>(<?= htmlspecialchars(['admin' => 'IT', 'teknisi' => 'Teknisi', 'kabag' => 'Kabag. Fasilitas dan Keselamatan'][$role] ?? $role) ?>)</small><?php endif; ?>
             </span>
         </div>
 

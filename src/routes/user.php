@@ -25,7 +25,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         } elseif ($id === (int) ($_SESSION['user_id'] ?? 0)) {
             flash('error', 'Tidak bisa menghapus akun sendiri.');
         } elseif ($target['role'] === 'admin' && $userController->countAdmins() <= 1) {
-            flash('error', 'Tidak bisa menghapus: harus ada minimal satu admin.');
+            flash('error', 'Tidak bisa menghapus: harus ada minimal satu IT.');
         } else {
             $userController->destroy($id);
             flash('success', 'User "' . $target['username'] . '" berhasil dihapus.');

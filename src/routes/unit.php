@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Rute unit & barang (khusus admin).
+ * Rute unit & barang (admin & teknisi).
  */
 
 return function (Router $router, mysqli $conn, string $basePath, AuthService $authService): void {
@@ -33,7 +33,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
     // Nonaktifkan ruangan/barang (soft-delete). Hanya bila tidak sedang dipakai
     // aset/laporan, supaya tidak meninggalkan referensi menggantung.
     $router->any('/unit/{jenis:ruangan|barang}/hapus/{id:\d+}', function (array $params) use ($conn, $basePath, $pemakaianUnit, $pesanPemakaian) {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
             flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
@@ -66,7 +66,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
     // Aktifkan kembali ruangan/barang yang nonaktif.
     $router->any('/unit/{jenis:ruangan|barang}/aktifkan/{id:\d+}', function (array $params) use ($conn, $basePath) {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
             flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
@@ -88,7 +88,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
     // Hapus permanen: hanya bila tidak dipakai aset/laporan mana pun.
     $router->any('/unit/{jenis:ruangan|barang}/hapus-permanen/{id:\d+}', function (array $params) use ($conn, $basePath, $pemakaianUnit, $pesanPemakaian) {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
             flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
@@ -122,7 +122,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
     // Simpan (tambah/edit) ruangan atau barang.
     $handleUnitSimpan = function (string $jenis) use ($conn, $basePath): void {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!csrfValid()) {
@@ -168,7 +168,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
     // Simpan (tambah/edit) aset barang: unit fisik yang menautkan ruangan & barang.
     $handleAsetSimpan = function () use ($conn, $basePath): void {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!csrfValid()) {
@@ -216,7 +216,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
     // Nonaktifkan aset (soft-delete): laporan yang pernah memakainya tetap utuh.
     $router->any('/unit/aset/hapus/{id:\d+}', function (array $params) use ($conn, $basePath) {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
             flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
@@ -232,7 +232,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
     // Aktifkan kembali aset yang nonaktif.
     $router->any('/unit/aset/aktifkan/{id:\d+}', function (array $params) use ($conn, $basePath) {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
             flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
@@ -248,7 +248,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
 
     // Hapus permanen: hanya bila aset tidak dirujuk laporan mana pun.
     $router->any('/unit/aset/hapus-permanen/{id:\d+}', function (array $params) use ($conn, $basePath) {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrfValid()) {
             flash('error', 'Permintaan tidak valid. Silakan coba lagi.');
@@ -275,7 +275,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
     });
 
     $router->any('/unit', function () use ($conn, $basePath) {
-        requireRole($basePath, ['admin']);
+        requireRole($basePath, ['admin', 'teknisi']);
 
         require_once __DIR__ . '/../controllers/ruanganController.php';
         require_once __DIR__ . '/../controllers/barangController.php';
