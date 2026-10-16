@@ -151,6 +151,7 @@ body {
   min-height: 0;
   overflow-y: auto;
   position: relative;
+  scrollbar-width: none;
 }
 
 /* Garis indikator (kanan) yang meluncur ke item aktif */
