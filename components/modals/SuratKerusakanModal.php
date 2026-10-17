@@ -60,7 +60,8 @@ $suratUserList = $userList ?? [];
                                 <option value="" disabled>— Pilih pelapor —</option>
                                 <?php foreach ($suratUserList as $su): ?>
                                     <option value="<?= htmlspecialchars($su['nama'], ENT_QUOTES) ?>"
-                                            data-jabatan="<?= htmlspecialchars($su['jabatan'] ?? '', ENT_QUOTES) ?>">
+                                            data-jabatan="<?= htmlspecialchars($su['jabatan'] ?? '', ENT_QUOTES) ?>"
+                                            data-id="<?= htmlspecialchars(!empty($su['username']) ? $su['username'] : (string)$su['id'], ENT_QUOTES) ?>">
                                         <?= htmlspecialchars($su['nama'] !== '' ? $su['nama'] : $su['username']) ?>
                                     </option>
                                 <?php endforeach; ?>

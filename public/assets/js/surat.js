@@ -12,7 +12,75 @@ document.addEventListener('DOMContentLoaded', function () {
 
 let _suratCurrentId = null;
 let _suratIsReprint = false;
+let _suratQrPelapor = '';
 let _suratQrKabag = '';
+
+/**
+ * Buat string teks TTE multi-baris standar RS Al-Huda
+ * Contoh hasil scan HP:
+ *   Dikeluarkan di RUMAH SAKIT AL- HUDA,
+ *   Kabupaten/Kota BANYUWANGI
+ *   Ditandatangani secara elektronik oleh Dovin Wulandari
+ *   Petugas Laboratorium
+ */
+function buildTteQrText(nama, jabatan) {
+    const instansi = window.SURAT_INSTANSI || {};
+    const namaRs = instansi.nama || 'RUMAH SAKIT AL- HUDA';
+    const kotaRs = instansi.kota || 'Kabupaten/Kota BANYUWANGI';
+    const cleanNama = (nama || 'Petugas').trim();
+    const cleanJabatan = (jabatan || 'Petugas Unit IT').trim();
+
+    return [
+        `Dikeluarkan di ${namaRs},`,
+        kotaRs,
+        `Ditandatangani secara elektronik oleh`,
+        `Nama: ${cleanNama}`,
+        `Jabatan: ${cleanJabatan}`
+    ].join('\n');
+}
+
+function refreshSuratQrs(callback) {
+    const id = _suratCurrentId;
+    const row = findLaporanById(id);
+    if (!row) {
+        if (callback) callback();
+        return;
+    }
+
+    const namaPelapor = (document.getElementById('suratNamaPelapor') ? document.getElementById('suratNamaPelapor').value.trim() : '') || (row.nama_pelapor || '');
+    const jabatanPelapor = (document.getElementById('suratJabatan') ? document.getElementById('suratJabatan').value.trim() : '') || (row.jabatan_pelapor || 'Petugas Unit IT');
+    const qrTextPelapor = buildTteQrText(namaPelapor, jabatanPelapor);
+
+    const isAcc = (row.acc_status || '') === 'diacc';
+    const signer2 = window.SURAT_SIGNER2 || {};
+    const kabagName = isAcc ? (row.nama_kabag || signer2.nama || '') : '';
+    const kabagJabatan = isAcc ? (row.jabatan_kabag || signer2.jabatan || 'Kabag. Fasilitas dan Keselamatan') : '';
+    const qrTextKabag = isAcc && kabagName ? buildTteQrText(kabagName, kabagJabatan) : '';
+
+    const host = window.location.origin;
+    const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
+    const qrCanvas = document.getElementById('suratQrCanvas');
+
+    if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
+        window.drawQrWithLogo(qrCanvas, qrTextPelapor, logoUrl, function (pDataUrl) {
+            _suratQrPelapor = pDataUrl || qrCanvas.toDataURL('image/png');
+            if (isAcc && qrTextKabag) {
+                window.drawQrWithLogo(qrCanvas, qrTextKabag, logoUrl, function (kDataUrl) {
+                    _suratQrKabag = kDataUrl || qrCanvas.toDataURL('image/png');
+                    renderSuratPreview();
+                    if (callback) callback();
+                });
+            } else {
+                _suratQrKabag = '';
+                renderSuratPreview();
+                if (callback) callback();
+            }
+        });
+    } else {
+        renderSuratPreview();
+        if (callback) callback();
+    }
+}
 
 // Konfigurasi header modal surat per mode:
 //   form    → form isian surat (sebelum TTE diterbitkan)
@@ -124,6 +192,7 @@ function openSuratModal(id, isReprint = false) {
             tmp.value = namaVal;
             tmp.textContent = namaVal + ' (tidak terdaftar)';
             tmp.setAttribute('data-jabatan', jabVal);
+            tmp.setAttribute('data-id', '-');
             tmp.dataset.temp = '1';
             pelaporSelect.appendChild(tmp);
             pelaporSelect.value = namaVal;
@@ -143,32 +212,11 @@ function openSuratModal(id, isReprint = false) {
     }
     document.getElementById('suratKeterangan').value = row.keterangan_tambahan || '';
 
-    // URL verifikasi diturunkan dari verify_token tersimpan
-    const verifyToken = String(row.verify_token || '');
-
-    // URL verifikasi QR Code
-    const host = window.location.origin;
-    const verifyUrl = `${host}${window.BASE_URL || ''}/surat/verifikasi?token=${encodeURIComponent(verifyToken)}`;
-    const logoUrl = `${host}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
-
-    // Render QR Code TTE dengan logo RS Al-Huda, lalu render pratinjau surat.
-    // Pratinjau memakai buildSuratHtml() yang sama dengan cetak (satu sumber).
-    // QR pelapor = URL verifikasi biasa; QR Kabag = URL + &signer=kabag (hanya saat surat sudah di-ACC).
-    const isAcc = (row.acc_status || '') === 'diacc';
+    // Render QR Code TTE standar RS Al-Huda (Opsi 1: Plain Text)
+    _suratQrPelapor = '';
     _suratQrKabag = '';
-    const qrCanvas = document.getElementById('suratQrCanvas');
     renderSuratPreview();
-    if (qrCanvas && typeof window.drawQrWithLogo === 'function') {
-        window.drawQrWithLogo(qrCanvas, verifyUrl, logoUrl, function () {
-            renderSuratPreview();
-            if (isAcc) {
-                window.drawQrWithLogo(qrCanvas, verifyUrl + '&signer=kabag', logoUrl, function () {
-                    _suratQrKabag = qrCanvas.toDataURL('image/png');
-                    renderSuratPreview();
-                });
-            }
-        });
-    }
+    refreshSuratQrs();
 
     // Sesuaikan header modal & tampilan section
     setSuratMode(shouldShowPreview ? 'preview' : 'form');
@@ -220,14 +268,14 @@ function renderSuratPreview() {
         return el ? el.value.trim() : '';
     };
 
-    const nomor       = fieldValue('suratNomor');
-    const tglSurat    = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
+    const nomor = fieldValue('suratNomor');
+    const tglSurat = document.getElementById('suratTglSurat') ? document.getElementById('suratTglSurat').value : '';
     const namaPelapor = fieldValue('suratNamaPelapor') || (row.nama_pelapor || '');
-    const jabatan     = fieldValue('suratJabatan') || (row.jabatan_pelapor || '');
-    const keterangan  = fieldValue('suratKeterangan');
-    const canvas      = document.getElementById('suratQrCanvas');
-    const qrImg       = canvas ? canvas.toDataURL('image/png') : '';
-    const qrImgKabag  = _suratQrKabag;
+    const jabatan = fieldValue('suratJabatan') || (row.jabatan_pelapor || '');
+    const keterangan = fieldValue('suratKeterangan');
+    const canvas = document.getElementById('suratQrCanvas');
+    const qrImg = _suratQrPelapor || (canvas ? canvas.toDataURL('image/png') : '');
+    const qrImgKabag = _suratQrKabag;
 
     frame.srcdoc = buildSuratHtml({
         nomor, tglFmt: formatTglIndo(tglSurat), namaPelapor, jabatan, keterangan, qrImg, qrImgKabag, row, id
@@ -238,6 +286,8 @@ function closeSuratModal() {
     closeModal('modal-surat-kerusakan');
     _suratCurrentId = null;
     _suratIsReprint = false;
+    _suratQrPelapor = '';
+    _suratQrKabag = '';
 
     // Reset pilihan pelapor ke placeholder + sinkronkan custom select.
     const pelaporSelect = document.getElementById('suratNamaPelapor');
@@ -265,6 +315,9 @@ function onSuratPelaporChange() {
 
     const opt = select.selectedOptions && select.selectedOptions[0];
     jabatanInput.value = (opt && opt.getAttribute('data-jabatan')) || '';
+
+    // Re-generate QR Code pelapor mengikuti nama pelapor yang baru dipilih
+    refreshSuratQrs();
 }
 
 /**
@@ -321,7 +374,7 @@ function cetakSurat() {
     const tglFmt = formatTglIndo(tglSurat);
 
     const canvas = document.getElementById('suratQrCanvas');
-    const qrImg = canvas ? canvas.toDataURL('image/png') : '';
+    const qrImg = _suratQrPelapor || (canvas ? canvas.toDataURL('image/png') : '');
 
     const html = buildSuratHtml({
         nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, qrImgKabag: _suratQrKabag, row, id
@@ -354,14 +407,14 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg
     // Penandatangan kedua — label/jabatan dari config/pengaturan.php (fallback);
     // nama mengikuti user Kabag yang meng-ACC surat.
     const signer2 = window.SURAT_SIGNER2 || {};
-    const signer2Label   = signer2.label   || '';
+    const signer2Label = signer2.label || '';
     const signer2Jabatan = signer2.jabatan || '';
-    const signer2Nama    = signer2.nama    || '';
+    const signer2Nama = signer2.nama || '';
 
     // Kolom kanan (Kabag): QR + nama hanya bila surat sudah di-ACC.
     const isAcc = (row.acc_status || '') === 'diacc';
     const kabagJabatan = isAcc ? (row.jabatan_kabag || signer2Jabatan) : signer2Jabatan;
-    const kabagName    = isAcc ? (row.nama_kabag || signer2Nama) : '';
+    const kabagName = isAcc ? (row.nama_kabag || signer2Nama) : '';
 
     return `<!DOCTYPE html>
 <html lang="id">
@@ -457,8 +510,8 @@ function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg
     <div class="ttd-title">${esc(signer2Label)}</div>
     <div class="ttd-jabatan">${esc(kabagJabatan)}</div>
     ${isAcc && qrImgKabag
-      ? `<div class="qr-wrap"><img src="${qrImgKabag}" alt="QR Code TTD Kabag" /></div>`
-      : `<div style="font-style:italic; color:#b45309; font-size:10pt; padding:12px 4px; min-height:115px; display:flex; align-items:center; justify-content:center; text-align:center;">Menunggu persetujuan ${esc(signer2Jabatan)}</div>`}
+            ? `<div class="qr-wrap"><img src="${qrImgKabag}" alt="QR Code TTD Kabag" /></div>`
+            : `<div style="font-style:italic; color:#b45309; font-size:10pt; padding:12px 4px; min-height:115px; display:flex; align-items:center; justify-content:center; text-align:center;">Menunggu persetujuan ${esc(signer2Jabatan)}</div>`}
     ${kabagName ? `<div class="ttd-name">${esc(kabagName)}</div>` : ''}
   </div>
 </div>

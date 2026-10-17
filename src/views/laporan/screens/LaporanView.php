@@ -511,8 +511,16 @@ if ($accFilter !== '') {
     window.BASE_URL = <?= json_encode(BASE_URL) ?>; 
     window.CSRF_TOKEN = <?= json_encode(csrfToken()) ?>; 
     window.CURRENT_USER_NAME = <?= json_encode($_SESSION['nama'] ?? $_SESSION['username'] ?? '') ?>;
-    window.CURRENT_ROLE = <?= json_encode($_SESSION['role'] ?? '') ?>;
-    window.SURAT_SIGNER2 = <?= json_encode(['label' => SURAT_SIGNER2_LABEL, 'jabatan' => SURAT_SIGNER2_JABATAN, 'nama' => SURAT_SIGNER2_NAMA], JSON_UNESCAPED_UNICODE) ?>;
+    window.SURAT_SIGNER2 = <?= json_encode([
+        'label'   => SURAT_SIGNER2_LABEL,
+        'jabatan' => SURAT_SIGNER2_JABATAN,
+        'nama'    => SURAT_SIGNER2_NAMA,
+        'id'      => defined('SURAT_SIGNER2_ID') ? SURAT_SIGNER2_ID : '2012.074.001'
+    ], JSON_UNESCAPED_UNICODE) ?>;
+    window.SURAT_INSTANSI = <?= json_encode([
+        'nama' => defined('SURAT_INSTANSI_NAMA') ? SURAT_INSTANSI_NAMA : 'RUMAH SAKIT AL- HUDA',
+        'kota' => defined('SURAT_INSTANSI_KOTA') ? SURAT_INSTANSI_KOTA : 'Kabupaten/Kota BANYUWANGI'
+    ], JSON_UNESCAPED_UNICODE) ?>;
 </script>
 <script src="<?= BASE_URL ?>/assets/js/qrcode.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/qrcode.js') ?>"></script>
 <script src="<?= BASE_URL ?>/assets/js/custom-select.js?v=<?= filemtime(BASE_PATH . '/public/assets/js/custom-select.js') ?>"></script>

@@ -99,6 +99,7 @@ class LaporanKerusakan
                     s.tgl_acc,
                     u.nama             AS nama_kabag,
                     u.jabatan          AS jabatan_kabag,
+                    u.username         AS username_kabag,
                     CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
                 FROM laporan_kerusakan lk
                 INNER JOIN barang  b ON lk.id_barang  = b.id
@@ -233,6 +234,7 @@ class LaporanKerusakan
                 s.tgl_acc,
                 u.nama             AS nama_kabag,
                 u.jabatan          AS jabatan_kabag,
+                u.username         AS username_kabag,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
              FROM laporan_kerusakan lk
              INNER JOIN barang  b ON lk.id_barang  = b.id
@@ -302,6 +304,7 @@ class LaporanKerusakan
                 s.tgl_acc,
                 u.nama             AS nama_kabag,
                 u.jabatan          AS jabatan_kabag,
+                u.username         AS username_kabag,
                 CASE WHEN lk.status_penanganan = 'Selesai' THEN 'selesai' ELSE 'pending' END AS hasil
              FROM surat_kerusakan s
              INNER JOIN laporan_kerusakan lk ON lk.id = s.id_laporan
