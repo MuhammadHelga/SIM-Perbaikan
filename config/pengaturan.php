@@ -19,3 +19,8 @@ define('SURAT_SIGNER2_JABATAN', 'Kabag. Fasilitas dan Keselamatan');
 define('SURAT_SIGNER2_NAMA', 'Budi Hartono, S.Kep., Ners.');
 define('SURAT_SIGNER2_ID', '2012.074.001');
 
+// Indikator "sering rusak" pada daftar laporan: aset fisik dengan jumlah
+// laporan minimal SERING_RUSAK_MIN dalam SERING_RUSAK_HARI hari terakhir.
+define('SERING_RUSAK_HARI', 90);
+define('SERING_RUSAK_MIN', 3);
+

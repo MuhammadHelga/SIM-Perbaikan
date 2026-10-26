@@ -21,9 +21,24 @@ class laporankerusakanController
         return $this->laporankerusakan->getHistory($id);
     }
 
-    public function recordHistory(int $id, ?int $userId, string $actorName, string $action, string $detail): bool
-    {
-        return $this->laporankerusakan->recordHistory($id, $userId, $actorName, $action, $detail);
+    public function recordHistory(
+        int $id,
+        ?int $userId,
+        string $actorName,
+        string $action,
+        string $detail,
+        ?string $statusLama = null,
+        ?string $statusBaru = null
+    ): bool {
+        return $this->laporankerusakan->recordHistory(
+            $id,
+            $userId,
+            $actorName,
+            $action,
+            $detail,
+            $statusLama,
+            $statusBaru
+        );
     }
 
     public function store(

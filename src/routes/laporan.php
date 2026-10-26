@@ -245,6 +245,22 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
             redirect($basePath . '/laporan');
         }
 
+        // Validasi isi surat di server: tombol di UI bisa dilewati lewat POST langsung.
+        if (empty($row['nama_pelapor']) || empty($row['jabatan_pelapor']) || empty($row['tgl_surat'])) {
+            flash('error', 'Surat belum lengkap. Isi dan simpan surat terlebih dahulu sebelum di-ACC.');
+            redirect($basePath . '/laporan');
+        }
+
+        if (!in_array($row['kirim_status'] ?? '', ['dikirim', 'diterima'], true)) {
+            flash('error', 'Surat hanya bisa di-ACC setelah barang ditandai dikirim.');
+            redirect($basePath . '/laporan');
+        }
+
+        if (($row['acc_status'] ?? '') !== 'menunggu') {
+            flash('error', 'Surat sudah pernah di-ACC.');
+            redirect($basePath . '/laporan');
+        }
+
         $conn->begin_transaction();
         try {
             $result = $laporanController->acc($id, (int) ($_SESSION['user_id'] ?? 0));
@@ -355,6 +371,87 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
         require __DIR__ . '/../views/laporan/screens/LaporanCetakView.php';
     });
 
+    // Export CSV: semua baris sesuai filter aktif (tanpa paginasi).
+    $router->get('/laporan/export', function () use ($conn, $basePath) {
+        requireLogin($basePath);
+
+        $periode      = $_GET['periode'] ?? '';
+        $statusFilter = $_GET['status'] ?? '';
+        $search       = $_GET['search'] ?? '';
+        $accFilter    = $_GET['acc'] ?? '';
+
+        if (preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', (string) $periode) !== 1) {
+            $periode = '';
+        }
+        if (!in_array($accFilter, ['menunggu', 'diacc'], true)) {
+            $accFilter = '';
+        }
+
+        require_once __DIR__ . '/../services/LaporanService.php';
+        $service = new LaporanService($conn);
+
+        $filters = [
+            'periode' => $periode,
+            'status'  => $statusFilter,
+            'search'  => $search,
+            'acc'     => $accFilter,
+        ];
+
+        $laporanList = $service->getAllFiltered($filters);
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="laporan-kerusakan-' . date('Ymd-His') . '.csv"');
+        header('Cache-Control: no-store');
+
+        $out = fopen('php://output', 'w');
+        if ($out === false) {
+            return;
+        }
+
+        // BOM agar Excel membaca UTF-8 dengan benar.
+        fwrite($out, "\xEF\xBB\xBF");
+
+        $header = [
+            'No', 'Tanggal', 'Waktu Kejadian', 'Unit/Ruangan', 'Jenis Poli',
+            'Jenis Barang', 'Tipe', 'No Seri', 'Rincian Kerusakan',
+            'Uraian Kegiatan', 'Status', 'Prioritas', 'Status Kirim',
+            'Tgl Kirim', 'Tgl Terima', 'ACC', 'No Surat', 'Pelapor',
+        ];
+        fputcsv($out, $header, ',', '"', '');
+
+        foreach ($laporanList as $index => $row) {
+            $urusan = trim((string) ($row['urusan'] ?? ''));
+            if (!empty($row['jenis_poli'])) {
+                $urusan .= ' - ' . $row['jenis_poli'];
+            }
+
+            $line = [
+                $index + 1,
+                $row['tanggal'] ?? '',
+                $row['waktu_kejadian'] ?? '',
+                $urusan,
+                $row['jenis_poli'] ?? '',
+                $row['barang'] ?? '',
+                $row['tipe_barang'] ?? '',
+                $row['serial_number'] ?? '',
+                $row['kerusakan'] ?? '',
+                $row['uraian'] ?? '',
+                $row['status_penanganan'] ?? '',
+                $row['prioritas'] ?? '',
+                $row['kirim_status'] ?? '',
+                $row['tgl_kirim'] ?? '',
+                $row['tgl_terima'] ?? '',
+                $row['acc_status'] ?? '',
+                $row['nomor_surat'] ?? '',
+                $row['nama_pelapor'] ?? '',
+            ];
+
+            fputcsv($out, array_map('csvCell', $line), ',', '"', '');
+        }
+
+        fclose($out);
+    });
+
     $router->any('/laporan/simpan', function () use ($conn, $basePath) {
         requireRole($basePath, ['admin', 'teknisi']);
 
@@ -402,7 +499,9 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
                     'Laporan dibuat dengan status ' . $data['status'] . ' dan prioritas ' . $data['prioritas'] . '.'
                         . ($data['waktu_kejadian'] !== null
                             ? ' Waktu kejadian/Laporan diterima: ' . $data['waktu_kejadian'] . '.'
-                            : ' Waktu kejadian/Laporan diterima belum dicatat.')
+                            : ' Waktu kejadian/Laporan diterima belum dicatat.'),
+                    null,
+                    (string) $data['status']
                 )) {
                     throw new RuntimeException('Gagal mencatat pembuatan laporan.');
                 }
@@ -513,12 +612,18 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
                     $data['tipe'] ?? null,
                     $data['aset_id'] ?? null
                 );
+                $statusLama = (string) ($existing['status_penanganan'] ?? '');
+                $statusBaru = (string) $data['status'];
+                $statusBerubah = $statusLama !== '' && $statusLama !== $statusBaru;
+
                 if (!$updated || !$laporanController->recordHistory(
                     $id,
                     (int) ($_SESSION['user_id'] ?? 0) ?: null,
                     (string) ($_SESSION['nama'] ?? $_SESSION['username'] ?? 'Pengguna'),
                     'Laporan diperbarui',
-                    $changes ? implode('; ', $changes) : 'Laporan disimpan tanpa perubahan nilai.'
+                    $changes ? implode('; ', $changes) : 'Laporan disimpan tanpa perubahan nilai.',
+                    $statusBerubah ? $statusLama : null,
+                    $statusBerubah ? $statusBaru : null
                 )) {
                     throw new RuntimeException('Gagal menyimpan perubahan atau riwayat laporan.');
                 }

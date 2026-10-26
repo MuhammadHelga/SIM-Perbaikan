@@ -42,7 +42,7 @@ return function (Router $router, mysqli $conn, string $basePath, AuthService $au
     });
 
     $router->any('/jaringan/simpan', function () use ($conn, $basePath) {
-        requireLogin($basePath);
+        requireRole($basePath, ['admin']);
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!csrfValid()) {

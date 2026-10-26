@@ -132,11 +132,13 @@ class LaporanKerusakan
         }
         $stmt->execute();
 
-        return array_map([$this, 'attachVerifyToken'], $stmt->get_result()->fetch_all(MYSQLI_ASSOC));
+        $rows = array_map([$this, 'attachVerifyToken'], $stmt->get_result()->fetch_all(MYSQLI_ASSOC));
+
+        return $this->attachSeringRusak($rows);
     }
 
     /**
-     * Semua baris sesuai filter, tanpa LIMIT — dipakai untuk cetak rekap.
+     * Semua baris sesuai filter, tanpa LIMIT — dipakai untuk cetak rekap/export.
      *
      * @param array{periode?:string, status?:string, search?:string} $filters
      * @return array<int, array<string,mixed>>
@@ -155,7 +157,62 @@ class LaporanKerusakan
         }
         $stmt->execute();
 
-        return array_map([$this, 'attachVerifyToken'], $stmt->get_result()->fetch_all(MYSQLI_ASSOC));
+        $rows = array_map([$this, 'attachVerifyToken'], $stmt->get_result()->fetch_all(MYSQLI_ASSOC));
+
+        return $this->attachSeringRusak($rows);
+    }
+
+    /**
+     * Peta id_aset => jumlah laporan dalam N hari terakhir untuk aset yang
+     * jumlahnya mencapai ambang "sering rusak".
+     *
+     * @return array<int,int>
+     */
+    private function seringRusakMap(): array
+    {
+        $hari = defined('SERING_RUSAK_HARI') ? (int) SERING_RUSAK_HARI : 90;
+        $min  = defined('SERING_RUSAK_MIN') ? (int) SERING_RUSAK_MIN : 3;
+        $hari = max(1, $hari);
+        $min  = max(1, $min);
+
+        $sql = "SELECT id_aset, COUNT(*) AS jumlah
+                FROM laporan_kerusakan
+                WHERE id_aset IS NOT NULL
+                  AND tanggal >= DATE_SUB(CURDATE(), INTERVAL {$hari} DAY)
+                GROUP BY id_aset
+                HAVING COUNT(*) >= {$min}";
+
+        $res = $this->conn->query($sql);
+        $map = [];
+        while ($row = $res->fetch_assoc()) {
+            $map[(int) $row['id_aset']] = (int) $row['jumlah'];
+        }
+
+        return $map;
+    }
+
+    /**
+     * Lengkapi baris listing dengan indikator "sering rusak" (per aset fisik).
+     *
+     * @param array<int,array<string,mixed>> $rows
+     * @return array<int,array<string,mixed>>
+     */
+    private function attachSeringRusak(array $rows): array
+    {
+        if (!$rows) {
+            return $rows;
+        }
+
+        $map = $this->seringRusakMap();
+
+        foreach ($rows as &$row) {
+            $idAset = (int) ($row['id_aset'] ?? 0);
+            $row['sering_rusak'] = $idAset > 0 && isset($map[$idAset]);
+            $row['kerusakan_90h'] = $idAset > 0 ? ($map[$idAset] ?? 0) : 0;
+        }
+        unset($row);
+
+        return $rows;
     }
     /**
      * Hitung jumlah baris sesuai filter (untuk paginasi).
@@ -251,13 +308,30 @@ class LaporanKerusakan
         return $row ? $this->attachVerifyToken($row) : null;
     }
 
-    public function recordHistory(int $reportId, ?int $userId, string $actorName, string $action, string $detail): bool
-    {
+    public function recordHistory(
+        int $reportId,
+        ?int $userId,
+        string $actorName,
+        string $action,
+        string $detail,
+        ?string $statusLama = null,
+        ?string $statusBaru = null
+    ): bool {
         $stmt = $this->conn->prepare(
-            "INSERT INTO laporan_riwayat (laporan_id, user_id, actor_name, aksi, detail)
-             VALUES (?, ?, ?, ?, ?)"
+            "INSERT INTO laporan_riwayat
+                (laporan_id, user_id, actor_name, aksi, detail, status_lama, status_baru)
+             VALUES (?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->bind_param("iisss", $reportId, $userId, $actorName, $action, $detail);
+        $stmt->bind_param(
+            "iisssss",
+            $reportId,
+            $userId,
+            $actorName,
+            $action,
+            $detail,
+            $statusLama,
+            $statusBaru
+        );
 
         return $stmt->execute();
     }
@@ -960,9 +1034,8 @@ class LaporanKerusakan
      */
     public function recapSelesaiByRuangan(int $tahun): array
     {
-        $types  = [];
-        $params = [];
-        $where  = $this->periodeClause($tahun, null, $types, $params);
+        $start = sprintf('%04d-01-01', $tahun);
+        $end   = sprintf('%04d-01-01', $tahun + 1);
 
         $stmt = $this->conn->prepare(
             "SELECT r.id, r.nama_ruangan,
@@ -971,13 +1044,12 @@ class LaporanKerusakan
              FROM ruangan r
              LEFT JOIN laporan_kerusakan lk
                     ON lk.id_ruangan = r.id
-                   AND lk.status_penanganan = 'Selesai'" . $where . "
+                   AND lk.status_penanganan = 'Selesai'
+                   AND lk.tanggal >= ? AND lk.tanggal < ?
              GROUP BY r.id, r.nama_ruangan, MONTH(lk.tanggal)
              ORDER BY r.nama_ruangan ASC"
         );
-        if ($types) {
-            $stmt->bind_param(implode('', $types), ...$params);
-        }
+        $stmt->bind_param('ss', $start, $end);
         $stmt->execute();
         $res = $stmt->get_result();
 
@@ -1009,9 +1081,9 @@ class LaporanKerusakan
      *
      * Cakupan: status 'Selesai' dan tidak dikirim ke vendor (tgl_kirim IS NULL).
      * Titik mulai  = waktu_kejadian, fallback created_at.
-     * Waktu selesai = riwayat transisi status -> 'Selesai' (atau laporan yang
-     *                 lahir berstatus 'Selesai'). Laporan tanpa baris riwayat
-     *                 yang sesuai dilewati (mode ketat).
+     * Waktu selesai = riwayat dengan status_baru = 'Selesai' (termasuk laporan
+     *                 yang lahir berstatus 'Selesai'). Laporan tanpa baris
+     *                 riwayat yang sesuai dilewati (mode ketat).
      *
      * @return array{days: float|null, count: int}
      */
@@ -1027,12 +1099,9 @@ class LaporanKerusakan
                     COUNT(*) AS n
              FROM laporan_kerusakan lk
              INNER JOIN (
-                 SELECT laporan_id,
-                        MIN(CASE
-                              WHEN detail LIKE ? THEN created_at
-                              WHEN aksi = 'Laporan dibuat' AND detail LIKE ? THEN created_at
-                            END) AS finish_at
+                 SELECT laporan_id, MIN(created_at) AS finish_at
                  FROM laporan_riwayat
+                 WHERE status_baru = 'Selesai'
                  GROUP BY laporan_id
              ) h ON h.laporan_id = lk.id
              WHERE lk.status_penanganan = 'Selesai'
@@ -1041,9 +1110,9 @@ class LaporanKerusakan
             . $where
         );
 
-        $bindTypes  = 'ss' . implode('', $types);
-        $bindParams = array_merge(['Status penanganan:%→ Selesai%', '%status Selesai%'], $params);
-        $stmt->bind_param($bindTypes, ...$bindParams);
+        if ($types !== '') {
+            $stmt->bind_param(implode('', $types), ...$params);
+        }
         $stmt->execute();
         $row = $stmt->get_result()->fetch_assoc();
 

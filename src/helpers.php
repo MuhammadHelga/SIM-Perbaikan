@@ -24,6 +24,35 @@ function csrfValid(): bool
         && hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf']);
 }
 
+// ===== Output helper =====
+
+/**
+ * Nilai aman untuk string JavaScript di dalam atribut HTML (mis. onclick).
+ *
+ * htmlspecialchars(ENT_QUOTES) saja TIDAK cukup untuk konteks ini: browser
+ * mengubah &#039; menjadi ' sebelum JS dieksekusi, sehingga nilai berisi kutip
+ * bisa keluar dari string. JSON_HEX_* menetralkan karakter tersebut.
+ */
+function jsString($value): string
+{
+    $json = json_encode(
+        (string) ($value ?? ''),
+        JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE
+    );
+
+    return htmlspecialchars($json === false ? '""' : $json, ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Netralkan sel CSV agar tidak dieksekusi sebagai formula oleh Excel.
+ */
+function csvCell($value): string
+{
+    $value = (string) ($value ?? '');
+
+    return preg_match('/^[=+\-@\t\r]/', $value) === 1 ? "'" . $value : $value;
+}
+
 function poliJenisOptions(): array
 {
     return [

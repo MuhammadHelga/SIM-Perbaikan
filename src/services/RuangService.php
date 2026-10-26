@@ -37,6 +37,9 @@ class RuangService
         // --- Kartu ringkasan (dari data tahun tsb, tanpa filter pencarian) ---
         $topUnit = null;
         foreach ($rows as $row) {
+            if ($row['total'] <= 0) {
+                continue;
+            }
             if ($topUnit === null || $row['total'] > $topUnit['total']) {
                 $topUnit = ['nama' => $row['nama'], 'total' => $row['total']];
             }
