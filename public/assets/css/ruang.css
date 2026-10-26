@@ -80,6 +80,17 @@ body {
   background: #059669;
 }
 
+.btn-export {
+  background: #0f766e;
+}
+
+.header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 /* Metric Cards */
 .cards-grid {
   display: grid;

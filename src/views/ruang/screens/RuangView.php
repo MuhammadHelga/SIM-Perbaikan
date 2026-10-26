@@ -31,6 +31,9 @@ $cetakQuery = http_build_query(array_filter([
 ], fn($v) => $v !== '' && $v !== null));
 $cetakUrl = BASE_URL . '/ruang/cetak' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
 
+// URL export CSV rekap ruang dengan filter yang sama.
+$exportUrl = BASE_URL . '/ruang/export' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
+
 $kecepatanDays  = $kecepatanServis['days'];
 $kecepatanCount = (int) ($kecepatanServis['count'] ?? 0);
 $kecepatanLabel = $kecepatanDays !== null
@@ -71,7 +74,10 @@ $kecepatanNote  = $kecepatanCount > 0
                 <h1>Total Barang Diperbaiki per Ruang/Urusan</h1>
                 <p>Dihitung dari laporan dengan status Selesai di semua bulan periode tahun berjalan (Rekap Tahunan)</p>
             </div>
-            <a class="btn btn-success" id="btnCetakRuang" href="<?= htmlspecialchars($cetakUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><span class="material-symbols-outlined">print</span> Cetak Rekap Ruang</a>
+            <div class="header-actions">
+                <a class="btn btn-success" id="btnCetakRuang" href="<?= htmlspecialchars($cetakUrl, ENT_QUOTES, 'UTF-8') ?>" target="_blank" rel="noopener"><span class="material-symbols-outlined">print</span> Cetak Rekap Ruang</a>
+                <a class="btn btn-export" id="btnExportRuang" href="<?= htmlspecialchars($exportUrl, ENT_QUOTES, 'UTF-8') ?>"><span class="material-symbols-outlined">download</span> Export CSV</a>
+            </div>
         </div>
 
         <!-- Metric Cards Grid -->
