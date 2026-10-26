@@ -11,12 +11,16 @@ Folder ini mengatur skema database `lkah` (laporan kerusakan Al-Huda) memakai
 ```
 databases/
 ├── base.sql                          # Skema awal (versi 0) — dibaca hanya saat "reset"
-└── migrations/
-    ├── up/
-    │   ├── 00001-seed-awal.sql       # Naik dari versi 0 -> 1
-    │   └── 00002-....sql             # Naik dari versi 1 -> 2 (contoh berikutnya)
-    └── down/
-        └── 00000-seed-awal.sql       # Kebalikan dari up/00001 (untuk rollback)
+├── migrations/
+│   ├── up/
+│   │   ├── 00001-seed-awal.sql       # Naik dari versi 0 -> 1
+│   │   └── 00002-....sql             # Naik dari versi 1 -> 2 (contoh berikutnya)
+│   └── down/
+│       └── 00000-seed-awal.sql       # Kebalikan dari up/00001 (untuk rollback)
+└── seeds/
+    ├── dev/                          # Data contoh development (jalankan manual)
+    ├── prod/                         # Skrip satu kali untuk produksi
+    └── README.md                     # Aturan seed vs migrasi
 ```
 
 - **`base.sql`** = isi database saat versi 0. Hanya dijalankan oleh perintah `reset`.
@@ -28,6 +32,9 @@ databases/
 - Tabel `migration_version` dibuat otomatis oleh tool, **jangan diedit manual**.
 
 Aturan nama file: `NNNNN[-deskripsi].sql` (angka = versi tujuan). Contoh: `00002-tambah-kolom-prioritas.sql`.
+
+> **Data contoh bukan migrasi.** Mulai sekarang data dummy development diletakkan di
+> `seeds/dev/`, bukan di `migrations/up/`. Lihat `seeds/README.md`.
 
 ---
 
@@ -57,7 +64,8 @@ URI="mysql://root:PASSWORD@127.0.0.1/lkah"
 php vendor/bin/migrate reset -c "$URI" -p databases -vv
 ```
 
-Hasil: database `lkah` + semua tabel + data seed, versi **1**.
+Hasil: database `lkah` + semua tabel + data seed, versi **terbaru** sesuai
+jumlah file di `migrations/up/`.
 
 ### Cek status versi
 
@@ -78,6 +86,25 @@ pada database yang sudah berisi data. Migrasi `00007-normalisasi-nama-barang.sql
 merapikan kapitalisasi nama barang yang sudah ada tanpa mengubah kode barang, ID,
 atau relasi laporan. Nama barang baru dan yang diedit juga dinormalisasi oleh aplikasi:
 huruf pertama kapital, kecuali singkatan yang dikenal seperti `SIMRS`, `CCTV`, dan `CPU`.
+
+### Instalasi produksi baru
+
+1. **Backup** database (walau masih kosong, simpan bukti kondisi awal).
+2. Jalankan `migrate reset` (hanya untuk database baru) atau `migrate up`.
+3. Jalankan pembersihan data demo **hanya jika** database baru saja dibuat dan
+   belum berisi laporan nyata:
+
+   ```bash
+   mysql -u USER -p lkah < databases/seeds/prod/cleanup-demo.sql
+   ```
+
+   Baca bagian `REVIEW` di file tersebut terlebih dahulu. Skrip itu menghapus
+   24 laporan dummy dari `up/00002` dan 7 aset contoh dari `up/00022`.
+4. Ganti password admin seed (`admin` / `admin123`) sebelum aplikasi dipakai.
+
+Catatan: `up/00002` dan `up/00022` adalah **seed demo warisan** yang tetap berada
+di jalur migrasi agar database lama tidak rusak. Jangan menambahkan seed demo
+baru ke `migrations/up/`; gunakan `seeds/dev/`.
 
 ### Rollback
 
@@ -155,7 +182,7 @@ nomornya jadi `00044-dev.sql`. Detail: `vendor/byjg/migration/docs/migration-scr
 | `ruangan` | Master unit/ruangan (mis. POLI, UGD, Radiologi) |
 | `barang` | Master jenis barang/perangkat (mis. Komputer, Printer) |
 | `laporan_kerusakan` | Data laporan kerusakan/perbaikan, termasuk jenis poli untuk laporan dari POLI |
-| `laporan_riwayat` | Catatan aktivitas baru laporan, pengguna, detail perubahan, dan waktu kejadian |
+| `laporan_riwayat` | Catatan aktivitas laporan, pengguna, detail perubahan, transisi status (`status_lama`/`status_baru`), dan waktu |
 | `migration_version` | Versi migrasi (dikelola tool, jangan diubah manual) |
 
 Kolom penting di `laporan_kerusakan`:
@@ -170,6 +197,10 @@ membiarkan `waktu_kejadian` laporan lama tetap `NULL` karena waktu sebenarnya ti
 
 Riwayat pada `laporan_riwayat` mulai tercatat sejak migrasi versi 14 diterapkan;
 aktivitas laporan yang terjadi sebelumnya tidak dapat direkonstruksi otomatis.
+Sejak migrasi versi 23, baris riwayat ikut terhapus saat laporan dihapus
+(`ON DELETE CASCADE`). Sejak versi 24, kolom `status_lama`/`status_baru` menyimpan
+transisi status secara terstruktur; kolom ini dipakai untuk menghitung rata-rata
+durasi penyelesaian tanpa menebak dari teks detail.
 
 ---
 
