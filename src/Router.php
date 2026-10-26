@@ -12,6 +12,10 @@
  */
 class Router
 {
+    public const NOT_FOUND = 0;
+    public const FOUND = 1;
+    public const METHOD_NOT_ALLOWED = 2;
+
     /** @var array<int, array{method:string, regex:string, names:string[], handler:callable}> */
     private array $routes = [];
 
@@ -52,32 +56,63 @@ class Router
     }
 
     /**
-     * Jalankan rute yang cocok. Mengembalikan true bila ada yang cocok.
+     * Samakan bentuk path: selalu diawali "/" dan tanpa trailing slash.
+     * Root tetap "/".
      */
-    public function dispatch(string $method, string $path): bool
+    private function normalizePath(string $path): string
+    {
+        $path = '/' . ltrim($path, '/');
+        if ($path !== '/') {
+            $path = rtrim($path, '/');
+        }
+
+        return $path === '' ? '/' : $path;
+    }
+
+    /**
+     * Jalankan rute yang cocok.
+     *
+     * @return int Salah satu dari Router::FOUND, Router::NOT_FOUND,
+     *             atau Router::METHOD_NOT_ALLOWED.
+     */
+    public function dispatch(string $method, string $path): int
     {
         $method = strtoupper($method);
+        if ($method === 'HEAD') {
+            $method = 'GET';
+        }
+
+        $path = $this->normalizePath($path);
+        $allowed = [];
 
         foreach ($this->routes as $route) {
-            if ($route['method'] !== 'ANY' && $route['method'] !== $method) {
-                continue;
-            }
-
             if (!preg_match($route['regex'], $path, $matches)) {
                 continue;
             }
 
-            array_shift($matches);
-            $params = [];
-            foreach ($route['names'] as $i => $name) {
-                $params[$name] = $matches[$i] ?? null;
+            if ($route['method'] === 'ANY' || $route['method'] === $method) {
+                array_shift($matches);
+                $params = [];
+                foreach ($route['names'] as $i => $name) {
+                    $params[$name] = $matches[$i] ?? null;
+                }
+
+                ($route['handler'])($params);
+
+                return self::FOUND;
             }
 
-            ($route['handler'])($params);
-
-            return true;
+            $allowed[$route['method']] = true;
         }
 
-        return false;
+        if ($allowed) {
+            $methods = array_keys($allowed);
+            sort($methods);
+            header('Allow: ' . implode(', ', $methods));
+
+            return self::METHOD_NOT_ALLOWED;
+        }
+
+        return self::NOT_FOUND;
     }
 }
