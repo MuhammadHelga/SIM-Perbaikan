@@ -16,19 +16,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const btnExport = document.getElementById('btnExportCsv');
     if (btnExport) btnExport.addEventListener('click', exportCsv);
-
-    const btnPing = document.getElementById('btnPingSemua');
-    if (btnPing) {
-        btnPing.addEventListener('click', function () {
-            openConfirmModal({
-                icon: 'network_ping',
-                title: 'Ping Semua Host',
-                text: 'Jalankan ping ke seluruh host IP yang terdaftar? Proses ini mungkin memakan waktu beberapa saat.',
-                confirmLabel: 'Ya, Jalankan',
-                onConfirm: function () { showToast('Fitur ping belum terhubung ke backend.', 'error'); }
-            });
-        });
-    }
 });
 
 if (typeof openModal === 'undefined') {
@@ -104,6 +91,19 @@ function openEditAlokasiModal(id) {
     openModal('modal-alokasi-ip');
 }
 
+function setAlokasiStatus(statusEl, text, className) {
+    if (!statusEl) return;
+
+    statusEl.replaceChildren();
+    statusEl.append(document.createTextNode('Status: '));
+
+    const span = document.createElement('span');
+    span.textContent = text;
+    statusEl.append(span);
+
+    statusEl.className = className;
+}
+
 function updateAlokasiPreview() {
     const prefix = currentSubnetPrefix();
     const octetInput = document.getElementById('alokasiOctet');
@@ -120,10 +120,7 @@ function updateAlokasiPreview() {
 
     if (!val || isNaN(val)) {
         if (fullIpEl) fullIpEl.textContent = prefix + '.—';
-        if (statusEl) {
-            statusEl.innerHTML = 'Status: <span>—</span>';
-            statusEl.className = 'alokasi-status';
-        }
+        setAlokasiStatus(statusEl, '—', 'alokasi-status');
         return;
     }
 
@@ -135,29 +132,23 @@ function updateAlokasiPreview() {
 
     if (statusEl) {
         if (val >= 1 && val <= 9) {
-            statusEl.innerHTML = 'Status: <span>Reserved (Core/Gateway)</span>';
-            statusEl.className = 'alokasi-status is-core';
+            setAlokasiStatus(statusEl, 'Reserved (Core/Gateway)', 'alokasi-status is-core');
         } else if (used) {
-            statusEl.innerHTML = 'Status: <span>Sudah Dipakai (' + used.hostname + ')</span>';
-            statusEl.className = 'alokasi-status is-taken';
+            setAlokasiStatus(statusEl, 'Sudah Dipakai (' + used.hostname + ')', 'alokasi-status is-taken');
         } else if (val < 10 || val > 254) {
-            statusEl.innerHTML = 'Status: <span>Di luar range valid</span>';
-            statusEl.className = 'alokasi-status is-taken';
+            setAlokasiStatus(statusEl, 'Di luar range valid', 'alokasi-status is-taken');
         } else {
-            statusEl.innerHTML = 'Status: <span>Kosong &amp; Tersedia</span>';
-            statusEl.className = 'alokasi-status is-available';
+            setAlokasiStatus(statusEl, 'Kosong & Tersedia', 'alokasi-status is-available');
         }
     }
 }
 
-function pingHost(id, ip) {
-    openConfirmModal({
-        icon: 'network_ping',
-        title: 'Ping Host',
-        text: 'Jalankan ping ke ' + ip + '?',
-        confirmLabel: 'Ya, Ping',
-        onConfirm: function () { showToast('Ping ke ' + ip + ' belum terhubung ke backend.', 'error'); }
-    });
+function csvEscape(value) {
+    let text = String(value ?? '');
+    if (/^[=+\-@\t\r]/.test(text)) {
+        text = "'" + text;
+    }
+    return '"' + text.replace(/"/g, '""') + '"';
 }
 
 function exportCsv() {
@@ -165,20 +156,21 @@ function exportCsv() {
     if (!rows.length) { showToast('Tidak ada data untuk diekspor.', 'error'); return; }
 
     const header = ['Nama Unit', 'Lokasi', 'Hostname', 'Alamat IP', 'Status'];
-    const lines = [header.join(',')];
+    const lines = [header.map(csvEscape).join(',')];
 
     rows.forEach(function (r) {
         const line = [
-            '"' + (r.unit || '') + '"',
-            '"' + (r.lokasi || '') + '"',
+            r.unit || '',
+            r.lokasi || '',
             r.hostname || '',
             r.ip || '',
             r.status || '',
-        ];
+        ].map(csvEscape);
+
         lines.push(line.join(','));
     });
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const blob = new Blob(['\uFEFF' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;

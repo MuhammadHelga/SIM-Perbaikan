@@ -152,16 +152,16 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                                         </button>
                                         <?php if ($isAktif): ?>
                                             <button type="button" class="icon-action text-danger" title="Nonaktifkan"
-                                                onclick="confirmUnitDelete('ruangan', <?= (int)$r['id'] ?>, '<?= htmlspecialchars($r['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                onclick="confirmUnitDelete('ruangan', <?= (int)$r['id'] ?>, <?= jsString($r['nama_ruangan']) ?>)">
                                                 <span class="material-symbols-outlined">block</span>
                                             </button>
                                         <?php else: ?>
                                             <button type="button" class="icon-action text-success" title="Aktifkan kembali"
-                                                onclick="confirmUnitRestore('ruangan', <?= (int)$r['id'] ?>, '<?= htmlspecialchars($r['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                onclick="confirmUnitRestore('ruangan', <?= (int)$r['id'] ?>, <?= jsString($r['nama_ruangan']) ?>)">
                                                 <span class="material-symbols-outlined">restart_alt</span>
                                             </button>
                                             <button type="button" class="icon-action text-danger" title="Hapus permanen"
-                                                onclick="confirmUnitPurge('ruangan', <?= (int)$r['id'] ?>, '<?= htmlspecialchars($r['nama_ruangan'], ENT_QUOTES) ?>')">
+                                                onclick="confirmUnitPurge('ruangan', <?= (int)$r['id'] ?>, <?= jsString($r['nama_ruangan']) ?>)">
                                                 <span class="material-symbols-outlined">delete_forever</span>
                                             </button>
                                         <?php endif; ?>
@@ -239,16 +239,16 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                                         </button>
                                         <?php if ($isAktif): ?>
                                             <button type="button" class="icon-action text-danger" title="Nonaktifkan"
-                                                onclick="confirmUnitDelete('barang', <?= (int)$b['id'] ?>, '<?= htmlspecialchars($b['nama_barang'], ENT_QUOTES) ?>')">
+                                                onclick="confirmUnitDelete('barang', <?= (int)$b['id'] ?>, <?= jsString($b['nama_barang']) ?>)">
                                                 <span class="material-symbols-outlined">block</span>
                                             </button>
                                         <?php else: ?>
                                             <button type="button" class="icon-action text-success" title="Aktifkan kembali"
-                                                onclick="confirmUnitRestore('barang', <?= (int)$b['id'] ?>, '<?= htmlspecialchars($b['nama_barang'], ENT_QUOTES) ?>')">
+                                                onclick="confirmUnitRestore('barang', <?= (int)$b['id'] ?>, <?= jsString($b['nama_barang']) ?>)">
                                                 <span class="material-symbols-outlined">restart_alt</span>
                                             </button>
                                             <button type="button" class="icon-action text-danger" title="Hapus permanen"
-                                                onclick="confirmUnitPurge('barang', <?= (int)$b['id'] ?>, '<?= htmlspecialchars($b['nama_barang'], ENT_QUOTES) ?>')">
+                                                onclick="confirmUnitPurge('barang', <?= (int)$b['id'] ?>, <?= jsString($b['nama_barang']) ?>)">
                                                 <span class="material-symbols-outlined">delete_forever</span>
                                             </button>
                                         <?php endif; ?>
@@ -346,16 +346,16 @@ $totalAsetNonaktif = count($asetList) - $totalAset;
                                     </button>
                                     <?php if ($isAktif): ?>
                                         <button type="button" class="icon-action text-danger" title="Nonaktifkan"
-                                            onclick="confirmAsetDelete(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($labelAks, ENT_QUOTES) ?>')">
+                                            onclick="confirmAsetDelete(<?= (int)$a['id'] ?>, <?= jsString($labelAks) ?>)">
                                             <span class="material-symbols-outlined">block</span>
                                         </button>
                                     <?php else: ?>
                                         <button type="button" class="icon-action text-success" title="Aktifkan kembali"
-                                            onclick="confirmAsetRestore(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($labelAks, ENT_QUOTES) ?>')">
+                                            onclick="confirmAsetRestore(<?= (int)$a['id'] ?>, <?= jsString($labelAks) ?>)">
                                             <span class="material-symbols-outlined">restart_alt</span>
                                         </button>
                                         <button type="button" class="icon-action text-danger" title="Hapus permanen"
-                                            onclick="confirmAsetPurge(<?= (int)$a['id'] ?>, '<?= htmlspecialchars($labelAks, ENT_QUOTES) ?>')">
+                                            onclick="confirmAsetPurge(<?= (int)$a['id'] ?>, <?= jsString($labelAks) ?>)">
                                             <span class="material-symbols-outlined">delete_forever</span>
                                         </button>
                                     <?php endif; ?>

@@ -96,7 +96,7 @@ $total        = count($subnetList);
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
                                     <button type="button" class="icon-action text-danger" title="Hapus"
-                                        onclick="confirmSubnetDelete(<?= (int)$s['id'] ?>, '<?= htmlspecialchars($s['cidr'], ENT_QUOTES) ?>')">
+                                        onclick="confirmSubnetDelete(<?= (int)$s['id'] ?>, <?= jsString($s['cidr']) ?>)">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </td>

@@ -85,6 +85,9 @@ $cetakQuery = http_build_query(array_filter([
 ], fn($v) => $v !== '' && $v !== null));
 $cetakUrl = BASE_URL . '/laporan/cetak' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
 
+// URL export CSV memakai filter yang sama dengan tampilan/cetak.
+$exportUrl = BASE_URL . '/laporan/export' . ($cetakQuery !== '' ? '?' . $cetakQuery : '');
+
 // Deret nomor halaman dengan elipsis: 1 … 4 5 6 … 20
 $pagerItems = function (int $current, int $total): array {
     if ($total <= 7) {
@@ -247,6 +250,10 @@ if ($accFilter !== '') {
                         <span class="material-symbols-outlined">print</span>
                         Cetak Rekap Laporan
                     </a>
+                    <a class="btn btn-export" id="btnExportCsv" href="<?= htmlspecialchars($exportUrl, ENT_QUOTES, 'UTF-8') ?>">
+                        <span class="material-symbols-outlined">download</span>
+                        Export CSV
+                    </a>
                     <?php if (!$isKabag): ?>
                     <button type="button" class="btn btn-add" onclick="openTambahModal()">
                         <span class="material-symbols-outlined">add</span>
@@ -330,7 +337,15 @@ if ($accFilter !== '') {
                         <tr>
                             <td class="nowrap col-tgl"><?= htmlspecialchars($fmtTanggal($row['tanggal'])) ?></td>
                             <td class="col-urusan"><?= htmlspecialchars(trim($row['urusan'] . (!empty($row['jenis_poli']) ? ' - ' . $row['jenis_poli'] : ''))) ?></td>
-                            <td class="col-barang"><?= htmlspecialchars($row['barang']) ?></td>
+                            <td class="col-barang">
+                                <?= htmlspecialchars($row['barang']) ?>
+                                <?php if (!empty($row['sering_rusak'])): ?>
+                                    <span class="badge badge--red badge--sering"
+                                          title="Aset ini muncul minimal <?= (int) (defined('SERING_RUSAK_MIN') ? SERING_RUSAK_MIN : 3) ?> kali dalam <?= (int) (defined('SERING_RUSAK_HARI') ? SERING_RUSAK_HARI : 90) ?> hari terakhir">
+                                        Sering rusak · <?= (int) $row['kerusakan_90h'] ?>x
+                                    </span>
+                                <?php endif; ?>
+                            </td>
                             <td class="col-tipe"><?= htmlspecialchars(!empty($row['tipe_barang']) ? $row['tipe_barang'] : '-') ?></td>
                             <td class="col-sn"><?= htmlspecialchars($row['serial_number'] ?? '-') ?></td>
                             <td class="truncate col-kerusakan" title="<?= htmlspecialchars($row['kerusakan']) ?>"><?= htmlspecialchars($row['kerusakan']) ?></td>

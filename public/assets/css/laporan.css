@@ -334,6 +334,15 @@ main.page-wrap {
   background: #001c64;
 }
 
+.btn-export {
+  background: #0f766e;
+  color: #fff;
+}
+
+.btn-export:hover {
+  filter: brightness(0.95);
+}
+
 .filter-active {
   display: flex;
   align-items: center;
@@ -609,6 +618,16 @@ main.page-wrap {
 .badge--orange {
   background: #ffe0b2;
   color: #b45309;
+}
+
+/* Indikator aset yang sering rusak: kecil, menempel di bawah nama barang. */
+.badge--sering {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.5;
 }
 
 /* Badge ACC di kolom "ACC Surat" — sedikit lebih ringkas dari badge status. */

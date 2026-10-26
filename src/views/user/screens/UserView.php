@@ -120,7 +120,7 @@ $totalTeknisi = count(array_filter($userList, static fn(array $u): bool => ($u['
                                         <span class="material-symbols-outlined">edit</span>
                                     </button>
                                     <button type="button" class="icon-action text-danger" title="Hapus"
-                                        onclick="confirmUserDelete(<?= (int)$u['id'] ?>, '<?= htmlspecialchars($u['username'], ENT_QUOTES) ?>')">
+                                        onclick="confirmUserDelete(<?= (int)$u['id'] ?>, <?= jsString($u['username']) ?>)">
                                         <span class="material-symbols-outlined">delete</span>
                                     </button>
                                 </td>

@@ -401,7 +401,8 @@ function cetakSurat() {
 }
 
 function buildSuratHtml({ nomor, tglFmt, namaPelapor, jabatan, keterangan, qrImg, qrImgKabag, row, id }) {
-    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     const logoSrc = `${window.location.origin}${window.BASE_URL || ''}/assets/images/logo_alhuda_kop.png`;
 
     // Penandatangan kedua — label/jabatan dari config/pengaturan.php (fallback);
